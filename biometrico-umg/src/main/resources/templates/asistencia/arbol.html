@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Árbol de Asistencia', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header" th:if="${curso != null}">
+    <div>
+      <h2><i class="fas fa-sitemap" style="margin-right:10px;color:var(--umg-azul);"></i>
+        Árbol de Asistencia — <span th:text="${curso.nombre}">Curso</span>
+      </h2>
+      <p class="breadcrumb">
+        <a th:href="@{/asistencia}">Asistencia</a> &rsaquo;
+        <span th:text="${curso.codigo}">COD</span>
+      </p>
+    </div>
+    <a th:href="@{/asistencia/curso/{id}/reporte-pdf(id=${curso.id}, fecha=${fechaStr})}"
+       class="btn btn-primary">
+      <i class="fas fa-file-pdf"></i> Exportar PDF
+    </a>
+  </div>
+
+  <!-- Selector de fecha -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-body" style="padding:16px 22px;">
+      <form th:action="@{/asistencia/curso/{id}(id=${curso.id})}" method="get"
+            style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <label class="form-label" style="margin:0;font-size:14px;">Fecha de asistencia:</label>
+        <input type="date" class="form-control" name="fecha" th:value="${fechaStr}"
+               style="max-width:200px;"/>
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="fas fa-search"></i> Cargar
+        </button>
+        <span style="font-size:13px;color:#7a8898;margin-left:auto;">
+          <i class="fas fa-calendar" style="margin-right:4px;"></i>
+          Mostrando: <strong th:text="${#temporals.format(fecha, 'EEEE dd/MM/yyyy')}">Fecha</strong>
+        </span>
+      </form>
+    </div>
+  </div>
+
+  <!-- Resumen presencias/ausencias -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;" th:if="${arbol != null}">
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-check-circle" style="color:#2e7d32;"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${#lists.size(arbol.?[presente == true])}">0</div>
+        <div class="stat-label">Presentes</div>
+      </div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-icon"><i class="fas fa-times-circle" style="color:var(--umg-rojo);"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${#lists.size(arbol.?[presente == false])}">0</div>
+        <div class="stat-label">Ausentes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-users" style="color:var(--umg-azul);"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${#lists.size(arbol)}">0</div>
+        <div class="stat-label">Total Inscritos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Árbol de asistencia con checkboxes para confirmar -->
+  <div class="card" th:if="${curso != null}">
+    <div class="card-header">
+      <h5><i class="fas fa-network-wired" style="margin-right:8px;"></i>
+        Árbol de Asistencia — Clic en tarjeta para marcar presente/ausente
+      </h5>
+    </div>
+    <div class="card-body">
+      <form th:action="@{/asistencia/curso/{id}/confirmar(id=${curso.id})}" method="post" id="formAsistencia">
+        <input type="hidden" name="fecha" th:value="${fechaStr}"/>
+
+        <div class="attendance-tree" th:if="${arbol != null and not #lists.isEmpty(arbol)}">
+          <div th:each="nodo : ${arbol}"
+               class="attendance-node"
+               th:classappend="${nodo.presente} ? 'presente' : 'ausente'">
+            <input type="checkbox" name="presentesIds" th:value="${nodo.estudianteId}"
+                   th:checked="${nodo.presente}" style="display:none;"/>
+            <img th:if="${nodo.fotoRuta != null}" th:src="@{'/' + nodo.fotoRuta}"
+                 alt="Foto" style="width:48px;height:48px;border-radius:50%;object-fit:cover;"/>
+            <div th:unless="${nodo.fotoRuta != null}"
+                 style="width:48px;height:48px;border-radius:50%;background:#eef2f7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+              <i class="fas fa-user" style="color:#7a8898;"></i>
+            </div>
+            <div class="node-info">
+              <div class="node-name" th:text="${nodo.nombreCompleto}">Nombre</div>
+              <div class="node-email" th:text="${nodo.correo}">correo</div>
+              <div class="node-hora" th:if="${nodo.horaRegistro != null}">
+                <i class="fas fa-clock" style="margin-right:3px;"></i>
+                <span th:text="${nodo.horaRegistro}">hora</span>
+              </div>
+            </div>
+            <div class="node-status" th:text="${nodo.presente} ? '✓' : '✗'">✓</div>
+          </div>
+        </div>
+
+        <div th:if="${arbol == null or #lists.isEmpty(arbol)}"
+             style="text-align:center;padding:50px;color:#7a8898;">
+          <i class="fas fa-users-slash" style="font-size:40px;display:block;margin-bottom:14px;"></i>
+          No hay estudiantes inscritos en este curso.
+        </div>
+
+        <div style="margin-top:22px;display:flex;gap:14px;align-items:center;"
+             th:if="${arbol != null and not #lists.isEmpty(arbol)}">
+          <button type="submit" class="btn btn-success"
+                  data-confirm="¿Confirmar el listado de asistencia para esta fecha?">
+            <i class="fas fa-check-double"></i> Confirmar Asistencia del Curso
+          </button>
+          <button type="button" class="btn btn-outline" onclick="marcarTodos(true)">
+            <i class="fas fa-check"></i> Todos Presentes
+          </button>
+          <button type="button" class="btn btn-outline" onclick="marcarTodos(false)">
+            <i class="fas fa-times"></i> Todos Ausentes
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+  function marcarTodos(presente) {
+    document.querySelectorAll('.attendance-node').forEach(node => {
+      const cb = node.querySelector('input[type="checkbox"]');
+      if (cb) {
+        cb.checked = presente;
+        node.classList.toggle('presente', presente);
+        node.classList.toggle('ausente', !presente);
+        const icon = node.querySelector('.node-status');
+        if (icon) icon.textContent = presente ? '✓' : '✗';
+      }
+    });
+  }
+  </script>
+
+</th:block>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Cursos', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>Cursos</h2>
+      <p class="breadcrumb">Listado de cursos activos</p>
+    </div>
+    <a th:href="@{/cursos/nuevo}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Nuevo Curso
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-list" style="margin-right:8px;"></i>
+        Cursos Activos (<span th:text="${#lists.size(cursos)}">0</span>)
+      </h5>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Código</th><th>Nombre del Curso</th>
+              <th>Catedrático</th><th>Salón</th><th>Horario</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="c, iter : ${cursos}">
+              <td th:text="${iter.count}">1</td>
+              <td><code th:text="${c.codigo}">cod</code></td>
+              <td><strong th:text="${c.nombre}">Nombre</strong></td>
+              <td th:text="${c.catedratico != null ? c.catedratico.nombreCompleto : '—'}">Cat</td>
+              <td th:text="${c.salon}">Salón</td>
+              <td><small th:text="${c.horario}">Horario</small></td>
+              <td>
+                <a th:href="@{/cursos/{id}(id=${c.id})}" class="btn btn-outline btn-xs">
+                  <i class="fas fa-users"></i> Estudiantes
+                </a>
+                <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs">
+                  <i class="fas fa-clipboard-check"></i> Asistencia
+                </a>
+              </td>
+            </tr>
+            <tr th:if="${cursos == null or #lists.isEmpty(cursos)}">
+              <td colspan="7" style="text-align:center;color:#7a8898;padding:40px;">
+                No hay cursos registrados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

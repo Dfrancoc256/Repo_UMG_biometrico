@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Reporte por Puerta', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-door-closed" style="margin-right:10px;color:var(--umg-azul);"></i>Reporte de Ingresos por Puerta</h2>
+      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Por Puerta</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><h5><i class="fas fa-filter" style="margin-right:8px;"></i>Filtros de Búsqueda</h5></div>
+    <div class="card-body">
+      <form th:action="@{/reportes/puerta}" method="get"
+            style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
+
+        <div class="form-group" style="margin:0;min-width:220px;">
+          <label class="form-label">Instalación</label>
+          <select class="form-control" name="instalacionId" id="selInstalacion"
+                  th:value="${instalacionId}">
+            <option value="">-- Seleccione --</option>
+            <option th:each="i : ${instalaciones}"
+                    th:value="${i.id}" th:text="${i.nombre}"
+                    th:selected="${instalacionId != null and i.id == instalacionId}">inst</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin:0;min-width:200px;" th:if="${puertas != null}">
+          <label class="form-label">Puerta / Acceso</label>
+          <select class="form-control" name="puertaId" id="selPuerta">
+            <option value="">-- Seleccione --</option>
+            <option th:each="p : ${puertas}"
+                    th:value="${p.id}" th:text="${p.nombre}"
+                    th:selected="${puertaId != null and p.id == puertaId}">puerta</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Fecha</label>
+          <input type="date" class="form-control" name="fecha"
+                 th:value="${fecha != null ? fecha.toString() : ''}"/>
+        </div>
+
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Ordenar por</label>
+          <select class="form-control" name="orden">
+            <option value="desc" th:selected="${orden == 'desc'}">Más reciente primero</option>
+            <option value="asc" th:selected="${orden == 'asc'}">Más antiguo primero</option>
+          </select>
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Árbol de fechas disponibles -->
+  <div class="card" style="margin-bottom:20px;" th:if="${fechasConIngreso != null and not #lists.isEmpty(fechasConIngreso)}">
+    <div class="card-header">
+      <h5><i class="fas fa-calendar-alt" style="margin-right:8px;"></i>Fechas con registros en esta puerta</h5>
+    </div>
+    <div class="card-body" style="display:flex;flex-wrap:wrap;gap:10px;">
+      <a th:each="f : ${fechasConIngreso}"
+         th:href="@{/reportes/puerta(instalacionId=${instalacionId}, puertaId=${puertaId}, fecha=${f.toString()})}"
+         class="btn btn-outline btn-sm"
+         th:classappend="${fecha != null and fecha.toString() == f.toString()} ? 'btn-primary' : ''">
+        <i class="fas fa-calendar-day" style="margin-right:4px;"></i>
+        <span th:text="${#temporals.format(f, 'dd/MM/yyyy')}">fecha</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Resultados / Árbol de ingresos -->
+  <div class="card" th:if="${registros != null}">
+    <div class="card-header">
+      <h5><i class="fas fa-list" style="margin-right:8px;"></i>
+        Registros de Ingreso
+        (<span th:text="${fecha != null ? #temporals.format(fecha, 'dd/MM/yyyy') : 'todas las fechas'}">fecha</span>)
+        — <span th:text="${#lists.size(registros)}">0</span> registros
+      </h5>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Foto</th><th>Nombre Completo</th><th>Correo</th>
+              <th>Tipo</th><th>Fecha y Hora</th><th>Método</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="r, iter : ${registros}">
+              <td th:text="${iter.count}">1</td>
+              <td>
+                <img th:if="${r.persona.fotoRuta != null}"
+                     th:src="@{'/' + r.persona.fotoRuta}"
+                     class="avatar-sm" alt="Foto"/>
+                <div th:unless="${r.persona.fotoRuta != null}" class="avatar-sm avatar-placeholder">
+                  <i class="fas fa-user"></i>
+                </div>
+              </td>
+              <td>
+                <strong th:text="${r.persona.nombreCompleto}">Nombre</strong>
+                <span th:if="${r.persona.restringido}" class="badge badge-danger" style="margin-left:6px;">
+                  Restringido
+                </span>
+              </td>
+              <td><small th:text="${r.persona.correo}">correo</small></td>
+              <td>
+                <span class="badge badge-info" th:text="${r.persona.tipoPersona}">tipo</span>
+              </td>
+              <td th:text="${#temporals.format(r.fechaHora, 'dd/MM/yyyy HH:mm:ss')}">fecha</td>
+              <td>
+                <span class="badge badge-secondary" th:text="${r.metodo}">facial</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(registros)}">
+              <td colspan="7" style="text-align:center;color:#7a8898;padding:40px;">
+                No hay registros de ingreso para los filtros seleccionados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

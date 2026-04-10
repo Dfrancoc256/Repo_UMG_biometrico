@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Enrolar Persona', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-user-plus" style="margin-right:10px;color:var(--umg-azul);"></i>
+        <span th:text="${persona.id != null} ? 'Editar Persona' : 'Enrolar Nueva Persona'">Enrolar</span>
+      </h2>
+      <p class="breadcrumb">
+        <a th:href="@{/personas}">Personas</a> &rsaquo;
+        <span th:text="${persona.id != null} ? 'Editar' : 'Nuevo Registro'">Nuevo</span>
+      </p>
+    </div>
+  </div>
+
+  <form th:action="@{/personas/guardar}" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="id" th:value="${persona.id}"/>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+      <!-- Columna datos biográficos -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h5><i class="fas fa-id-card" style="margin-right:8px;"></i>Datos Biográficos</h5>
+          </div>
+          <div class="card-body">
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+              <div class="form-group">
+                <label class="form-label">Nombre *</label>
+                <input type="text" class="form-control" name="nombre" th:value="${persona.nombre}"
+                       placeholder="Ej: Juan Carlos" required/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Apellido *</label>
+                <input type="text" class="form-control" name="apellido" th:value="${persona.apellido}"
+                       placeholder="Ej: Pérez López" required/>
+              </div>
+
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico UMG *</label>
+              <input type="email" class="form-control" name="correo" th:value="${persona.correo}"
+                     placeholder="usuario@umg.edu.gt" required/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input type="tel" class="form-control" name="telefono" th:value="${persona.telefono}"
+                     placeholder="+502 1234-5678"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tipo de Persona *</label>
+              <select class="form-control" name="tipoPersona" required>
+                <option value="">-- Seleccione --</option>
+                <option value="estudiante" th:selected="${persona.tipoPersona == 'estudiante'}">Estudiante</option>
+                <option value="catedratico" th:selected="${persona.tipoPersona == 'catedratico'}">Catedrático</option>
+                <option value="mantenimiento" th:selected="${persona.tipoPersona == 'mantenimiento'}">Mantenimiento</option>
+                <option value="admin" th:selected="${persona.tipoPersona == 'admin'}">Administrador</option>
+                <option value="otro" th:selected="${persona.tipoPersona == 'otro'}">Otro</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Carrera</label>
+              <input type="text" class="form-control" name="carrera" th:value="${persona.carrera}"
+                     placeholder="Ej: Ingeniería en Sistemas"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Sección</label>
+              <input type="text" class="form-control" name="seccion" th:value="${persona.seccion}"
+                     placeholder="Ej: A, B, C..."/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Contraseña (para acceso al sistema)</label>
+              <input type="password" class="form-control" name="contrasena"
+                     placeholder="Dejar en blanco para no cambiar"/>
+              <small style="color:#7a8898;font-size:11px;">
+                Solo requerido para catedráticos y administradores.
+              </small>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna foto y biométrico -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <h5><i class="fas fa-camera" style="margin-right:8px;"></i>Fotografía Biométrica</h5>
+          </div>
+          <div class="card-body" style="text-align:center;">
+
+            <!-- Preview de foto actual -->
+            <div style="margin-bottom:16px;">
+              <img th:if="${persona.fotoRuta != null}"
+                   th:src="@{'/' + persona.fotoRuta}"
+                   id="previewFoto"
+                   class="avatar-lg"
+                   style="width:110px;height:110px;margin-bottom:10px;"
+                   alt="Foto actual"/>
+              <img th:unless="${persona.fotoRuta != null}"
+                   id="previewFoto"
+                   class="avatar-lg"
+                   style="width:110px;height:110px;margin-bottom:10px;display:none;"
+                   alt="Vista previa"/>
+            </div>
+
+            <!-- Webcam -->
+            <div class="webcam-box" style="margin:0 auto 14px;display:inline-block;border-radius:10px;overflow:hidden;">
+              <video id="webcamVideo" width="280" height="210" autoplay muted
+                     style="display:block;background:#111;"></video>
+              <div class="webcam-overlay">📹 Cámara en vivo</div>
+            </div>
+            <canvas id="webcamCanvas" style="display:none;"></canvas>
+            <input type="hidden" id="fotoBase64" name="fotoBase64"/>
+
+            <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+              <button type="button" class="btn btn-success" id="btnCapturar">
+                <i class="fas fa-camera"></i> Capturar Foto
+              </button>
+              <div style="color:#7a8898;font-size:12px;">— o —</div>
+              <label style="cursor:pointer;">
+                <span class="btn btn-outline btn-sm"><i class="fas fa-upload"></i> Subir desde archivo</span>
+                <input type="file" name="foto" accept="image/*" style="display:none;"
+                       onchange="previewFotoArchivo(this)"/>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="card-header">
+            <h5><i class="fas fa-fingerprint" style="margin-right:8px;"></i>Número de Carnet</h5>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">No. Carnet (se genera automáticamente si está vacío)</label>
+              <input type="text" class="form-control" name="numeroCarnet" th:value="${persona.numeroCarnet}"
+                     placeholder="UMG-XXXXXXX"/>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;margin-top:10px;">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i>
+        <span th:text="${persona.id != null} ? 'Actualizar Persona' : 'Registrar Persona'">Guardar</span>
+      </button>
+      <a th:href="@{/personas}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Cancelar
+      </a>
+    </div>
+
+  </form>
+
+  <script>
+    function previewFotoArchivo(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('previewFoto');
+        img.src = e.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+
+</th:block>
+</body>
+</html>

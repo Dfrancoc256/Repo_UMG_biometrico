@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Agregar Acceso', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>Agregar Acceso / Salón</h2>
+      <p class="breadcrumb">
+        <a th:href="@{/instalaciones}">Instalaciones</a> &rsaquo;
+        <span th:text="${instalacion.nombre}">Instalación</span> &rsaquo; Nuevo Acceso
+      </p>
+    </div>
+  </div>
+  <div class="card" style="max-width:560px;">
+    <div class="card-header"><h5>Datos del Acceso</h5></div>
+    <div class="card-body">
+      <form th:action="@{/instalaciones/{id}/puerta/guardar(id=${instalacion.id})}" method="post">
+        <div class="form-group">
+          <label class="form-label">Nombre del Acceso / Salón *</label>
+          <input type="text" class="form-control" name="nombre"
+                 placeholder="Ej: Puerta Principal, Salón 201" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nivel</label>
+          <input type="text" class="form-control" name="nivel"
+                 placeholder="Ej: Primer Nivel, Segundo Nivel"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">¿Es salón de clases?</label>
+          <select class="form-control" name="esSalon">
+            <option value="false">No — Puerta de acceso principal</option>
+            <option value="true">Sí — Salón de clases</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <input type="text" class="form-control" name="descripcion"
+                 placeholder="Descripción adicional..."/>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+          <a th:href="@{/instalaciones/{id}(id=${instalacion.id})}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Cancelar
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

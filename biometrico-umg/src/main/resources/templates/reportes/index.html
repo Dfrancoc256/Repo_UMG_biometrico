@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Reportes y Estadísticas', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-chart-bar" style="margin-right:10px;color:var(--umg-azul);"></i>Reportes y Estadísticas</h2>
+      <p class="breadcrumb">Dashboard de reportes en tiempo real</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+
+    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/puerta'">
+      <div class="card-body" style="padding:28px;text-align:center;">
+        <div style="background:#eef2f7;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-door-closed" style="font-size:28px;color:var(--umg-azul);"></i>
+        </div>
+        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Ingresos por Puerta</h4>
+        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
+          Reporte histórico y por fecha de ingresos registrados en las puertas de acceso principal.
+        </p>
+        <a th:href="@{/reportes/puerta}" class="btn btn-primary" style="margin-top:14px;">
+          <i class="fas fa-arrow-right"></i> Ver Reporte
+        </a>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/salon'">
+      <div class="card-body" style="padding:28px;text-align:center;">
+        <div style="background:#fff8e1;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-chalkboard-teacher" style="font-size:28px;color:#9e6c00;"></i>
+        </div>
+        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Ingresos por Salón</h4>
+        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
+          Listado de personas que han ingresado a salones de clase, incluyendo catedráticos.
+        </p>
+        <a th:href="@{/reportes/salon}" class="btn btn-warning" style="margin-top:14px;">
+          <i class="fas fa-arrow-right"></i> Ver Reporte
+        </a>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/historico'">
+      <div class="card-body" style="padding:28px;text-align:center;">
+        <div style="background:#e8f5e9;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-history" style="font-size:28px;color:#2e7d32;"></i>
+        </div>
+        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Árbol Histórico</h4>
+        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
+          Árbol jerárquico con toda la historia de accesos por instalación, puerta y fecha.
+        </p>
+        <a th:href="@{/reportes/historico}" class="btn btn-success" style="margin-top:14px;">
+          <i class="fas fa-arrow-right"></i> Ver Árbol
+        </a>
+      </div>
+    </div>
+
+    <div class="card" style="cursor:pointer;" onclick="location.href='/asistencia'">
+      <div class="card-body" style="padding:28px;text-align:center;">
+        <div style="background:#fdecea;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-clipboard-list" style="font-size:28px;color:var(--umg-rojo);"></i>
+        </div>
+        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Asistencia a Cursos</h4>
+        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
+          Árbol de asistencia por curso mostrando presentes (verde) y ausentes (rojo).
+        </p>
+        <a th:href="@{/asistencia}" class="btn btn-danger" style="margin-top:14px;">
+          <i class="fas fa-arrow-right"></i> Ver Asistencia
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+</th:block>
+</body>
+</html>

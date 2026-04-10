@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Personas Restringidas', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-user-slash" style="margin-right:10px;color:var(--umg-rojo);"></i>Personas con Restricción</h2>
+      <p class="breadcrumb">Módulo de control de acceso restringido</p>
+    </div>
+  </div>
+
+  <div th:if="${#lists.isEmpty(personas)}" class="card">
+    <div class="card-body" style="text-align:center;padding:50px;color:#7a8898;">
+      <i class="fas fa-check-circle" style="font-size:40px;color:#4caf50;display:block;margin-bottom:14px;"></i>
+      No hay personas con restricción de acceso actualmente.
+    </div>
+  </div>
+
+  <div th:unless="${#lists.isEmpty(personas)}" class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-ban" style="margin-right:8px;color:var(--umg-rojo);"></i>
+        Personas Restringidas (<span th:text="${#lists.size(personas)}">0</span>)
+      </h5>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Foto</th><th>Nombre</th><th>Tipo</th>
+              <th>Correo</th><th>Motivo</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="p, iter : ${personas}" style="background:#fdecea5a;">
+              <td th:text="${iter.count}">1</td>
+              <td>
+                <img th:if="${p.fotoRuta != null}" th:src="@{'/' + p.fotoRuta}" class="avatar-sm" alt="Foto"
+                     style="border-color:var(--umg-rojo);"/>
+                <div th:unless="${p.fotoRuta != null}" class="avatar-sm avatar-placeholder">
+                  <i class="fas fa-user"></i>
+                </div>
+              </td>
+              <td><strong th:text="${p.nombreCompleto}">Nombre</strong></td>
+              <td><span class="badge badge-secondary" th:text="${p.tipoPersona}">tipo</span></td>
+              <td><small th:text="${p.correo}">correo</small></td>
+              <td>
+                <span style="font-size:12px;color:#c62828;" th:text="${p.motivoRestriccion}">Motivo</span>
+              </td>
+              <td>
+                <a th:href="@{/personas/{id}/ver(id=${p.id})}" class="btn btn-outline btn-xs">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <form th:action="@{/personas/{id}/levantar-restriccion(id=${p.id})}" method="post" style="display:inline;">
+                  <button type="submit" class="btn btn-success btn-xs"
+                          data-confirm="¿Levantar la restricción de esta persona?">
+                    <i class="fas fa-unlock"></i> Levantar
+                  </button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario para agregar restricción desde aquí -->
+  <div class="card" style="margin-top:24px;">
+    <div class="card-header">
+      <h5><i class="fas fa-plus-circle" style="margin-right:8px;color:var(--umg-rojo);"></i>Agregar Restricción por ID</h5>
+    </div>
+    <div class="card-body">
+      <form th:action="@{/personas/0/restringir}" method="post"
+            style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">ID de Persona</label>
+          <input type="number" class="form-control" name="personaId" placeholder="ID" style="width:120px;"/>
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:240px;">
+          <label class="form-label">Motivo *</label>
+          <input type="text" class="form-control" name="motivo" placeholder="Motivo de restricción" required/>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-ban"></i> Aplicar Restricción
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

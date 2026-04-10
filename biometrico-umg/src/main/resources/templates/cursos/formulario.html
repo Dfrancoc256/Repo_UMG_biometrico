@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Nuevo Curso', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>
+        <span th:text="${curso.id != null} ? 'Editar Curso' : 'Nuevo Curso'">Nuevo Curso</span>
+      </h2>
+      <p class="breadcrumb"><a th:href="@{/cursos}">Cursos</a> &rsaquo; Formulario</p>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:700px;">
+    <div class="card-header"><h5><i class="fas fa-edit" style="margin-right:8px;"></i>Información del Curso</h5></div>
+    <div class="card-body">
+      <form th:action="@{/cursos/guardar}" method="post">
+        <input type="hidden" name="id" th:value="${curso.id}"/>
+
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Código *</label>
+            <input type="text" class="form-control" name="codigo" th:value="${curso.codigo}"
+                   placeholder="EJ: SIS-301" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre del Curso *</label>
+            <input type="text" class="form-control" name="nombre" th:value="${curso.nombre}"
+                   placeholder="Ej: Programación III" required/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Catedrático *</label>
+          <select class="form-control" name="catedraticoId" required>
+            <option value="">-- Seleccione un catedrático --</option>
+            <option th:each="cat : ${catedraticos}"
+                    th:value="${cat.id}"
+                    th:text="${cat.nombreCompleto}"
+                    th:selected="${curso.catedratico != null and curso.catedratico.id == cat.id}">
+              Catedrático
+            </option>
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Salón</label>
+            <input type="text" class="form-control" name="salon" th:value="${curso.salon}"
+                   placeholder="Ej: Salón 201"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Horario</label>
+            <input type="text" class="form-control" name="horario" th:value="${curso.horario}"
+                   placeholder="Ej: Lunes y Miércoles 18:00-21:00"/>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i>
+            <span th:text="${curso.id != null} ? 'Actualizar' : 'Guardar Curso'">Guardar</span>
+          </button>
+          <a th:href="@{/cursos}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Cancelar
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

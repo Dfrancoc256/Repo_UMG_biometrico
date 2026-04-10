@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Registro de Ingreso', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>Registro de Ingreso</h2>
+      <p class="breadcrumb">Registrar ingreso manual o por reconocimiento facial</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+    <!-- Formulario manual -->
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-keyboard" style="margin-right:8px;"></i>Registro Manual</h5>
+      </div>
+      <div class="card-body">
+        <form th:action="@{/ingreso/registrar}" method="post">
+          <div class="form-group">
+            <label class="form-label">ID de Persona *</label>
+            <input type="number" class="form-control" name="personaId"
+                   placeholder="ID de la persona" required/>
+            <small style="color:#7a8898;font-size:11px;">Ingrese el ID de la persona del sistema.</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Instalación</label>
+            <select class="form-control" id="selInstalacion">
+              <option value="">-- Seleccione instalación --</option>
+              <option th:each="inst : ${instalaciones}"
+                      th:value="${inst.id}"
+                      th:text="${inst.nombre}">Instalación</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Puerta / Acceso *</label>
+            <select class="form-control" name="puertaId" id="selPuerta" required>
+              <option value="">-- Primero seleccione instalación --</option>
+              <option th:each="p : ${puertas}"
+                      th:value="${p.id}"
+                      th:text="${p.nombre + (p.esSalon ? ' (Salón)' : ' (Acceso)')}">Puerta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Método de registro</label>
+            <select class="form-control" name="metodo">
+              <option value="manual">Manual</option>
+              <option value="carnet">Carnet QR</option>
+              <option value="facial">Reconocimiento Facial</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check-circle"></i> Registrar Ingreso
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Cámara facial -->
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-camera" style="margin-right:8px;"></i>Reconocimiento Facial (Vista previa)</h5>
+      </div>
+      <div class="card-body" style="text-align:center;">
+        <div class="webcam-box" style="margin:0 auto 16px;border-radius:12px;overflow:hidden;display:inline-block;">
+          <video id="webcamVideo" width="320" height="240" autoplay muted
+                 style="display:block;background:#0a1e35;"></video>
+          <div class="webcam-overlay">📹 Cámara activa</div>
+        </div>
+        <canvas id="webcamCanvas" style="display:none;"></canvas>
+        <div style="margin-top:12px;">
+          <button type="button" class="btn btn-success" id="btnCapturar">
+            <i class="fas fa-camera"></i> Capturar y Buscar
+          </button>
+        </div>
+        <div id="resultadoFacial" style="margin-top:16px;"></div>
+        <div style="margin-top:14px;padding:12px;background:#f0f4f8;border-radius:8px;font-size:12px;color:#5a6a7e;text-align:left;">
+          <strong>Nota:</strong> El reconocimiento facial completo requiere la integración con OpenCV/DeepFace.
+          Esta vista muestra la interfaz para captura y envío de frame al backend para procesamiento.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</th:block>
+</body>
+</html>
