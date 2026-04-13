@@ -1,10 +1,13 @@
 package com.umg.biometrico.controller;
 
-import com.itextpdf.text.DocumentException;
 import com.umg.biometrico.model.Persona;
+import com.umg.biometrico.service.EmailService;
 import com.umg.biometrico.service.PdfService;
 import com.umg.biometrico.service.PersonaService;
+import com.umg.biometrico.service.WhatsAppService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
-
 @Controller
 @RequestMapping("/personas")
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class PersonaController {
 
     private final PersonaService personaService;
     private final PdfService pdfService;
+    private final EmailService emailService;
 
     @GetMapping
     public String listar(@RequestParam(required = false) String busqueda,
@@ -130,4 +132,91 @@ public class PersonaController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/{id}/enviar-carnet")
+    public String enviarCarnet(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Persona persona = personaService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+            if (persona.getCorreo() == null || persona.getCorreo().isBlank()) {
+                throw new RuntimeException("La persona no tiene correo registrado");
+            }
+
+            // Generar PDF
+            byte[] pdf = pdfService.generarCarnetPersona(persona);
+
+            String nombreArchivo = "carnet_" +
+                    (persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : persona.getId()) +
+                    ".pdf";
+
+            // Enviar correo
+            emailService.enviarCarnet(persona.getCorreo(), pdf, nombreArchivo);
+
+            redirectAttributes.addFlashAttribute("success", "Carnet enviado correctamente al correo.");
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al enviar carnet: " + e.getMessage());
+        }
+
+        return "redirect:/personas/" + id + "/ver";
+    }
+
+    @GetMapping("/{id}/carnet-publico")
+    public ResponseEntity<byte[]> carnetPublico(@PathVariable Long id) {
+        try {
+            Persona persona = personaService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Persona no encontrada con id: " + id));
+
+            byte[] pdf = pdfService.generarCarnetPersona(persona);
+
+            String nombreArchivo = "carnet_" +
+                    (persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : persona.getId()) +
+                    ".pdf";
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + nombreArchivo + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Autowired
+    private WhatsAppService whatsAppService;
+
+    @Value("${app.base-url}")
+    private String appBaseUrl;
+
+    @GetMapping("/{id}/enviar-whatsapp")
+    public String enviarWhatsApp(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+
+        try {
+            Persona persona = personaService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+            if (persona.getTelefono() == null || persona.getTelefono().isBlank()) {
+                throw new RuntimeException("La persona no tiene teléfono registrado");
+            }
+
+            String mediaUrl = appBaseUrl + "/personas/" + id + "/carnet-publico";
+
+            String sid = whatsAppService.enviarCarnetPdf(
+                    persona.getTelefono(),
+                    mediaUrl
+            );
+
+            redirectAttributes.addFlashAttribute("success",
+                    "Carnet enviado por WhatsApp ✅ SID: " + sid);
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al enviar por WhatsApp ❌: " + e.getMessage());
+        }
+
+        return "redirect:/personas/" + id + "/ver";
+    }
+
 }
