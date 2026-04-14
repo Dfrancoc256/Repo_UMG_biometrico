@@ -1,16 +1,16 @@
 package com.umg.biometrico.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import java.util.List;
 
 @Entity
 @Table(name = "cursos")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Curso {
 
     @Id
@@ -23,7 +23,7 @@ public class Curso {
     @Column(length = 200)
     private String nombre;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "catedratico_id")
     private Persona catedratico;
 
@@ -36,6 +36,8 @@ public class Curso {
     @Column(nullable = false)
     private Boolean activo = true;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CursoEstudiante> estudiantes;
 }

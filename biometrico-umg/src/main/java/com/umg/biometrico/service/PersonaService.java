@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,21 @@ public class PersonaService {
 
     public Persona guardar(Persona persona, MultipartFile foto) throws IOException {
         if (persona.getNumeroCarnet() == null || persona.getNumeroCarnet().isBlank()) {
-            persona.setNumeroCarnet(generarNumeroCarnet());
+            persona.setNumeroCarnet(generarNumeroCarnetUnico());
+        } else {
+            // Validar que el carnet no esté asignado a otra persona
+            personaRepository.findByNumeroCarnet(persona.getNumeroCarnet().trim())
+                .ifPresent(existente -> {
+                    boolean esMismaPersona = existente.getId() != null
+                            && existente.getId().equals(persona.getId());
+                    if (!esMismaPersona) {
+                        throw new IllegalArgumentException(
+                            "El número de carnet '" + persona.getNumeroCarnet() +
+                            "' ya está asignado a " + existente.getNombreCompleto() +
+                            ". Deje el campo vacío para generar uno automáticamente.");
+                    }
+                });
+            persona.setNumeroCarnet(persona.getNumeroCarnet().trim());
         }
 
         if (persona.getActivo() == null) {
@@ -106,8 +121,15 @@ public class PersonaService {
         });
     }
 
-    private String generarNumeroCarnet() {
-        return "UMG-" + String.valueOf(System.currentTimeMillis()).substring(7);
+    private String generarNumeroCarnetUnico() {
+        String carnet;
+        do {
+            // Combina timestamp + random para garantizar unicidad
+            long suffix = System.currentTimeMillis() % 10_000_000L
+                        + ThreadLocalRandom.current().nextInt(1000);
+            carnet = String.format("UMG-%07d", suffix % 10_000_000L);
+        } while (personaRepository.findByNumeroCarnet(carnet).isPresent());
+        return carnet;
     }
 
     private String guardarFoto(MultipartFile foto) throws IOException {

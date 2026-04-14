@@ -1,160 +1,53 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::content}, 'Personas', ${activeMenu})}">
+      th:replace="~{layout/main :: layout(~{::content}, 'Instalaciones', ${activeMenu})}">
 <body>
 <th:block th:fragment="content">
 
   <div class="page-header">
     <div>
-      <h2><i class="fas fa-users" style="margin-right:10px;color:var(--umg-azul);"></i>Personas Registradas</h2>
-      <p class="breadcrumb">Listado de personas enroladas en el sistema</p>
+      <h2><i class="fas fa-building" style="margin-right:10px;color:var(--umg-azul);"></i>Instalaciones</h2>
+      <p class="breadcrumb">Edificios y accesos registrados en el sistema</p>
     </div>
-    <a th:href="@{/personas/nuevo}" class="btn btn-primary">
-      <i class="fas fa-user-plus"></i> Enrolar Persona
+    <a th:href="@{/instalaciones/nueva}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Nueva Instalación
     </a>
   </div>
 
-  <div class="card" style="margin-bottom:18px;">
-    <div class="card-body" style="padding:16px 22px;">
-      <form th:action="@{/personas}" method="get" class="search-bar" style="flex-wrap:wrap;gap:10px;">
-
-        <label for="busqueda" class="sr-only">Buscar personas</label>
-        <input id="busqueda"
-               type="text"
-               class="form-control"
-               name="busqueda"
-               placeholder="Buscar por nombre, correo o carnet..."
-               th:value="${busqueda}"
-               style="max-width:360px;"/>
-
-        <label for="tipo" class="sr-only">Filtrar por tipo</label>
-        <select id="tipo" class="form-control" name="tipo" style="max-width:180px;">
-          <option value="">Todos los tipos</option>
-          <option value="estudiante" th:selected="${tipoFiltro == 'estudiante'}">Estudiante</option>
-          <option value="catedratico" th:selected="${tipoFiltro == 'catedratico'}">Catedrático</option>
-          <option value="mantenimiento" th:selected="${tipoFiltro == 'mantenimiento'}">Mantenimiento</option>
-          <option value="admin" th:selected="${tipoFiltro == 'admin'}">Administrador</option>
-        </select>
-
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-search"></i> Buscar
-        </button>
-
-        <a th:href="@{/personas}" class="btn btn-outline">
-          <i class="fas fa-times"></i> Limpiar
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));">
+    <div th:each="inst : ${instalaciones}" class="card"
+         style="cursor:pointer;transition:transform .2s,box-shadow .2s;"
+         onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.15)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div class="card-body" style="padding:22px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div style="background:#eef2f7;padding:10px;border-radius:10px;">
+            <i class="fas fa-building" style="font-size:22px;color:var(--umg-azul);"></i>
+          </div>
+          <span class="badge badge-info">Instalación</span>
+        </div>
+        <h4 style="font-size:16px;font-weight:700;color:var(--umg-azul);margin-bottom:6px;"
+            th:text="${inst.nombre}">Nombre</h4>
+        <p style="font-size:13px;color:#7a8898;margin-bottom:16px;">
+          <i class="fas fa-map-marker-alt" style="width:16px;"></i>
+          <span th:text="${inst.direccion != null ? inst.direccion : 'Sin dirección registrada'}">Dirección</span>
+        </p>
+        <a th:href="@{/instalaciones/{id}(id=${inst.id})}" class="btn btn-primary"
+           style="width:100%;justify-content:center;">
+          <i class="fas fa-door-open"></i> Ver Accesos y Salones
         </a>
-      </form>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h5>
-        <i class="fas fa-list" style="margin-right:8px;"></i>
-        Resultados (<span th:text="${#lists.size(personas)}">0</span> personas)
-      </h5>
-    </div>
-
-    <div class="card-body" style="padding:0;">
-      <div class="table-wrapper">
-        <table class="umg-table">
-          <thead>
-          <tr>
-            <th>#</th>
-            <th>Foto</th>
-            <th>Nombre Completo</th>
-            <th>Tipo</th>
-            <th>Carnet</th>
-            <th>Correo</th>
-            <th>Carrera</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-          </thead>
-
-          <tbody>
-          <tr th:each="p, iter : ${personas}">
-            <td th:text="${iter.count}">1</td>
-
-            <td>
-              <img th:if="${p.fotoRuta != null and #strings.startsWith(p.fotoRuta, 'uploads/')}"
-                   th:src="@{'/' + ${p.fotoRuta}}"
-                   class="avatar-sm"
-                   alt="Foto"/>
-
-              <img th:if="${p.fotoRuta != null and #strings.startsWith(p.fotoRuta, 'fotos_personas/')}"
-                   th:src="@{'/' + ${p.fotoRuta}}"
-                   class="avatar-sm"
-                   alt="Foto"/>
-
-              <div th:if="${p.fotoRuta == null or (!#strings.startsWith(p.fotoRuta, 'uploads/') and !#strings.startsWith(p.fotoRuta, 'fotos_personas/'))}"
-                   class="avatar-sm avatar-placeholder">
-                <i class="fas fa-user"></i>
-              </div>
-            </td>
-
-            <td>
-              <strong th:text="${p.nombreCompleto}">Nombre</strong><br/>
-              <small style="color:#7a8898;" th:text="${p.telefono}">Tel</small>
-            </td>
-
-            <td>
-                <span class="badge"
-                      th:classappend="${p.tipoPersona == 'estudiante'} ? 'badge-info' : (${p.tipoPersona == 'catedratico'} ? 'badge-warning' : (${p.tipoPersona == 'admin'} ? 'badge-danger' : 'badge-secondary'))"
-                      th:text="${p.tipoPersona != null ? p.tipoPersona : '—'}">tipo</span>
-            </td>
-
-            <td><code th:text="${p.numeroCarnet}">carnet</code></td>
-
-            <td>
-              <small th:text="${p.correo}">correo</small>
-            </td>
-
-            <td>
-              <small th:text="${p.carrera}">—</small>
-              <br/>
-              <small style="color:#aaa;" th:text="${p.seccion != null ? 'Sec: ' + p.seccion : ''}"></small>
-            </td>
-
-            <td>
-                <span class="badge"
-                      th:classappend="${p.restringido} ? 'badge-danger' : 'badge-success'"
-                      th:text="${p.restringido} ? 'Restringido' : 'Activo'">Activo</span>
-            </td>
-
-            <td style="white-space:nowrap;">
-              <a th:href="@{/personas/{id}/ver(id=${p.id})}" class="btn btn-outline btn-xs" title="Ver detalle">
-                <i class="fas fa-eye"></i>
-              </a>
-
-              <a th:href="@{/personas/{id}/editar(id=${p.id})}" class="btn btn-warning btn-xs" title="Editar">
-                <i class="fas fa-edit"></i>
-              </a>
-
-              <a th:href="@{/personas/{id}/carnet(id=${p.id})}" class="btn btn-primary btn-xs" title="Descargar carnet PDF">
-                <i class="fas fa-id-card"></i>
-              </a>
-
-              <form th:action="@{/personas/{id}/eliminar(id=${p.id})}" method="post" style="display:inline;">
-                <button type="submit"
-                        class="btn btn-danger btn-xs"
-                        data-confirm="¿Desactivar esta persona?"
-                        title="Desactivar">
-                  <i class="fas fa-ban"></i>
-                </button>
-              </form>
-            </td>
-          </tr>
-
-          <tr th:if="${personas == null or #lists.isEmpty(personas)}">
-            <td colspan="9" style="text-align:center;color:#7a8898;padding:40px;">
-              <i class="fas fa-search" style="font-size:28px;display:block;margin-bottom:10px;"></i>
-              No se encontraron personas.
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+  <div th:if="${instalaciones == null or #lists.isEmpty(instalaciones)}" class="card">
+    <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+      <i class="fas fa-building" style="font-size:40px;display:block;margin-bottom:14px;"></i>
+      No hay instalaciones registradas.
+      <br/><br/>
+      <a th:href="@{/instalaciones/nueva}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Registrar primera instalación
+      </a>
     </div>
   </div>
 

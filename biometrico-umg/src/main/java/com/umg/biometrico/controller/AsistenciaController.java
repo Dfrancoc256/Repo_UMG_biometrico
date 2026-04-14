@@ -38,15 +38,29 @@ public class AsistenciaController {
     public String arbolAsistencia(@PathVariable Long cursoId,
                                   @RequestParam(required = false)
                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-                                  Model model) {
-        if (fecha == null) fecha = LocalDate.now();
-        List<AsistenciaDTO> arbol = asistenciaService.obtenerArbolAsistencia(cursoId, fecha);
-        cursoService.buscarPorId(cursoId).ifPresent(c -> model.addAttribute("curso", c));
-        model.addAttribute("arbol", arbol);
-        model.addAttribute("fecha", fecha);
-        model.addAttribute("fechaStr", fecha.toString());
-        model.addAttribute("activeMenu", "asistencia");
-        return "asistencia/arbol";
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
+        return cursoService.buscarPorId(cursoId).map(curso -> {
+            if (fecha == null) {
+                LocalDate hoy = LocalDate.now();
+                List<AsistenciaDTO> arbol = asistenciaService.obtenerArbolAsistencia(cursoId, hoy);
+                model.addAttribute("curso", curso);
+                model.addAttribute("arbol", arbol);
+                model.addAttribute("fecha", hoy);
+                model.addAttribute("fechaStr", hoy.toString());
+            } else {
+                List<AsistenciaDTO> arbol = asistenciaService.obtenerArbolAsistencia(cursoId, fecha);
+                model.addAttribute("curso", curso);
+                model.addAttribute("arbol", arbol);
+                model.addAttribute("fecha", fecha);
+                model.addAttribute("fechaStr", fecha.toString());
+            }
+            model.addAttribute("activeMenu", "asistencia");
+            return "asistencia/arbol";
+        }).orElseGet(() -> {
+            redirectAttributes.addFlashAttribute("error", "Curso no encontrado.");
+            return "redirect:/asistencia";
+        });
     }
 
     @PostMapping("/curso/{cursoId}/confirmar")
@@ -64,7 +78,7 @@ public class AsistenciaController {
                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         return cursoService.buscarPorId(cursoId).map(curso -> {
             try {
-                List<Asistencia> lista = asistenciaService.obtenerHistorialEstudiante(null, cursoId);
+                List<Asistencia> lista = asistenciaService.obtenerAsistenciasPorCursoYFecha(cursoId, fecha);
                 byte[] pdf = pdfService.generarReporteAsistenciaPdf(curso, fecha, lista);
 
                 return ResponseEntity.ok()

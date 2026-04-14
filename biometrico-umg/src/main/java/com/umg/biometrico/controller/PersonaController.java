@@ -25,6 +25,10 @@ public class PersonaController {
     private final PersonaService personaService;
     private final PdfService pdfService;
     private final EmailService emailService;
+<<<<<<< HEAD
+=======
+    private final WhatsAppService whatsAppService;
+>>>>>>> firmaycursos
 
     @GetMapping
     public String listar(@RequestParam(required = false) String busqueda,
@@ -58,10 +62,32 @@ public class PersonaController {
                           @RequestParam(value = "foto", required = false) MultipartFile foto,
                           RedirectAttributes redirectAttributes) {
         try {
-            personaService.guardar(persona, foto);
-            redirectAttributes.addFlashAttribute("success", "Persona registrada correctamente.");
+            boolean esNueva = (persona.getId() == null);
+            Persona guardada = personaService.guardar(persona, foto);
+
+            if (esNueva) {
+                // Envío asíncrono: no bloquea la respuesta al usuario
+                emailService.enviarCarnetPorCorreo(guardada);
+                whatsAppService.enviarCarnetPorWhatsApp(guardada);
+                redirectAttributes.addFlashAttribute("success",
+                    "Persona enrolada correctamente. Se ha enviado el carnet por correo" +
+                    (guardada.getTelefono() != null ? " y WhatsApp." : "."));
+            } else {
+                redirectAttributes.addFlashAttribute("success", "Persona actualizada correctamente.");
+            }
+        } catch (IllegalArgumentException e) {
+            // Errores de validación claros (ej: carnet duplicado)
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/personas/nuevo";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al guardar: " + e.getMessage());
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            if (msg.contains("duplicate key") || msg.contains("unique constraint")) {
+                redirectAttributes.addFlashAttribute("error",
+                    "Ya existe una persona con ese correo o número de carnet. Verifique los datos.");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Error al guardar: " + msg);
+            }
+            return "redirect:/personas/nuevo";
         }
         return "redirect:/personas";
     }
