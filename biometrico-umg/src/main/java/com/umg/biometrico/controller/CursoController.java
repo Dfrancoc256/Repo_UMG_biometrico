@@ -32,14 +32,24 @@ public class CursoController {
         return "cursos/formulario";
     }
 
+    @GetMapping("/{id}/editar")
+    public String editar(@PathVariable Long id, Model model) {
+        cursoService.buscarPorId(id).ifPresent(c -> model.addAttribute("curso", c));
+        model.addAttribute("catedraticos", personaService.listarCatedraticos());
+        model.addAttribute("activeMenu", "cursos");
+        return "cursos/formulario";
+    }
+
     @PostMapping("/guardar")
     public String guardar(@ModelAttribute Curso curso,
-                          @RequestParam Long catedraticoId,
+                          @RequestParam(required = false) Long catedraticoId,
                           RedirectAttributes redirectAttributes) {
-        personaService.buscarPorId(catedraticoId).ifPresent(curso::setCatedratico);
-        cursoService.guardar(curso);
+        if (catedraticoId != null) {
+            personaService.buscarPorId(catedraticoId).ifPresent(curso::setCatedratico);
+        }
+        Curso guardado = cursoService.guardar(curso);
         redirectAttributes.addFlashAttribute("success", "Curso guardado correctamente.");
-        return "redirect:/cursos";
+        return "redirect:/cursos/" + guardado.getId();
     }
 
     @GetMapping("/{id}")

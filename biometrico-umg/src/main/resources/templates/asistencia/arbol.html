@@ -4,6 +4,226 @@
 <body>
 <th:block th:fragment="content">
 
+<style>
+/* ── ÁRBOL DE ASISTENCIA ──────────────────── */
+.tree-page-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0 30px;
+}
+
+/* Nodo raíz: Catedrático */
+.root-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--umg-azul);
+  color: #fff;
+  padding: 18px 28px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,51,102,.35);
+  min-width: 320px;
+  max-width: 480px;
+  position: relative;
+  z-index: 2;
+}
+.root-card img,
+.root-card .root-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.35);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.root-card .root-avatar {
+  background: rgba(255,255,255,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.root-info { flex: 1; }
+.root-role {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--umg-dorado);
+  margin-bottom: 4px;
+}
+.root-name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.root-course {
+  font-size: 12px;
+  opacity: .75;
+  margin-top: 5px;
+}
+.root-badge {
+  background: rgba(255,255,255,.15);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--umg-dorado);
+  margin-top: 6px;
+  display: inline-block;
+}
+
+/* Conector vertical desde el catedrático */
+.tree-connector-root {
+  width: 3px;
+  height: 36px;
+  background: linear-gradient(to bottom, #1a3d6b, #c5d8ea);
+  position: relative;
+  z-index: 1;
+}
+
+/* Área de ramificación */
+.tree-branch-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Línea horizontal conectora */
+.tree-h-line {
+  height: 3px;
+  background: #c5d8ea;
+  width: 0%; /* se calcula dinámicamente via JS */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+/* Fila de estudiantes */
+.tree-students-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding-top: 36px;
+  position: relative;
+  width: 100%;
+}
+
+/* Cada columna de estudiante */
+.student-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Línea vertical de conexión por encima del nodo */
+.student-col::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 36px;
+  background: #c5d8ea;
+  border-radius: 2px;
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Tarjeta del estudiante */
+.student-node {
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  min-width: 140px;
+  max-width: 170px;
+  text-align: center;
+  position: relative;
+  border: 2px solid transparent;
+}
+.student-node:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.student-node.presente {
+  background: #e8f5e9;
+  border-color: #4caf50;
+  box-shadow: 0 2px 8px rgba(76,175,80,.2);
+}
+.student-node.ausente {
+  background: #fdecea;
+  border-color: #ef5350;
+  box-shadow: 0 2px 8px rgba(239,83,80,.15);
+}
+.student-node img,
+.student-node .student-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+.student-node .student-avatar {
+  background: #eef2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #7a8898;
+}
+.s-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a2a3a;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.s-hora {
+  font-size: 11px;
+  color: #2e7d32;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.s-hora.ausente-text { color: var(--umg-rojo); }
+.s-status {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.s-status.presente { background: #4caf50; color: #fff; }
+.s-status.ausente  { background: #ef5350; color: #fff; }
+
+/* Empty state */
+.tree-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #7a8898;
+}
+</style>
+
+  <!-- Encabezado de página -->
   <div class="page-header" th:if="${curso != null}">
     <div>
       <h2><i class="fas fa-sitemap" style="margin-right:10px;color:var(--umg-azul);"></i>
@@ -21,7 +241,7 @@
   </div>
 
   <!-- Selector de fecha -->
-  <div class="card" style="margin-bottom:20px;">
+  <div class="card" style="margin-bottom:20px;" th:if="${curso != null}">
     <div class="card-body" style="padding:16px 22px;">
       <form th:action="@{/asistencia/curso/{id}(id=${curso.id})}" method="get"
             style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
@@ -33,14 +253,15 @@
         </button>
         <span style="font-size:13px;color:#7a8898;margin-left:auto;">
           <i class="fas fa-calendar" style="margin-right:4px;"></i>
-          Mostrando: <strong th:text="${#temporals.format(fecha, 'EEEE dd/MM/yyyy')}">Fecha</strong>
+          Mostrando: <strong th:text="${fechaStr}">Fecha</strong>
         </span>
       </form>
     </div>
   </div>
 
-  <!-- Resumen presencias/ausencias -->
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;" th:if="${arbol != null}">
+  <!-- Tarjetas resumen -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;"
+       th:if="${curso != null and arbol != null}">
     <div class="stat-card green">
       <div class="stat-icon"><i class="fas fa-check-circle" style="color:#2e7d32;"></i></div>
       <div class="stat-info">
@@ -64,52 +285,131 @@
     </div>
   </div>
 
-  <!-- Árbol de asistencia con checkboxes para confirmar -->
+  <!-- ── ÁRBOL GRÁFICO ──────────────────────────── -->
   <div class="card" th:if="${curso != null}">
     <div class="card-header">
-      <h5><i class="fas fa-network-wired" style="margin-right:8px;"></i>
-        Árbol de Asistencia — Clic en tarjeta para marcar presente/ausente
+      <h5><i class="fas fa-sitemap" style="margin-right:8px;"></i>
+        Árbol de Asistencia — Clic en tarjeta para marcar presente / ausente
       </h5>
     </div>
-    <div class="card-body">
+    <div class="card-body" style="overflow-x:auto;">
+
       <form th:action="@{/asistencia/curso/{id}/confirmar(id=${curso.id})}" method="post" id="formAsistencia">
         <input type="hidden" name="fecha" th:value="${fechaStr}"/>
 
-        <div class="attendance-tree" th:if="${arbol != null and not #lists.isEmpty(arbol)}">
-          <div th:each="nodo : ${arbol}"
-               class="attendance-node"
-               th:classappend="${nodo.presente} ? 'presente' : 'ausente'">
-            <input type="checkbox" name="presentesIds" th:value="${nodo.estudianteId}"
-                   th:checked="${nodo.presente}" style="display:none;"/>
-            <img th:if="${nodo.fotoRuta != null}" th:src="@{'/' + nodo.fotoRuta}"
-                 alt="Foto" style="width:48px;height:48px;border-radius:50%;object-fit:cover;"/>
-            <div th:unless="${nodo.fotoRuta != null}"
-                 style="width:48px;height:48px;border-radius:50%;background:#eef2f7;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
-              <i class="fas fa-user" style="color:#7a8898;"></i>
-            </div>
-            <div class="node-info">
-              <div class="node-name" th:text="${nodo.nombreCompleto}">Nombre</div>
-              <div class="node-email" th:text="${nodo.correo}">correo</div>
-              <div class="node-hora" th:if="${nodo.horaRegistro != null}">
-                <i class="fas fa-clock" style="margin-right:3px;"></i>
-                <span th:text="${nodo.horaRegistro}">hora</span>
-              </div>
-            </div>
-            <div class="node-status" th:text="${nodo.presente} ? '✓' : '✗'">✓</div>
-          </div>
-        </div>
-
-        <div th:if="${arbol == null or #lists.isEmpty(arbol)}"
-             style="text-align:center;padding:50px;color:#7a8898;">
-          <i class="fas fa-users-slash" style="font-size:40px;display:block;margin-bottom:14px;"></i>
+        <!-- Estado vacío -->
+        <div th:if="${arbol == null or #lists.isEmpty(arbol)}" class="tree-empty">
+          <i class="fas fa-users-slash" style="font-size:44px;display:block;margin-bottom:14px;"></i>
           No hay estudiantes inscritos en este curso.
         </div>
 
-        <div style="margin-top:22px;display:flex;gap:14px;align-items:center;"
+        <!-- Árbol gráfico -->
+        <div class="tree-page-wrap" th:if="${arbol != null and not #lists.isEmpty(arbol)}">
+
+          <!-- ── Nodo raíz: Catedrático ─────────── -->
+          <div class="root-card">
+
+            <!-- Foto del catedrático -->
+            <img th:if="${curso.catedratico != null and curso.catedratico.fotoRuta != null}"
+                 th:src="@{'/' + curso.catedratico.fotoRuta}" alt="Foto Catedrático"/>
+            <div th:unless="${curso.catedratico != null and curso.catedratico.fotoRuta != null}"
+                 class="root-avatar">
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+
+            <!-- Info del catedrático -->
+            <div class="root-info">
+              <div class="root-role">Catedrático</div>
+              <div class="root-name"
+                   th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar'}">
+                Nombre Catedrático
+              </div>
+              <div class="root-course">
+                <span th:text="${curso.nombre}">Curso</span>
+                &nbsp;·&nbsp;
+                <span th:text="${curso.codigo}">COD</span>
+              </div>
+              <span class="root-badge"
+                    th:text="${curso.horario != null ? curso.horario : '—'}">Horario</span>
+            </div>
+
+          </div>
+          <!-- Fin nodo raíz -->
+
+          <!-- Conector desde el catedrático hacia abajo -->
+          <div class="tree-connector-root"></div>
+
+          <!-- Área de ramificación con todos los estudiantes -->
+          <div class="tree-branch-area" id="treeBranchArea">
+            <!-- Línea horizontal dinámica (el JS la expande) -->
+            <div class="tree-h-line" id="treeHLine"></div>
+
+            <!-- Fila de nodos estudiantes -->
+            <div class="tree-students-row" id="studentsRow">
+
+              <div th:each="nodo : ${arbol}"
+                   class="student-col"
+                   th:attr="data-id=${nodo.estudianteId}">
+
+                <!-- Checkbox oculto para confirmar asistencia -->
+                <input type="checkbox" name="presentesIds"
+                       th:value="${nodo.estudianteId}"
+                       th:checked="${nodo.presente}"
+                       style="display:none;"/>
+
+                <!-- Tarjeta del estudiante -->
+                <div class="student-node"
+                     th:classappend="${nodo.presente} ? 'presente' : 'ausente'">
+
+                  <!-- Indicador de estado -->
+                  <div class="s-status"
+                       th:classappend="${nodo.presente} ? 'presente' : 'ausente'"
+                       th:text="${nodo.presente} ? '✓' : '✗'">✓</div>
+
+                  <!-- Foto -->
+                  <img th:if="${nodo.fotoRuta != null}"
+                       th:src="@{'/' + nodo.fotoRuta}" alt="Foto"/>
+                  <div th:unless="${nodo.fotoRuta != null}" class="student-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+
+                  <!-- Nombre -->
+                  <div class="s-name" th:text="${nodo.nombreCompleto}">Nombre</div>
+
+                  <!-- Hora de llegada o "Ausente" -->
+                  <div th:if="${nodo.horaRegistro != null}"
+                       class="s-hora">
+                    <i class="fas fa-clock"></i>
+                    <span th:text="${nodo.horaRegistro}">08:00</span>
+                  </div>
+                  <div th:if="${nodo.horaRegistro == null and nodo.presente}"
+                       class="s-hora">
+                    <i class="fas fa-check"></i> Presente
+                  </div>
+                  <div th:unless="${nodo.presente}"
+                       class="s-hora ausente-text">
+                    <i class="fas fa-times"></i> Ausente
+                  </div>
+
+                </div>
+                <!-- Fin tarjeta estudiante -->
+              </div>
+              <!-- Fin th:each estudiante -->
+
+            </div>
+            <!-- Fin fila estudiantes -->
+          </div>
+          <!-- Fin área de ramificación -->
+
+        </div>
+        <!-- Fin tree-page-wrap -->
+
+        <!-- Botones de acción -->
+        <div style="margin-top:28px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;"
              th:if="${arbol != null and not #lists.isEmpty(arbol)}">
           <button type="submit" class="btn btn-success"
                   data-confirm="¿Confirmar el listado de asistencia para esta fecha?">
-            <i class="fas fa-check-double"></i> Confirmar Asistencia del Curso
+            <i class="fas fa-check-double"></i> Confirmar Asistencia
           </button>
           <button type="button" class="btn btn-outline" onclick="marcarTodos(true)">
             <i class="fas fa-check"></i> Todos Presentes
@@ -123,20 +423,100 @@
     </div>
   </div>
 
-  <script>
-  function marcarTodos(presente) {
-    document.querySelectorAll('.attendance-node').forEach(node => {
-      const cb = node.querySelector('input[type="checkbox"]');
-      if (cb) {
-        cb.checked = presente;
-        node.classList.toggle('presente', presente);
-        node.classList.toggle('ausente', !presente);
-        const icon = node.querySelector('.node-status');
-        if (icon) icon.textContent = presente ? '✓' : '✗';
-      }
-    });
+<script>
+// Clic en nodo estudiante: toggle presente/ausente
+document.querySelectorAll('.student-node').forEach(card => {
+  card.addEventListener('click', function () {
+    const col      = this.closest('.student-col');
+    const checkbox = col ? col.querySelector('input[type="checkbox"]') : null;
+    if (!checkbox) return;
+
+    checkbox.checked = !checkbox.checked;
+    const presente = checkbox.checked;
+
+    this.classList.toggle('presente', presente);
+    this.classList.toggle('ausente',  !presente);
+
+    const statusEl = this.querySelector('.s-status');
+    if (statusEl) {
+      statusEl.textContent = presente ? '✓' : '✗';
+      statusEl.classList.toggle('presente', presente);
+      statusEl.classList.toggle('ausente',  !presente);
+    }
+
+    // Actualizar texto de hora/estado debajo del nombre
+    const horaEls = this.querySelectorAll('.s-hora');
+    horaEls.forEach(el => el.remove());
+
+    const s = document.createElement('div');
+    s.className = presente ? 's-hora' : 's-hora ausente-text';
+    s.innerHTML  = presente
+      ? '<i class="fas fa-check"></i> Presente'
+      : '<i class="fas fa-times"></i> Ausente';
+    this.appendChild(s);
+  });
+});
+
+// Marcar todos presentes o ausentes
+function marcarTodos(presente) {
+  document.querySelectorAll('.student-col').forEach(col => {
+    const checkbox = col.querySelector('input[type="checkbox"]');
+    const card     = col.querySelector('.student-node');
+    if (!checkbox || !card) return;
+
+    checkbox.checked = presente;
+    card.classList.toggle('presente', presente);
+    card.classList.toggle('ausente',  !presente);
+
+    const statusEl = card.querySelector('.s-status');
+    if (statusEl) {
+      statusEl.textContent = presente ? '✓' : '✗';
+      statusEl.classList.toggle('presente', presente);
+      statusEl.classList.toggle('ausente',  !presente);
+    }
+
+    card.querySelectorAll('.s-hora').forEach(el => el.remove());
+    const s = document.createElement('div');
+    s.className = presente ? 's-hora' : 's-hora ausente-text';
+    s.innerHTML  = presente
+      ? '<i class="fas fa-check"></i> Presente'
+      : '<i class="fas fa-times"></i> Ausente';
+    card.appendChild(s);
+  });
+}
+
+// Ajustar la línea horizontal del árbol al ancho real de los estudiantes
+function ajustarLineaHorizontal() {
+  const row    = document.getElementById('studentsRow');
+  const hLine  = document.getElementById('treeHLine');
+  const area   = document.getElementById('treeBranchArea');
+  if (!row || !hLine || !area) return;
+
+  const cols = row.querySelectorAll('.student-col');
+  if (cols.length === 0) return;
+
+  if (cols.length === 1) {
+    // Un solo estudiante: solo la línea vertical, sin horizontal
+    hLine.style.width = '0px';
+    return;
   }
-  </script>
+
+  const rowRect   = row.getBoundingClientRect();
+  const firstRect = cols[0].getBoundingClientRect();
+  const lastRect  = cols[cols.length - 1].getBoundingClientRect();
+  const areaRect  = area.getBoundingClientRect();
+
+  const firstCenter = firstRect.left + firstRect.width / 2 - areaRect.left;
+  const lastCenter  = lastRect.left  + lastRect.width  / 2 - areaRect.left;
+
+  hLine.style.width     = (lastCenter - firstCenter) + 'px';
+  hLine.style.left      = firstCenter + 'px';
+  hLine.style.transform = 'none';
+}
+
+window.addEventListener('load',   ajustarLineaHorizontal);
+window.addEventListener('resize', ajustarLineaHorizontal);
+</script>
 
 </th:block>
 </body>

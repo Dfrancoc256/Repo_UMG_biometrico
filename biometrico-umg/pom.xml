@@ -91,6 +91,13 @@
             <version>5.2.0</version>
         </dependency>
 
+        <!-- BouncyCastle PKIX: certificados X.509 para firma digital PDF -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
+        </dependency>
+
         <!-- QR -->
         <dependency>
             <groupId>com.google.zxing</groupId>

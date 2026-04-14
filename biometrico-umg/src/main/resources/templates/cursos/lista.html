@@ -38,11 +38,14 @@
               <td th:text="${c.salon}">Salón</td>
               <td><small th:text="${c.horario}">Horario</small></td>
               <td>
-                <a th:href="@{/cursos/{id}(id=${c.id})}" class="btn btn-outline btn-xs">
+                <a th:href="@{/cursos/{id}(id=${c.id})}" class="btn btn-outline btn-xs" title="Ver estudiantes">
                   <i class="fas fa-users"></i> Estudiantes
                 </a>
-                <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs">
+                <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs" title="Asistencia">
                   <i class="fas fa-clipboard-check"></i> Asistencia
+                </a>
+                <a th:href="@{/cursos/{id}/editar(id=${c.id})}" class="btn btn-warning btn-xs" title="Editar curso">
+                  <i class="fas fa-edit"></i>
                 </a>
               </td>
             </tr>

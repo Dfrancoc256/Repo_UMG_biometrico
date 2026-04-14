@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +40,16 @@ public class CursoService {
     }
 
     public Curso guardar(Curso curso) {
+        if (curso.getCodigo() == null || curso.getCodigo().isBlank()) {
+            curso.setCodigo(generarCodigoCurso());
+        }
         return cursoRepository.save(curso);
+    }
+
+    private String generarCodigoCurso() {
+        int anio = Year.now().getValue();
+        long total = cursoRepository.count() + 1;
+        return String.format("CUR-%d-%03d", anio, total);
     }
 
     public void inscribirEstudiante(Long cursoId, Long estudianteId) {

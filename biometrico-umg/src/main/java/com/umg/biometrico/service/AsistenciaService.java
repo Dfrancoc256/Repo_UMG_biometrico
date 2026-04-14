@@ -84,4 +84,8 @@ public class AsistenciaService {
     public List<Asistencia> obtenerHistorialEstudiante(Long estudianteId, Long cursoId) {
         return asistenciaRepository.findByEstudiante_IdAndCurso_Id(estudianteId, cursoId);
     }
+
+    public List<Asistencia> obtenerAsistenciasPorCursoYFecha(Long cursoId, LocalDate fecha) {
+        return asistenciaRepository.findByCursoAndFechaOrdenado(cursoId, fecha);
+    }
 }

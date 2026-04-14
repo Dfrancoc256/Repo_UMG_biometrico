@@ -7,10 +7,12 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
+import com.itextpdf.text.pdf.security.*;
 import com.umg.biometrico.model.Asistencia;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +29,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PdfService {
+
+    private final FirmaDigitalComponent firmaDigital;
 
     private static final BaseColor UMG_AZUL = new BaseColor(0, 51, 102);
     private static final BaseColor UMG_AZUL_CLARO = new BaseColor(220, 235, 248);
@@ -216,7 +221,61 @@ public class PdfService {
                 new Phrase("Universidad Mariano Gálvez de Guatemala", pieFont), 108, 16, 0);
 
         document.close();
-        return baos.toByteArray();
+        byte[] pdfSinFirma = baos.toByteArray();
+
+        // Aplicar firma digital electrónica reconocida por lectores PDF
+        return firmarPdf(pdfSinFirma, persona);
+    }
+
+    /**
+     * Firma el PDF con el certificado auto-firmado de UMG.
+     * Los lectores de PDF (Adobe Acrobat, Foxit, PDF-XChange, etc.)
+     * reconocen la firma como una firma digital válida en la estructura del documento.
+     */
+    private byte[] firmarPdf(byte[] pdfBytes, Persona persona) {
+        if (!firmaDigital.isDisponible()) {
+            log.warn("Firma digital no disponible, carnet se entrega sin firmar.");
+            return pdfBytes;
+        }
+        try {
+            ByteArrayOutputStream signedOut = new ByteArrayOutputStream();
+            PdfReader reader = new PdfReader(pdfBytes);
+
+            PdfStamper stamper = PdfStamper.createSignature(reader, signedOut, '\0');
+
+            PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
+            appearance.setReason("Carnet emitido oficialmente por UMG");
+            appearance.setLocation("Universidad Mariano Gálvez, Sede La Florida, Zona 19, Guatemala");
+            appearance.setContact("noreply.umg.biometrico@gmail.com");
+            appearance.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
+
+            // Firma visible pequeña en la esquina inferior del carnet
+            appearance.setVisibleSignature(new Rectangle(108, 2, 260, 15), 1, "FirmaUMG");
+            appearance.setLayer2Text("Firmado digitalmente por UMG · " +
+                LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            Font firmaFont = new Font(Font.FontFamily.HELVETICA, 5, Font.NORMAL, UMG_AZUL);
+            appearance.setLayer2Font(firmaFont);
+
+            ExternalDigest digest = new BouncyCastleDigest();
+            ExternalSignature signature = new PrivateKeySignature(
+                firmaDigital.getPrivateKey(), "SHA-256", "BC"
+            );
+
+            MakeSignature.signDetached(
+                appearance, digest, signature,
+                firmaDigital.getCertificateChain(),
+                null, null, null, 0,
+                MakeSignature.CryptoStandard.CMS
+            );
+
+            reader.close();
+            log.debug("PDF del carnet firmado digitalmente para: {}", persona.getNumeroCarnet());
+            return signedOut.toByteArray();
+
+        } catch (Exception e) {
+            log.error("Error al firmar PDF del carnet {}: {}", persona.getNumeroCarnet(), e.getMessage());
+            return pdfBytes; // Devolver sin firma antes que fallar
+        }
     }
 
     public byte[] generarReporteAsistenciaPdf(Curso curso, LocalDate fecha, List<Asistencia> asistencias)
