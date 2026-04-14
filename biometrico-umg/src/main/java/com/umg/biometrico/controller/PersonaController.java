@@ -16,6 +16,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.*;
+
 
 @Controller
 @RequestMapping("/personas")
@@ -25,10 +27,9 @@ public class PersonaController {
     private final PersonaService personaService;
     private final PdfService pdfService;
     private final EmailService emailService;
-<<<<<<< HEAD
-=======
+
     private final WhatsAppService whatsAppService;
->>>>>>> firmaycursos
+
 
     @GetMapping
     public String listar(@RequestParam(required = false) String busqueda,
@@ -210,8 +211,6 @@ public class PersonaController {
         }
     }
 
-    @Autowired
-    private WhatsAppService whatsAppService;
 
     @Value("${app.base-url}")
     private String appBaseUrl;

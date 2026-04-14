@@ -1,15 +1,49 @@
 package com.umg.biometrico.service;
 
-<<<<<<< HEAD
+import com.umg.biometrico.model.Persona;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Base64;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-
+/**
+ * Servicio para enviar el carnet por WhatsApp usando la API REST de Twilio.
+ *
+ * Configuración necesaria en application.properties:
+ *   whatsapp.twilio.account-sid=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ *   whatsapp.twilio.auth-token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ *   whatsapp.twilio.from=whatsapp:+14155238886
+ *   whatsapp.enabled=true
+ *
+ * El número destino debe incluir código de país, ej: +50230001234
+ * Para el sandbox de Twilio, el destinatario debe enviar primero
+ * "join <sandbox-keyword>" al número de Twilio.
+ */
 @Service
+@Slf4j
+
+
+
+
+
 public class WhatsAppService {
+
+    @Value("${whatsapp.enabled:false}")
+    private boolean enabled;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${twilio.account.sid}")
     private String accountSid;
@@ -34,52 +68,6 @@ public class WhatsAppService {
 
         return message.getSid();
     }
-}
-=======
-import com.umg.biometrico.model.Persona;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.Base64;
-
-/**
- * Servicio para enviar el carnet por WhatsApp usando la API REST de Twilio.
- *
- * Configuración necesaria en application.properties:
- *   whatsapp.twilio.account-sid=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- *   whatsapp.twilio.auth-token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- *   whatsapp.twilio.from=whatsapp:+14155238886
- *   whatsapp.enabled=true
- *
- * El número destino debe incluir código de país, ej: +50230001234
- * Para el sandbox de Twilio, el destinatario debe enviar primero
- * "join <sandbox-keyword>" al número de Twilio.
- */
-@Service
-@Slf4j
-public class WhatsAppService {
-
-    @Value("${whatsapp.twilio.account-sid:}")
-    private String accountSid;
-
-    @Value("${whatsapp.twilio.auth-token:}")
-    private String authToken;
-
-    @Value("${whatsapp.twilio.from:whatsapp:+14155238886}")
-    private String fromNumber;
-
-    @Value("${whatsapp.enabled:false}")
-    private boolean enabled;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
     @Async
     public void enviarCarnetPorWhatsApp(Persona persona) {
         if (!enabled) {
@@ -171,4 +159,3 @@ public class WhatsAppService {
         return "+502" + limpio;
     }
 }
->>>>>>> firmaycursos
