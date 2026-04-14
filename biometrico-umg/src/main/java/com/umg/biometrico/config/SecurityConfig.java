@@ -31,7 +31,8 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/img/**",
                                 "/webjars/**",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/personas/*/carnet-publico"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -52,6 +53,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .csrf(csrf -> csrf.disable());
+
 
         return http.build();
     }
@@ -84,4 +86,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 }

@@ -16,6 +16,14 @@
       <a th:href="@{/personas/{id}/carnet(id=${persona.id})}" class="btn btn-primary">
         <i class="fas fa-id-card"></i> Descargar Carnet PDF
       </a>
+      <a th:href="@{/personas/{id}/enviar-carnet(id=${persona.id})}"
+         class="btn btn-success">
+        Enviar por Correo
+      </a>
+      <a th:href="@{/personas/{id}/enviar-whatsapp(id=${persona.id})}"
+         class="btn btn-success">
+        <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+      </a>
     </div>
   </div>
 
