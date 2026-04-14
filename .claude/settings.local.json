@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command ':*)",
+      "Bash(powershell -Command \"Select-String -Path 'C:\\\\Users\\\\cris1\\\\Repo_UMG_biometrico\\\\biometrico-umg\\\\src\\\\main\\\\resources\\\\application.properties' -Pattern 'mail.password'\")",
+      "Bash(mvn clean:*)",
+      "Bash(cmd /c \"mvn clean compile 2>&1\")",
+      "Bash(powershell -Command \"Set-Location 'C:\\\\Users\\\\cris1\\\\Repo_UMG_biometrico\\\\biometrico-umg'; & mvn clean compile 2>&1\")",
+      "Bash(powershell -Command \"Get-Command mvn -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\Users\\\\cris1\\\\Repo_UMG_biometrico\\\\biometrico-umg' -Filter '*.xml' | Select-Object Name\")"
+    ]
+  }
+}
