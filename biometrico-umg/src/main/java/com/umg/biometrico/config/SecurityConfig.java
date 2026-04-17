@@ -32,7 +32,8 @@ public class SecurityConfig {
                                 "/img/**",
                                 "/webjars/**",
                                 "/uploads/**",
-                                "/personas/*/carnet-publico"
+                                "/personas/*/carnet-publico",
+                                "verificar/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
