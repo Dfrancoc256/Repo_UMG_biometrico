@@ -39,4 +39,6 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     Long contarRestringidos();
 
     List<Persona> findByTipoPersonaIn(List<String> tipos);
+
+    List<Persona> findTop5ByActivoTrueOrderByIdDesc();
 }

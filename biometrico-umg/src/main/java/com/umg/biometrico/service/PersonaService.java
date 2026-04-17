@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,7 +60,7 @@ public class PersonaService {
         return personaRepository.findByTipoPersonaAndActivo("catedratico", true);
     }
 
-    public Persona guardar(Persona persona, MultipartFile foto) throws IOException {
+    public Persona guardar(Persona persona, MultipartFile foto, String fotoBase64) throws IOException {
         if (persona.getNumeroCarnet() == null || persona.getNumeroCarnet().isBlank()) {
             persona.setNumeroCarnet(generarNumeroCarnetUnico());
         } else {
@@ -87,8 +88,9 @@ public class PersonaService {
         }
 
         if (foto != null && !foto.isEmpty()) {
-            String rutaFoto = guardarFoto(foto);
-            persona.setFotoRuta(rutaFoto);
+            persona.setFotoRuta(guardarFoto(foto));
+        } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
+            persona.setFotoRuta(guardarFotoBase64(fotoBase64));
         }
 
         return personaRepository.save(persona);
@@ -132,6 +134,20 @@ public class PersonaService {
         return carnet;
     }
 
+    private String guardarFotoBase64(String base64Data) throws IOException {
+        String datos = base64Data.contains(",") ? base64Data.split(",")[1] : base64Data;
+        byte[] imageBytes = Base64.getDecoder().decode(datos);
+
+        Path dirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath);
+        }
+
+        String nombreArchivo = UUID.randomUUID() + "_webcam.jpg";
+        Files.write(dirPath.resolve(nombreArchivo), imageBytes);
+        return "uploads/fotos/" + nombreArchivo;
+    }
+
     private String guardarFoto(MultipartFile foto) throws IOException {
         Path dirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
 
@@ -145,6 +161,10 @@ public class PersonaService {
         foto.transferTo(rutaCompleta.toFile());
 
         return "uploads/fotos/" + nombreArchivo;
+    }
+
+    public List<Persona> listarUltimas5() {
+        return personaRepository.findTop5ByActivoTrueOrderByIdDesc();
     }
 
     public Long contarPorTipo(String tipo) {

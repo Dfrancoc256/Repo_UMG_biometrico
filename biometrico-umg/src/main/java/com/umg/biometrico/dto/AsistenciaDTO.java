@@ -12,6 +12,7 @@ public class AsistenciaDTO {
     private String nombreCompleto;
     private String correo;
     private String fotoRuta;
+    private String seccion;
     private Boolean presente;
     private String horaRegistro;
 }

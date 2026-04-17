@@ -4,6 +4,7 @@ import com.umg.biometrico.dto.AsistenciaDTO;
 import com.umg.biometrico.model.Asistencia;
 import com.umg.biometrico.service.AsistenciaService;
 import com.umg.biometrico.service.CursoService;
+import com.umg.biometrico.service.EmailService;
 import com.umg.biometrico.service.PdfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class AsistenciaController {
     private final AsistenciaService asistenciaService;
     private final CursoService cursoService;
     private final PdfService pdfService;
+    private final EmailService emailService;
 
     @GetMapping
     public String listarCursos(Model model) {
@@ -39,23 +42,19 @@ public class AsistenciaController {
                                   @RequestParam(required = false)
                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
                                   Model model,
+                                  Principal principal,
                                   RedirectAttributes redirectAttributes) {
         return cursoService.buscarPorId(cursoId).map(curso -> {
-            if (fecha == null) {
-                LocalDate hoy = LocalDate.now();
-                List<AsistenciaDTO> arbol = asistenciaService.obtenerArbolAsistencia(cursoId, hoy);
-                model.addAttribute("curso", curso);
-                model.addAttribute("arbol", arbol);
-                model.addAttribute("fecha", hoy);
-                model.addAttribute("fechaStr", hoy.toString());
-            } else {
-                List<AsistenciaDTO> arbol = asistenciaService.obtenerArbolAsistencia(cursoId, fecha);
-                model.addAttribute("curso", curso);
-                model.addAttribute("arbol", arbol);
-                model.addAttribute("fecha", fecha);
-                model.addAttribute("fechaStr", fecha.toString());
-            }
+            LocalDate fechaEfectiva = fecha != null ? fecha : LocalDate.now();
+            List<AsistenciaDTO> arbol = asistenciaService.obtenerArbolAsistencia(cursoId, fechaEfectiva);
+            model.addAttribute("curso", curso);
+            model.addAttribute("arbol", arbol);
+            model.addAttribute("fecha", fechaEfectiva);
+            model.addAttribute("fechaStr", fechaEfectiva.toString());
             model.addAttribute("activeMenu", "asistencia");
+            if (principal != null) {
+                model.addAttribute("usuarioCorreo", principal.getName());
+            }
             return "asistencia/arbol";
         }).orElseGet(() -> {
             redirectAttributes.addFlashAttribute("error", "Curso no encontrado.");
@@ -71,6 +70,29 @@ public class AsistenciaController {
         asistenciaService.confirmarAsistencia(cursoId, fecha, presentesIds);
         redirectAttributes.addFlashAttribute("success", "Asistencia confirmada para el " + fecha);
         return "redirect:/asistencia/curso/" + cursoId + "?fecha=" + fecha;
+    }
+
+    @PostMapping("/curso/{cursoId}/enviar-asistencia")
+    public String enviarAsistencia(@PathVariable Long cursoId,
+                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+                                   @RequestParam String correoDestino,
+                                   RedirectAttributes redirectAttributes) {
+        return cursoService.buscarPorId(cursoId).map(curso -> {
+            try {
+                List<Asistencia> lista = asistenciaService.obtenerAsistenciasPorCursoYFecha(cursoId, fecha);
+                byte[] pdf = pdfService.generarReporteAsistenciaPdf(curso, fecha, lista);
+                emailService.enviarReporteAsistencia(correoDestino, curso.getNombre(), fecha.toString(), pdf);
+                redirectAttributes.addFlashAttribute("success",
+                    "Reporte de asistencia enviado exitosamente a: " + correoDestino);
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error",
+                    "Error al enviar el reporte: " + e.getMessage());
+            }
+            return "redirect:/asistencia/curso/" + cursoId + "?fecha=" + fecha;
+        }).orElseGet(() -> {
+            redirectAttributes.addFlashAttribute("error", "Curso no encontrado.");
+            return "redirect:/asistencia";
+        });
     }
 
     @GetMapping("/curso/{cursoId}/reporte-pdf")

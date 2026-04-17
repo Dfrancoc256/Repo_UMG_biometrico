@@ -40,6 +40,7 @@ public class AsistenciaService {
             dto.setNombreCompleto(e.getNombreCompleto());
             dto.setCorreo(e.getCorreo());
             dto.setFotoRuta(e.getFotoRuta());
+            dto.setSeccion(e.getSeccion());
             dto.setPresente(asistencia.map(Asistencia::getPresente).orElse(false));
 
             if (asistencia.isPresent() && asistencia.get().getHoraRegistro() != null) {
@@ -74,6 +75,27 @@ public class AsistenciaService {
             }
             asistenciaRepository.save(asistencia);
         }
+    }
+
+    public void registrarAsistenciaIngreso(Long personaId, Long cursoId) {
+        Optional<CursoEstudiante> inscripcion = cursoEstudianteRepository
+                .findByCurso_IdAndEstudiante_Id(cursoId, personaId);
+        if (inscripcion.isEmpty()) return;
+
+        LocalDate hoy = LocalDate.now();
+        Asistencia asistencia = asistenciaRepository
+                .findByEstudiante_IdAndCurso_IdAndFecha(personaId, cursoId, hoy)
+                .orElseGet(() -> {
+                    Asistencia nueva = new Asistencia();
+                    nueva.setEstudiante(inscripcion.get().getEstudiante());
+                    nueva.setCurso(inscripcion.get().getCurso());
+                    nueva.setFecha(hoy);
+                    return nueva;
+                });
+
+        asistencia.setPresente(true);
+        asistencia.setHoraRegistro(LocalDateTime.now());
+        asistenciaRepository.save(asistencia);
     }
 
     public Long contarAsistenciasHoy() {

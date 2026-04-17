@@ -26,7 +26,7 @@ public class DashboardController {
         model.addAttribute("stats", stats);
         model.addAttribute("fechaActual",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-        model.addAttribute("ultimosEstudiantes", personaService.listarActivas().stream().limit(5).toList());
+        model.addAttribute("ultimosEstudiantes", personaService.listarUltimas5());
         model.addAttribute("activeMenu", "dashboard");
         return "dashboard/index";
     }

@@ -27,7 +27,6 @@ public class PersonaController {
     private final PersonaService personaService;
     private final PdfService pdfService;
     private final EmailService emailService;
-
     private final WhatsAppService whatsAppService;
 
 
@@ -61,10 +60,11 @@ public class PersonaController {
     @PostMapping("/guardar")
     public String guardar(@ModelAttribute Persona persona,
                           @RequestParam(value = "foto", required = false) MultipartFile foto,
+                          @RequestParam(value = "fotoBase64", required = false) String fotoBase64,
                           RedirectAttributes redirectAttributes) {
         try {
             boolean esNueva = (persona.getId() == null);
-            Persona guardada = personaService.guardar(persona, foto);
+            Persona guardada = personaService.guardar(persona, foto, fotoBase64);
 
             if (esNueva) {
                 // Envío asíncrono: no bloquea la respuesta al usuario

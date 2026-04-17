@@ -5,228 +5,135 @@
 <th:block th:fragment="content">
 
 <style>
-/* ── ÁRBOL DE ASISTENCIA ──────────────────── */
-.tree-page-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 0 30px;
-}
-
-/* Nodo raíz: Catedrático */
+/* ── ÁRBOL TIPO CARPETA — SOLO LECTURA ─────────────── */
 .root-card {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   background: var(--umg-azul);
   color: #fff;
-  padding: 18px 28px;
-  border-radius: 14px;
-  box-shadow: 0 6px 20px rgba(0,51,102,.35);
-  min-width: 320px;
-  max-width: 480px;
-  position: relative;
-  z-index: 2;
+  padding: 14px 22px;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0,51,102,.3);
+  max-width: 520px;
+  margin: 0 auto;
 }
-.root-card img,
-.root-card .root-avatar {
-  width: 68px;
-  height: 68px;
+.root-avatar {
+  width: 52px; height: 52px;
   border-radius: 50%;
-  border: 3px solid rgba(255,255,255,.35);
-  object-fit: cover;
-  flex-shrink: 0;
-}
-.root-card .root-avatar {
-  background: rgba(255,255,255,.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-}
-.root-info { flex: 1; }
-.root-role {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--umg-dorado);
-  margin-bottom: 4px;
-}
-.root-name {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-.root-course {
-  font-size: 12px;
-  opacity: .75;
-  margin-top: 5px;
-}
-.root-badge {
   background: rgba(255,255,255,.15);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--umg-dorado);
-  margin-top: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,.3);
+}
+.root-info { flex: 1; min-width: 0; }
+.root-role {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.4px; text-transform: uppercase;
+  color: var(--umg-dorado); margin-bottom: 3px;
+}
+.root-name  { font-size: 16px; font-weight: 700; line-height: 1.2; }
+.root-meta  { font-size: 12px; opacity: .75; margin-top: 4px; }
+.root-badge {
   display: inline-block;
+  background: rgba(255,255,255,.15); border-radius: 20px;
+  padding: 2px 10px; font-size: 11px;
+  color: var(--umg-dorado); font-weight: 600; margin-top: 4px;
 }
+.tree-connector {
+  width: 2px; height: 24px;
+  background: linear-gradient(to bottom, var(--umg-azul), #c5d8ea);
+  margin: 0 auto;
+}
+.folder-list {
+  border: 2px solid #dde8f5; border-radius: 10px;
+  overflow: hidden; background: #fff;
+}
+.folder-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: linear-gradient(to right, #e8f0fb, #f5f8fc);
+  border-bottom: 2px solid #dde8f5;
+  font-size: 13px; font-weight: 700; color: var(--umg-azul);
+}
+.folder-header i { font-size: 15px; color: var(--umg-dorado); }
+.folder-count { margin-left: auto; font-size: 11px; font-weight: 600; color: #7a8898; }
 
-/* Conector vertical desde el catedrático */
-.tree-connector-root {
-  width: 3px;
-  height: 36px;
-  background: linear-gradient(to bottom, #1a3d6b, #c5d8ea);
-  position: relative;
-  z-index: 1;
+/* Fila estudiante — solo visual, sin cursor interactivo */
+.student-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #f0f4fa;
 }
+.student-row:last-child { border-bottom: none; }
+.student-row.presente { background: #f0faf0; }
+.student-row.ausente  { background: #fff8f8; }
+.student-row.oculto   { display: none; }
 
-/* Área de ramificación */
-.tree-branch-area {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
+.student-row::before {
+  content: ''; display: block; width: 3px;
+  background: #dde8f5; align-self: stretch;
+  border-radius: 2px; flex-shrink: 0; margin-right: 4px;
 }
+.student-row.presente::before { background: #4caf50; }
+.student-row.ausente::before  { background: #ef5350; }
 
-/* Línea horizontal conectora */
-.tree-h-line {
-  height: 3px;
-  background: #c5d8ea;
-  width: 0%; /* se calcula dinámicamente via JS */
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 2px;
+.s-icon {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
+.s-icon.presente { background: #4caf50; color: #fff; }
+.s-icon.ausente  { background: #ef5350; color: #fff; }
 
-/* Fila de estudiantes */
-.tree-students-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  padding-top: 36px;
-  position: relative;
-  width: 100%;
-}
-
-/* Cada columna de estudiante */
-.student-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-/* Línea vertical de conexión por encima del nodo */
-.student-col::before {
-  content: '';
-  display: block;
-  width: 3px;
-  height: 36px;
-  background: #c5d8ea;
-  border-radius: 2px;
-  position: absolute;
-  top: -36px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Tarjeta del estudiante */
-.student-node {
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: transform .15s, box-shadow .15s;
-  min-width: 140px;
-  max-width: 170px;
-  text-align: center;
-  position: relative;
-  border: 2px solid transparent;
-}
-.student-node:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
-.student-node.presente {
-  background: #e8f5e9;
-  border-color: #4caf50;
-  box-shadow: 0 2px 8px rgba(76,175,80,.2);
-}
-.student-node.ausente {
-  background: #fdecea;
-  border-color: #ef5350;
-  box-shadow: 0 2px 8px rgba(239,83,80,.15);
-}
-.student-node img,
-.student-node .student-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,.15);
-}
-.student-node .student-avatar {
-  background: #eef2f7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #7a8898;
-}
 .s-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: #1a2a3a;
-  line-height: 1.3;
-  word-break: break-word;
+  flex: 1; font-size: 13px; font-weight: 600; color: #1a2a3a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.s-sec {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 10px; background: #e8f0fe; color: var(--umg-azul); flex-shrink: 0;
 }
 .s-hora {
-  font-size: 11px;
-  color: #2e7d32;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 3px;
+  font-size: 11px; color: #2e7d32; font-weight: 600;
+  min-width: 80px; text-align: right; flex-shrink: 0;
 }
 .s-hora.ausente-text { color: var(--umg-rojo); }
-.s-status {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,.2);
-}
-.s-status.presente { background: #4caf50; color: #fff; }
-.s-status.ausente  { background: #ef5350; color: #fff; }
 
-/* Empty state */
 .tree-empty {
-  text-align: center;
-  padding: 60px 20px;
-  color: #7a8898;
+  text-align: center; padding: 48px 20px; color: #7a8898;
 }
+.no-results {
+  display: none; text-align: center;
+  padding: 24px; color: #7a8898; font-size: 13px;
+}
+
+/* Modal enviar asistencia */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 12px; padding: 28px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.25); position: relative;
+}
+.modal-box h4  { color: var(--umg-azul); margin: 0 0 6px; font-size: 18px; }
+.modal-box p   { color: #7a8898; font-size: 13px; margin: 0 0 18px; }
+.modal-close   {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: #7a8898; line-height: 1;
+}
+.modal-close:hover { color: #333; }
 </style>
 
-  <!-- Encabezado de página -->
+  <!-- Encabezado -->
   <div class="page-header" th:if="${curso != null}">
     <div>
-      <h2><i class="fas fa-sitemap" style="margin-right:10px;color:var(--umg-azul);"></i>
+      <h2><i class="fas fa-folder-open" style="margin-right:10px;color:var(--umg-azul);"></i>
         Árbol de Asistencia — <span th:text="${curso.nombre}">Curso</span>
       </h2>
       <p class="breadcrumb">
@@ -234,28 +141,53 @@
         <span th:text="${curso.codigo}">COD</span>
       </p>
     </div>
-    <a th:href="@{/asistencia/curso/{id}/reporte-pdf(id=${curso.id}, fecha=${fechaStr})}"
-       class="btn btn-primary">
-      <i class="fas fa-file-pdf"></i> Exportar PDF
-    </a>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a th:href="@{/asistencia/curso/{id}/reporte-pdf(id=${curso.id}, fecha=${fechaStr})}"
+         class="btn btn-primary">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+      </a>
+      <button type="button" class="btn btn-success" onclick="abrirModalEnvio()">
+        <i class="fas fa-paper-plane"></i> Enviar Asistencia
+      </button>
+    </div>
   </div>
 
-  <!-- Selector de fecha -->
+  <!-- Filtros -->
   <div class="card" style="margin-bottom:20px;" th:if="${curso != null}">
     <div class="card-body" style="padding:16px 22px;">
       <form th:action="@{/asistencia/curso/{id}(id=${curso.id})}" method="get"
-            style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-        <label class="form-label" style="margin:0;font-size:14px;">Fecha de asistencia:</label>
-        <input type="date" class="form-control" name="fecha" th:value="${fechaStr}"
-               style="max-width:200px;"/>
+            style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+        <label class="form-label" style="margin:0;font-size:13px;font-weight:600;white-space:nowrap;">
+          <i class="fas fa-calendar" style="margin-right:5px;color:var(--umg-azul);"></i>Fecha:
+        </label>
+        <input type="date" class="form-control" name="fecha" th:value="${fechaStr}" style="max-width:180px;"/>
         <button type="submit" class="btn btn-primary btn-sm">
           <i class="fas fa-search"></i> Cargar
         </button>
-        <span style="font-size:13px;color:#7a8898;margin-left:auto;">
-          <i class="fas fa-calendar" style="margin-right:4px;"></i>
+        <span style="font-size:12px;color:#7a8898;margin-left:auto;">
           Mostrando: <strong th:text="${fechaStr}">Fecha</strong>
         </span>
       </form>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+                  padding-top:12px;border-top:1px solid #eef2f7;">
+        <i class="fas fa-filter" style="color:var(--umg-azul);font-size:13px;"></i>
+        <input type="text" id="filtroNombre" class="form-control"
+               placeholder="Buscar por nombre..."
+               style="max-width:240px;" oninput="filtrarEstudiantes()"/>
+        <select id="filtroSeccion" class="form-control" style="max-width:160px;"
+                onchange="filtrarEstudiantes()">
+          <option value="">Todas las secciones</option>
+          <option value="A">Sección A</option>
+          <option value="B">Sección B</option>
+          <option value="C">Sección C</option>
+          <option value="D">Sección D</option>
+        </select>
+        <span id="contadorFiltrado" style="font-size:12px;color:#7a8898;"></span>
+        <button type="button" class="btn btn-outline btn-sm" onclick="limpiarFiltros()"
+                style="margin-left:auto;">
+          <i class="fas fa-times"></i> Limpiar
+        </button>
+      </div>
     </div>
   </div>
 
@@ -285,237 +217,158 @@
     </div>
   </div>
 
-  <!-- ── ÁRBOL GRÁFICO ──────────────────────────── -->
+  <!-- Árbol tipo carpeta (solo lectura) -->
   <div class="card" th:if="${curso != null}">
     <div class="card-header">
-      <h5><i class="fas fa-sitemap" style="margin-right:8px;"></i>
-        Árbol de Asistencia — Clic en tarjeta para marcar presente / ausente
+      <h5><i class="fas fa-folder-tree" style="margin-right:8px;"></i>
+        Lista de Asistencia
+        <small style="font-weight:400;color:#7a8898;font-size:12px;margin-left:8px;">
+          (registrado automáticamente desde Registro de Ingreso)
+        </small>
       </h5>
     </div>
-    <div class="card-body" style="overflow-x:auto;">
+    <div class="card-body" style="padding:20px;">
 
-      <form th:action="@{/asistencia/curso/{id}/confirmar(id=${curso.id})}" method="post" id="formAsistencia">
+      <div th:if="${arbol == null or #lists.isEmpty(arbol)}" class="tree-empty">
+        <i class="fas fa-users-slash" style="font-size:40px;display:block;margin-bottom:12px;"></i>
+        No hay estudiantes inscritos en este curso.
+      </div>
+
+      <div th:if="${arbol != null and not #lists.isEmpty(arbol)}">
+
+        <!-- Nodo raíz: catedrático -->
+        <div class="root-card">
+          <div class="root-avatar">
+            <i class="fas fa-chalkboard-teacher"></i>
+          </div>
+          <div class="root-info">
+            <div class="root-role">Catedrático</div>
+            <div class="root-name"
+                 th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar'}">
+              Nombre
+            </div>
+            <div class="root-meta">
+              <span th:text="${curso.nombre}">Curso</span>
+              &nbsp;·&nbsp;
+              <span th:text="${curso.codigo}">COD</span>
+            </div>
+            <span class="root-badge" th:text="${curso.horario != null ? curso.horario : '—'}">Horario</span>
+          </div>
+        </div>
+
+        <div class="tree-connector"></div>
+
+        <!-- Lista de estudiantes -->
+        <div class="folder-list" id="folderList">
+          <div class="folder-header">
+            <i class="fas fa-folder-open"></i>
+            Estudiantes inscritos
+            <span class="folder-count" th:text="${#lists.size(arbol)} + ' estudiantes'">0</span>
+          </div>
+
+          <div th:each="nodo : ${arbol}"
+               class="student-row"
+               th:classappend="${nodo.presente} ? 'presente' : 'ausente'"
+               th:attr="data-nombre=${nodo.nombreCompleto}, data-seccion=${nodo.seccion != null ? nodo.seccion : ''}">
+
+            <div class="s-icon" th:classappend="${nodo.presente} ? 'presente' : 'ausente'">
+              <i class="fas" th:classappend="${nodo.presente} ? 'fa-check' : 'fa-times'"></i>
+            </div>
+
+            <div class="s-name" th:text="${nodo.nombreCompleto}">Nombre</div>
+
+            <span class="s-sec"
+                  th:if="${nodo.seccion != null and not #strings.isEmpty(nodo.seccion)}"
+                  th:text="${'Sec. ' + nodo.seccion}">Sec.</span>
+
+            <div class="s-hora"
+                 th:if="${nodo.presente and nodo.horaRegistro != null}">
+              <i class="fas fa-clock" style="margin-right:3px;"></i>
+              <span th:text="${nodo.horaRegistro}">08:00</span>
+            </div>
+            <div class="s-hora"
+                 th:if="${nodo.presente and nodo.horaRegistro == null}">
+              <i class="fas fa-check" style="margin-right:3px;"></i> Presente
+            </div>
+            <div class="s-hora ausente-text"
+                 th:unless="${nodo.presente}">
+              <i class="fas fa-times" style="margin-right:3px;"></i> Ausente
+            </div>
+
+          </div>
+
+          <div class="no-results" id="noResultsMsg">
+            <i class="fas fa-search" style="margin-right:6px;"></i>
+            No se encontraron estudiantes con ese filtro.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal enviar asistencia -->
+  <div class="modal-overlay" id="modalEnvio">
+    <div class="modal-box">
+      <button class="modal-close" onclick="cerrarModalEnvio()" type="button">&times;</button>
+      <h4><i class="fas fa-paper-plane" style="margin-right:8px;color:var(--umg-azul);"></i>Enviar Asistencia</h4>
+      <p>Se enviará el reporte PDF de asistencia al correo indicado.</p>
+      <form th:action="@{/asistencia/curso/{id}/enviar-asistencia(id=${curso != null ? curso.id : 0})}"
+            method="post">
         <input type="hidden" name="fecha" th:value="${fechaStr}"/>
-
-        <!-- Estado vacío -->
-        <div th:if="${arbol == null or #lists.isEmpty(arbol)}" class="tree-empty">
-          <i class="fas fa-users-slash" style="font-size:44px;display:block;margin-bottom:14px;"></i>
-          No hay estudiantes inscritos en este curso.
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" style="font-weight:600;">Correo destinatario *</label>
+          <input type="email" class="form-control" name="correoDestino" id="inputCorreoDestino"
+                 th:value="${usuarioCorreo}" placeholder="correo@ejemplo.com" required
+                 style="margin-top:6px;"/>
+          <small style="color:#7a8898;font-size:11px;margin-top:4px;display:block;">
+            Pre-cargado con tu correo de sesión. Puedes cambiarlo.
+          </small>
         </div>
-
-        <!-- Árbol gráfico -->
-        <div class="tree-page-wrap" th:if="${arbol != null and not #lists.isEmpty(arbol)}">
-
-          <!-- ── Nodo raíz: Catedrático ─────────── -->
-          <div class="root-card">
-
-            <!-- Foto del catedrático -->
-            <img th:if="${curso.catedratico != null and curso.catedratico.fotoRuta != null}"
-                 th:src="@{'/' + curso.catedratico.fotoRuta}" alt="Foto Catedrático"/>
-            <div th:unless="${curso.catedratico != null and curso.catedratico.fotoRuta != null}"
-                 class="root-avatar">
-              <i class="fas fa-chalkboard-teacher"></i>
-            </div>
-
-            <!-- Info del catedrático -->
-            <div class="root-info">
-              <div class="root-role">Catedrático</div>
-              <div class="root-name"
-                   th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar'}">
-                Nombre Catedrático
-              </div>
-              <div class="root-course">
-                <span th:text="${curso.nombre}">Curso</span>
-                &nbsp;·&nbsp;
-                <span th:text="${curso.codigo}">COD</span>
-              </div>
-              <span class="root-badge"
-                    th:text="${curso.horario != null ? curso.horario : '—'}">Horario</span>
-            </div>
-
-          </div>
-          <!-- Fin nodo raíz -->
-
-          <!-- Conector desde el catedrático hacia abajo -->
-          <div class="tree-connector-root"></div>
-
-          <!-- Área de ramificación con todos los estudiantes -->
-          <div class="tree-branch-area" id="treeBranchArea">
-            <!-- Línea horizontal dinámica (el JS la expande) -->
-            <div class="tree-h-line" id="treeHLine"></div>
-
-            <!-- Fila de nodos estudiantes -->
-            <div class="tree-students-row" id="studentsRow">
-
-              <div th:each="nodo : ${arbol}"
-                   class="student-col"
-                   th:attr="data-id=${nodo.estudianteId}">
-
-                <!-- Checkbox oculto para confirmar asistencia -->
-                <input type="checkbox" name="presentesIds"
-                       th:value="${nodo.estudianteId}"
-                       th:checked="${nodo.presente}"
-                       style="display:none;"/>
-
-                <!-- Tarjeta del estudiante -->
-                <div class="student-node"
-                     th:classappend="${nodo.presente} ? 'presente' : 'ausente'">
-
-                  <!-- Indicador de estado -->
-                  <div class="s-status"
-                       th:classappend="${nodo.presente} ? 'presente' : 'ausente'"
-                       th:text="${nodo.presente} ? '✓' : '✗'">✓</div>
-
-                  <!-- Foto -->
-                  <img th:if="${nodo.fotoRuta != null}"
-                       th:src="@{'/' + nodo.fotoRuta}" alt="Foto"/>
-                  <div th:unless="${nodo.fotoRuta != null}" class="student-avatar">
-                    <i class="fas fa-user"></i>
-                  </div>
-
-                  <!-- Nombre -->
-                  <div class="s-name" th:text="${nodo.nombreCompleto}">Nombre</div>
-
-                  <!-- Hora de llegada o "Ausente" -->
-                  <div th:if="${nodo.horaRegistro != null}"
-                       class="s-hora">
-                    <i class="fas fa-clock"></i>
-                    <span th:text="${nodo.horaRegistro}">08:00</span>
-                  </div>
-                  <div th:if="${nodo.horaRegistro == null and nodo.presente}"
-                       class="s-hora">
-                    <i class="fas fa-check"></i> Presente
-                  </div>
-                  <div th:unless="${nodo.presente}"
-                       class="s-hora ausente-text">
-                    <i class="fas fa-times"></i> Ausente
-                  </div>
-
-                </div>
-                <!-- Fin tarjeta estudiante -->
-              </div>
-              <!-- Fin th:each estudiante -->
-
-            </div>
-            <!-- Fin fila estudiantes -->
-          </div>
-          <!-- Fin área de ramificación -->
-
-        </div>
-        <!-- Fin tree-page-wrap -->
-
-        <!-- Botones de acción -->
-        <div style="margin-top:28px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;"
-             th:if="${arbol != null and not #lists.isEmpty(arbol)}">
-          <button type="submit" class="btn btn-success"
-                  data-confirm="¿Confirmar el listado de asistencia para esta fecha?">
-            <i class="fas fa-check-double"></i> Confirmar Asistencia
-          </button>
-          <button type="button" class="btn btn-outline" onclick="marcarTodos(true)">
-            <i class="fas fa-check"></i> Todos Presentes
-          </button>
-          <button type="button" class="btn btn-outline" onclick="marcarTodos(false)">
-            <i class="fas fa-times"></i> Todos Ausentes
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" class="btn btn-outline" onclick="cerrarModalEnvio()">Cancelar</button>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-paper-plane"></i> Enviar
           </button>
         </div>
-
       </form>
     </div>
   </div>
 
 <script>
-// Clic en nodo estudiante: toggle presente/ausente
-document.querySelectorAll('.student-node').forEach(card => {
-  card.addEventListener('click', function () {
-    const col      = this.closest('.student-col');
-    const checkbox = col ? col.querySelector('input[type="checkbox"]') : null;
-    if (!checkbox) return;
+function filtrarEstudiantes() {
+  const nombre  = document.getElementById('filtroNombre').value.toLowerCase().trim();
+  const seccion = document.getElementById('filtroSeccion').value.toUpperCase().trim();
+  const filas   = document.querySelectorAll('.student-row');
+  const noRes   = document.getElementById('noResultsMsg');
+  const contador = document.getElementById('contadorFiltrado');
+  let visibles  = 0;
 
-    checkbox.checked = !checkbox.checked;
-    const presente = checkbox.checked;
-
-    this.classList.toggle('presente', presente);
-    this.classList.toggle('ausente',  !presente);
-
-    const statusEl = this.querySelector('.s-status');
-    if (statusEl) {
-      statusEl.textContent = presente ? '✓' : '✗';
-      statusEl.classList.toggle('presente', presente);
-      statusEl.classList.toggle('ausente',  !presente);
-    }
-
-    // Actualizar texto de hora/estado debajo del nombre
-    const horaEls = this.querySelectorAll('.s-hora');
-    horaEls.forEach(el => el.remove());
-
-    const s = document.createElement('div');
-    s.className = presente ? 's-hora' : 's-hora ausente-text';
-    s.innerHTML  = presente
-      ? '<i class="fas fa-check"></i> Presente'
-      : '<i class="fas fa-times"></i> Ausente';
-    this.appendChild(s);
+  filas.forEach(row => {
+    const n = (row.dataset.nombre  || '').toLowerCase();
+    const s = (row.dataset.seccion || '').toUpperCase();
+    const ok = (!nombre || n.includes(nombre)) && (!seccion || s === seccion);
+    row.classList.toggle('oculto', !ok);
+    if (ok) visibles++;
   });
+
+  contador.textContent = (nombre || seccion)
+    ? visibles + ' de ' + filas.length + ' mostrado' + (visibles !== 1 ? 's' : '')
+    : '';
+  noRes.style.display = (visibles === 0) ? 'block' : 'none';
+}
+
+function limpiarFiltros() {
+  document.getElementById('filtroNombre').value  = '';
+  document.getElementById('filtroSeccion').value = '';
+  filtrarEstudiantes();
+}
+
+function abrirModalEnvio()  { document.getElementById('modalEnvio').classList.add('active'); }
+function cerrarModalEnvio() { document.getElementById('modalEnvio').classList.remove('active'); }
+document.getElementById('modalEnvio').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalEnvio();
 });
-
-// Marcar todos presentes o ausentes
-function marcarTodos(presente) {
-  document.querySelectorAll('.student-col').forEach(col => {
-    const checkbox = col.querySelector('input[type="checkbox"]');
-    const card     = col.querySelector('.student-node');
-    if (!checkbox || !card) return;
-
-    checkbox.checked = presente;
-    card.classList.toggle('presente', presente);
-    card.classList.toggle('ausente',  !presente);
-
-    const statusEl = card.querySelector('.s-status');
-    if (statusEl) {
-      statusEl.textContent = presente ? '✓' : '✗';
-      statusEl.classList.toggle('presente', presente);
-      statusEl.classList.toggle('ausente',  !presente);
-    }
-
-    card.querySelectorAll('.s-hora').forEach(el => el.remove());
-    const s = document.createElement('div');
-    s.className = presente ? 's-hora' : 's-hora ausente-text';
-    s.innerHTML  = presente
-      ? '<i class="fas fa-check"></i> Presente'
-      : '<i class="fas fa-times"></i> Ausente';
-    card.appendChild(s);
-  });
-}
-
-// Ajustar la línea horizontal del árbol al ancho real de los estudiantes
-function ajustarLineaHorizontal() {
-  const row    = document.getElementById('studentsRow');
-  const hLine  = document.getElementById('treeHLine');
-  const area   = document.getElementById('treeBranchArea');
-  if (!row || !hLine || !area) return;
-
-  const cols = row.querySelectorAll('.student-col');
-  if (cols.length === 0) return;
-
-  if (cols.length === 1) {
-    // Un solo estudiante: solo la línea vertical, sin horizontal
-    hLine.style.width = '0px';
-    return;
-  }
-
-  const rowRect   = row.getBoundingClientRect();
-  const firstRect = cols[0].getBoundingClientRect();
-  const lastRect  = cols[cols.length - 1].getBoundingClientRect();
-  const areaRect  = area.getBoundingClientRect();
-
-  const firstCenter = firstRect.left + firstRect.width / 2 - areaRect.left;
-  const lastCenter  = lastRect.left  + lastRect.width  / 2 - areaRect.left;
-
-  hLine.style.width     = (lastCenter - firstCenter) + 'px';
-  hLine.style.left      = firstCenter + 'px';
-  hLine.style.transform = 'none';
-}
-
-window.addEventListener('load',   ajustarLineaHorizontal);
-window.addEventListener('resize', ajustarLineaHorizontal);
 </script>
 
 </th:block>

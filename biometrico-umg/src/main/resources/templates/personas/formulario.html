@@ -170,14 +170,44 @@
   </form>
 
   <script>
+    const video   = document.getElementById('webcamVideo');
+    const canvas  = document.getElementById('webcamCanvas');
+    const b64Input = document.getElementById('fotoBase64');
+    const preview = document.getElementById('previewFoto');
+    let streamActivo = null;
+
+    // Inicializar webcam al cargar la página
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(stream => {
+        streamActivo = stream;
+        video.srcObject = stream;
+      })
+      .catch(() => {
+        video.style.display = 'none';
+        document.getElementById('btnCapturar').style.display = 'none';
+      });
+
+    // Capturar foto desde webcam
+    document.getElementById('btnCapturar').addEventListener('click', () => {
+      if (!streamActivo) return;
+      canvas.width  = video.videoWidth  || 320;
+      canvas.height = video.videoHeight || 240;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      b64Input.value = dataUrl;
+      preview.src    = dataUrl;
+      preview.style.display = 'block';
+    });
+
+    // Preview al subir archivo — también limpia el base64 para que no interfiera
     function previewFotoArchivo(input) {
       const file = input.files[0];
       if (!file) return;
+      b64Input.value = '';          // archivo tiene prioridad sobre base64
       const reader = new FileReader();
       reader.onload = e => {
-        const img = document.getElementById('previewFoto');
-        img.src = e.target.result;
-        img.style.display = 'block';
+        preview.src = e.target.result;
+        preview.style.display = 'block';
       };
       reader.readAsDataURL(file);
     }

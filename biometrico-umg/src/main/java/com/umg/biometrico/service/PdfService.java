@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -94,15 +95,14 @@ public class PdfService {
         cb.rectangle(95, 38, w - 95, 3);
         cb.fill();
 
-        // Logo UMG
+        // Logo UMG — se agrega via cb para quedar sobre los fondos
         try {
             ClassPathResource logoResource = new ClassPathResource("static/img/logo-umg.png");
             try (InputStream is = logoResource.getInputStream()) {
                 byte[] logoBytes = is.readAllBytes();
                 Image logo = Image.getInstance(logoBytes);
                 logo.scaleToFit(62, 62);
-                logo.setAbsolutePosition(16, 142);
-                document.add(logo);
+                cb.addImage(logo, logo.getScaledWidth(), 0, 0, logo.getScaledHeight(), 16, 142);
             }
         } catch (Exception ignored) {
         }
@@ -145,9 +145,9 @@ public class PdfService {
                 if (Files.exists(rutaFoto)) {
                     byte[] fotoBytes = Files.readAllBytes(rutaFoto);
                     Image foto = Image.getInstance(fotoBytes);
-                    foto.scaleToFit(59, 72);
-                    foto.setAbsolutePosition(18, 31);
-                    document.add(foto);
+                    foto.scaleAbsolute(fotoW - 4, fotoH - 4);
+                    cb.addImage(foto, foto.getScaledWidth(), 0, 0, foto.getScaledHeight(),
+                            fotoX + 2, fotoY + 2);
                 }
             } catch (Exception ignored) {
             }
@@ -243,16 +243,18 @@ public class PdfService {
 
             PdfStamper stamper = PdfStamper.createSignature(reader, signedOut, '\0');
 
+            LocalDateTime ahora = LocalDateTime.now();
+            String fechaHoraImpresion = ahora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+
             PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
-            appearance.setReason("Carnet emitido oficialmente por UMG");
+            appearance.setReason("Carnet emitido oficialmente por UMG — Impreso: " + fechaHoraImpresion);
             appearance.setLocation("Universidad Mariano Gálvez, Sede La Florida, Zona 19, Guatemala");
             appearance.setContact("noreply.umg.biometrico@gmail.com");
             appearance.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
 
-            // Firma visible pequeña en la esquina inferior del carnet
-            appearance.setVisibleSignature(new Rectangle(108, 2, 260, 15), 1, "FirmaUMG");
-            appearance.setLayer2Text("Firmado digitalmente por UMG · " +
-                LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            // Firma visible en la esquina inferior del carnet con hora de impresión
+            appearance.setVisibleSignature(new Rectangle(108, 2, 320, 15), 1, "FirmaUMG");
+            appearance.setLayer2Text("Firmado digitalmente por UMG · Impreso: " + fechaHoraImpresion);
             Font firmaFont = new Font(Font.FontFamily.HELVETICA, 5, Font.NORMAL, UMG_AZUL);
             appearance.setLayer2Font(firmaFont);
 
