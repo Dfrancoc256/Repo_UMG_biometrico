@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Verificación de Carnet</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1>Verificación de Carnet</h1>
+
+<p><strong>Nombre:</strong> <span th:text="${persona.nombreCompleto}"></span></p>
+<p><strong>Carnet:</strong> <span th:text="${persona.numeroCarnet}"></span></p>
+<p><strong>Correo:</strong> <span th:text="${persona.correo}"></span></p>
+<p><strong>Carrera:</strong> <span th:text="${persona.carrera}"></span></p>
+<p><strong>Sección:</strong> <span th:text="${persona.seccion}"></span></p>
+<p><strong>Estado:</strong>
+    <span th:text="${persona.restringido} ? 'RESTRINGIDO' : 'ACTIVO'"></span>
+</p>
+</body>
+</html>
