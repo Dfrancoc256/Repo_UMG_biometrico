@@ -133,10 +133,27 @@
   </div>
   <div class="topbar-right">
     <div class="user-pill">
+      <!-- Foto del usuario si existe, icono si no -->
       <div class="user-avatar">
-        <i class="fas fa-user" style="font-size:11px;"></i>
+        <img th:if="${currentUser != null and currentUser.fotoRuta != null}"
+             th:src="@{'/' + ${currentUser.fotoRuta}}"
+             alt="Foto"/>
+        <i th:unless="${currentUser != null and currentUser.fotoRuta != null}"
+           class="fas fa-user" style="font-size:11px;"></i>
       </div>
-      <span sec:authentication="name">Usuario</span>
+      <!-- Nombre completo del usuario autenticado -->
+      <span th:if="${currentUser != null}"
+            th:text="${currentUser.nombreCompleto}"
+            style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        Usuario
+      </span>
+      <span th:unless="${currentUser != null}" sec:authentication="name">Usuario</span>
+      <!-- Badge de rol -->
+      <span th:if="${currentUser != null}"
+            th:text="${currentUser.tipoPersona}"
+            style="font-size:10px;background:rgba(0,51,102,0.12);color:var(--umg-azul);
+                   padding:2px 7px;border-radius:10px;margin-left:2px;">
+      </span>
       <a th:href="@{/auth/logout}" style="margin-left:8px;color:#7a8898;" title="Cerrar sesión">
         <i class="fas fa-sign-out-alt"></i>
       </a>

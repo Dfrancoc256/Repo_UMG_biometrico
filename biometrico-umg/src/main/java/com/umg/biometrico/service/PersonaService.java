@@ -4,6 +4,7 @@ import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PersonaService {
 
     private final PersonaRepository personaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -46,6 +48,10 @@ public class PersonaService {
 
     public Optional<Persona> buscarPorCorreo(String correo) {
         return personaRepository.findByCorreo(correo);
+    }
+
+    public Optional<Persona> buscarPorCarnet(String carnet) {
+        return personaRepository.findByNumeroCarnet(carnet);
     }
 
     public List<Persona> buscar(String termino) {
@@ -91,6 +97,22 @@ public class PersonaService {
             persona.setFotoRuta(guardarFoto(foto));
         } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
             persona.setFotoRuta(guardarFotoBase64(fotoBase64));
+        }
+
+        // Contraseña: codificar si es texto plano, preservar si está en blanco (modo edición)
+        if (persona.getContrasena() != null && !persona.getContrasena().isBlank()) {
+            boolean yaEsBcrypt = persona.getContrasena().startsWith("$2a$")
+                    || persona.getContrasena().startsWith("$2b$")
+                    || persona.getContrasena().startsWith("$2y$");
+            if (!yaEsBcrypt) {
+                persona.setContrasena(passwordEncoder.encode(persona.getContrasena()));
+            }
+        } else if (persona.getId() != null) {
+            // Editando: no cambiar la contraseña si se dejó en blanco
+            personaRepository.findById(persona.getId())
+                    .ifPresent(existente -> persona.setContrasena(existente.getContrasena()));
+        } else {
+            persona.setContrasena(null);
         }
 
         return personaRepository.save(persona);

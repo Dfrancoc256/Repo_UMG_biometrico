@@ -86,7 +86,7 @@
                 <td th:text="${iter.count}">1</td>
                 <td>
                   <img th:if="${r.persona.fotoRuta != null}"
-                       th:src="@{'/' + r.persona.fotoRuta}" class="avatar-sm" alt="Foto"/>
+                       th:src="@{'/' + ${r.persona.fotoRuta}}" class="avatar-sm" alt="Foto"/>
                   <div th:unless="${r.persona.fotoRuta != null}" class="avatar-sm avatar-placeholder">
                     <i class="fas fa-user"></i>
                   </div>

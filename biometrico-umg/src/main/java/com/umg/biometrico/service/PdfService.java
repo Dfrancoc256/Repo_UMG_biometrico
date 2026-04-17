@@ -15,14 +15,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -202,17 +203,19 @@ public class PdfService {
         );
         escribirCampo(cb, startX, startY - (salto * 4), "Estado:", estado, labelFont, estadoFont);
 
-        // QR
-        byte[] qrBytes = generarQR(valor(persona.getNumeroCarnet()), 90, 90);
+        // QR con código de validación incrustado
+        String codigoValidacion = generarCodigoValidacion(persona.getNumeroCarnet());
+        String qrContenido = valor(persona.getNumeroCarnet()) + "\nCOD:" + codigoValidacion;
+        byte[] qrBytes = generarQR(qrContenido, 90, 90);
         if (qrBytes != null) {
             Image qr = Image.getInstance(qrBytes);
             qr.scaleToFit(58, 58);
             qr.setAbsolutePosition(260, 48);
             document.add(qr);
 
-            Font qrFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL, UMG_AZUL);
+            Font qrFont = new Font(Font.FontFamily.HELVETICA, 6.5f, Font.BOLD, UMG_AZUL);
             ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                    new Phrase("Código de validación", qrFont), 289, 40, 0);
+                    new Phrase("COD: " + codigoValidacion, qrFont), 289, 40, 0);
         }
 
         // Pie
@@ -464,5 +467,25 @@ public class PdfService {
 
     private String valor(String texto) {
         return texto != null ? texto : "";
+    }
+
+    /**
+     * Genera un código de validación de 10 caracteres hexadecimales derivado del
+     * número de carnet. Es determinístico: el mismo carnet siempre produce el mismo código,
+     * lo que permite verificar la autenticidad del PDF sin acceso a base de datos.
+     */
+    public static String generarCodigoValidacion(String carnet) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String entrada = (carnet != null ? carnet.trim() : "") + ":UMG-BIOMETRICO-SEDE-Z19";
+            byte[] hash = digest.digest(entrada.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 5; i++) {
+                sb.append(String.format("%02X", hash[i]));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "N/A";
+        }
     }
 }

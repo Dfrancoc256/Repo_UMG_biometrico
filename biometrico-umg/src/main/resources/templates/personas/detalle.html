@@ -34,7 +34,7 @@
       <div class="card">
         <div class="card-body" style="text-align:center;padding:30px;">
           <img th:if="${persona.fotoRuta != null}"
-               th:src="@{'/' + persona.fotoRuta}"
+               th:src="@{'/' + ${persona.fotoRuta}}"
                class="avatar-lg"
                style="width:120px;height:120px;margin-bottom:14px;"
                alt="Foto"/>

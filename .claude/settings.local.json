@@ -6,7 +6,8 @@
       "Bash(mvn clean:*)",
       "Bash(cmd /c \"mvn clean compile 2>&1\")",
       "Bash(powershell -Command \"Set-Location 'C:\\\\Users\\\\cris1\\\\Repo_UMG_biometrico\\\\biometrico-umg'; & mvn clean compile 2>&1\")",
-      "Bash(powershell -Command \"Get-Command mvn -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\Users\\\\cris1\\\\Repo_UMG_biometrico\\\\biometrico-umg' -Filter '*.xml' | Select-Object Name\")"
+      "Bash(powershell -Command \"Get-Command mvn -ErrorAction SilentlyContinue; Get-ChildItem 'C:\\\\Users\\\\cris1\\\\Repo_UMG_biometrico\\\\biometrico-umg' -Filter '*.xml' | Select-Object Name\")",
+      "Bash(xargs -I {} basename {})"
     ]
   }
 }

@@ -64,20 +64,10 @@
             <tr th:each="p, iter : ${personas}">
               <td th:text="${iter.count}">1</td>
               <td>
-                <!-- Foto nueva -->
-                <img th:if="${p.fotoRuta != null and #strings.startsWith(p.fotoRuta, 'uploads/')}"
+                <img th:if="${p.fotoRuta != null}"
                      th:src="@{'/' + ${p.fotoRuta}}"
-                     class="avatar-sm"
-                     alt="Foto"/>
-
-                <!-- Foto vieja -->
-                <img th:if="${p.fotoRuta != null and #strings.startsWith(p.fotoRuta, 'fotos_personas/')}"
-                     th:src="@{'/' + ${p.fotoRuta}}"
-                     class="avatar-sm"
-                     alt="Foto"/>
-
-                <!-- Sin foto -->
-                <div th:if="${p.fotoRuta == null or (!#strings.startsWith(p.fotoRuta, 'uploads/') and !#strings.startsWith(p.fotoRuta, 'fotos_personas/'))}"
+                     class="avatar-sm" alt="Foto"/>
+                <div th:unless="${p.fotoRuta != null}"
                      class="avatar-sm avatar-placeholder">
                   <i class="fas fa-user"></i>
                 </div>

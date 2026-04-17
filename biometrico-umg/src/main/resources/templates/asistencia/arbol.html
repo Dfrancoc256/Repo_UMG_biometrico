@@ -142,6 +142,14 @@
       </p>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <!-- Confirmar asistencia del día -->
+      <form th:action="@{/asistencia/curso/{id}/confirmar(id=${curso.id})}" method="post" id="formConfirmar">
+        <input type="hidden" name="fecha" th:value="${fechaStr}"/>
+        <!-- presentesIds se inyectan desde JS antes de enviar -->
+        <button type="button" class="btn btn-warning" onclick="confirmarAsistencia()">
+          <i class="fas fa-clipboard-check"></i> Confirmar Asistencia
+        </button>
+      </form>
       <a th:href="@{/asistencia/curso/{id}/reporte-pdf(id=${curso.id}, fecha=${fechaStr})}"
          class="btn btn-primary">
         <i class="fas fa-file-pdf"></i> Exportar PDF
@@ -269,7 +277,7 @@
           <div th:each="nodo : ${arbol}"
                class="student-row"
                th:classappend="${nodo.presente} ? 'presente' : 'ausente'"
-               th:attr="data-nombre=${nodo.nombreCompleto}, data-seccion=${nodo.seccion != null ? nodo.seccion : ''}">
+               th:attr="data-nombre=${nodo.nombreCompleto}, data-seccion=${nodo.seccion != null ? nodo.seccion : ''}, data-id=${nodo.estudianteId}, data-presente=${nodo.presente}">
 
             <div class="s-icon" th:classappend="${nodo.presente} ? 'presente' : 'ausente'">
               <i class="fas" th:classappend="${nodo.presente} ? 'fa-check' : 'fa-times'"></i>
@@ -362,6 +370,22 @@ function limpiarFiltros() {
   document.getElementById('filtroNombre').value  = '';
   document.getElementById('filtroSeccion').value = '';
   filtrarEstudiantes();
+}
+
+function confirmarAsistencia() {
+  const form = document.getElementById('formConfirmar');
+  // Remove any previously injected inputs
+  form.querySelectorAll('input[name="presentesIds"]').forEach(el => el.remove());
+  // Collect IDs of students marked as presente
+  document.querySelectorAll('.student-row[data-presente="true"]').forEach(row => {
+    const id = row.dataset.id;
+    if (id) {
+      const inp = document.createElement('input');
+      inp.type = 'hidden'; inp.name = 'presentesIds'; inp.value = id;
+      form.appendChild(inp);
+    }
+  });
+  form.submit();
 }
 
 function abrirModalEnvio()  { document.getElementById('modalEnvio').classList.add('active'); }
