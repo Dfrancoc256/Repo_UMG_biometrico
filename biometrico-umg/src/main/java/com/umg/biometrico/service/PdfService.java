@@ -1,5 +1,4 @@
 package com.umg.biometrico.service;
-
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
@@ -27,6 +26,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -228,34 +231,48 @@ public class PdfService {
         escribirCampo(cb, startX, startY - (salto * 4), "Estado:", estado, labelFont, estadoFont);
 
         // Contenido del QR más profesional
-        String contenidoQR = "Documento: Carnet UMG"
-                + "\nCarnet: " + valor(persona.getNumeroCarnet())
-                + "\nNombre: " + valor(persona.getNombreCompleto())
-                + "\nCarrera: " + valor(persona.getCarrera())
-                + "\nEstado: " + estado
-                + "\nFecha emision: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String contenidoQR = "https://um1.duckdns.org/verificar/" + valor(persona.getNumeroCarnet());
 
         // Recuadro visual del QR
+        float qrBoxX = 248;
+        float qrBoxY = 48;
+        float qrBoxW = 62;
+        float qrBoxH = 62;
+
         cb.setColorFill(BLANCO);
-        cb.roundRectangle(252, 44, 70, 70, 6);
+        cb.roundRectangle(qrBoxX, qrBoxY, qrBoxW, qrBoxH, 6);
         cb.fill();
 
         cb.setColorStroke(UMG_AZUL);
         cb.setLineWidth(1f);
-        cb.roundRectangle(252, 44, 70, 70, 6);
+        cb.roundRectangle(qrBoxX, qrBoxY, qrBoxW, qrBoxH, 6);
         cb.stroke();
 
         // QR
-        byte[] qrBytes = generarQR(contenidoQR, 120, 120);
+        byte[] qrBytes = generarQR(contenidoQR, 220, 220);
         if (qrBytes != null) {
-            Image qrImage = Image.getInstance(qrBytes);
-            qrImage.scaleToFit(62, 62);
-            qrImage.setAbsolutePosition(256, 48);
-            document.add(qrImage);
+            try {
+                Image qrImage = Image.getInstance(qrBytes);
 
-            Font qrFont = new Font(Font.FontFamily.HELVETICA, 7, Font.NORMAL, UMG_AZUL);
-            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                    new Phrase("Escanear para validar", qrFont), 287, 38, 0);
+                // Ajuste visual más limpio
+                qrImage.scaleToFit(52, 52);
+
+                // Centrar manualmente dentro del recuadro
+                float qrX = qrBoxX + (qrBoxW - qrImage.getScaledWidth()) / 2;
+                float qrY = qrBoxY + (qrBoxH - qrImage.getScaledHeight()) / 2;
+
+                qrImage.setAbsolutePosition(qrX, qrY);
+                cb.addImage(qrImage);
+
+                Font qrFont = new Font(Font.FontFamily.HELVETICA, 6, Font.NORMAL, UMG_AZUL);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
+                        new Phrase("Escanear para validar", qrFont), qrBoxX + (qrBoxW / 2), 44, 0);
+
+            } catch (Exception e) {
+                log.error("Error al insertar la imagen QR en el PDF: {}", e.getMessage(), e);
+            }
+        } else {
+            log.error("El método generarQR devolvió null.");
         }
 
         // Pie institucional
@@ -502,14 +519,31 @@ public class PdfService {
     private byte[] generarQR(String contenido, int ancho, int alto) {
         try {
             QRCodeWriter qrWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrWriter.encode(contenido, BarcodeFormat.QR_CODE, ancho, alto);
+
+            Map<EncodeHintType, Object> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            hints.put(EncodeHintType.MARGIN, 0);
+            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+
+            BitMatrix bitMatrix = qrWriter.encode(
+                    contenido,
+                    BarcodeFormat.QR_CODE,
+                    ancho,
+                    alto,
+                    hints
+            );
+
             BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(qrImage, "PNG", baos);
-            return baos.toByteArray();
+
+            byte[] resultado = baos.toByteArray();
+            log.info("QR generado correctamente. Tamaño en bytes: {}", resultado.length);
+            return resultado;
+
         } catch (Exception e) {
-            log.error("Error al generar el QR: {}", e.getMessage());
+            log.error("Error al generar el QR: {}", e.getMessage(), e);
             return null;
         }
     }
