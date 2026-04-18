@@ -28,7 +28,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Instalación</label>
-            <select class="form-control" id="selInstalacion">
+            <select class="form-control" id="selInstalacion" onchange="filtrarPuertas(this.value)">
               <option value="">-- Seleccione instalación --</option>
               <option th:each="inst : ${instalaciones}"
                       th:value="${inst.id}"
@@ -39,8 +39,10 @@
             <label class="form-label">Puerta / Acceso *</label>
             <select class="form-control" name="puertaId" id="selPuerta" required>
               <option value="">-- Primero seleccione instalación --</option>
+              <!-- data-inst guarda el instalacionId para filtrar en JS -->
               <option th:each="p : ${puertas}"
                       th:value="${p.id}"
+                      th:attr="data-inst=${p.instalacion != null ? p.instalacion.id : ''}"
                       th:text="${p.nombre + (p.esSalon ? ' (Salón)' : ' (Acceso)')}">Puerta</option>
             </select>
           </div>
@@ -51,9 +53,14 @@
               <option value="facial">Reconocimiento Facial</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-check-circle"></i> Registrar Ingreso
-          </button>
+          <div style="display:flex;gap:10px;">
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-check-circle"></i> Registrar Ingreso
+            </button>
+            <a th:href="@{/ingreso}" class="btn btn-outline">
+              <i class="fas fa-times"></i> Cancelar
+            </a>
+          </div>
         </form>
       </div>
     </div>
@@ -84,6 +91,26 @@
     </div>
 
   </div>
+
+<script>
+// All door options loaded server-side; filter client-side by instalación
+const _todasPuertas = Array.from(document.querySelectorAll('#selPuerta option[data-inst]'))
+  .map(o => ({ value: o.value, text: o.textContent, inst: o.dataset.inst }));
+
+function filtrarPuertas(instId) {
+  const sel = document.getElementById('selPuerta');
+  sel.innerHTML = '<option value="">' + (instId ? '-- Seleccione puerta --' : '-- Primero seleccione instalación --') + '</option>';
+  if (!instId) return;
+  _todasPuertas
+    .filter(p => p.inst === String(instId))
+    .forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.value;
+      opt.textContent = p.text;
+      sel.appendChild(opt);
+    });
+}
+</script>
 
 </th:block>
 </body>

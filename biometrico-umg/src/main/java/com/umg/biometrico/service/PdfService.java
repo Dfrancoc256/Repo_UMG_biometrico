@@ -1,8 +1,11 @@
 package com.umg.biometrico.service;
+
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
@@ -19,16 +22,16 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -230,8 +233,9 @@ public class PdfService {
         escribirCampo(cb, startX, startY - (salto * 3), "Sección:", valor(persona.getSeccion()), labelFont, valueFont);
         escribirCampo(cb, startX, startY - (salto * 4), "Estado:", estado, labelFont, estadoFont);
 
-        // Contenido del QR más profesional
-        String contenidoQR = "https://um1.duckdns.org/verificar/" + valor(persona.getNumeroCarnet());
+        // QR con URL de verificación + código de validación
+        String codigoValidacion = generarCodigoValidacion(persona.getNumeroCarnet());
+        String contenidoQR = "https://um1.duckdns.org/verificar/" + valor(persona.getNumeroCarnet()) + "?cod=" + codigoValidacion;
 
         // Recuadro visual del QR
         float qrBoxX = 248;
@@ -248,25 +252,21 @@ public class PdfService {
         cb.roundRectangle(qrBoxX, qrBoxY, qrBoxW, qrBoxH, 6);
         cb.stroke();
 
-        // QR
         byte[] qrBytes = generarQR(contenidoQR, 220, 220);
         if (qrBytes != null) {
             try {
                 Image qrImage = Image.getInstance(qrBytes);
-
-                // Ajuste visual más limpio
                 qrImage.scaleToFit(52, 52);
 
-                // Centrar manualmente dentro del recuadro
                 float qrX = qrBoxX + (qrBoxW - qrImage.getScaledWidth()) / 2;
                 float qrY = qrBoxY + (qrBoxH - qrImage.getScaledHeight()) / 2;
 
                 qrImage.setAbsolutePosition(qrX, qrY);
                 cb.addImage(qrImage);
 
-                Font qrFont = new Font(Font.FontFamily.HELVETICA, 6, Font.NORMAL, UMG_AZUL);
+                Font qrFont = new Font(Font.FontFamily.HELVETICA, 6, Font.BOLD, UMG_AZUL);
                 ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                        new Phrase("Escanear para validar", qrFont), qrBoxX + (qrBoxW / 2), 44, 0);
+                        new Phrase("COD: " + codigoValidacion, qrFont), qrBoxX + (qrBoxW / 2), 44, 0);
 
             } catch (Exception e) {
                 log.error("Error al insertar la imagen QR en el PDF: {}", e.getMessage(), e);
@@ -288,7 +288,6 @@ public class PdfService {
         document.close();
         byte[] pdfSinFirma = baos.toByteArray();
 
-        // Firmar el PDF
         return firmarPdf(pdfSinFirma, persona);
     }
 
@@ -560,5 +559,20 @@ public class PdfService {
             return texto;
         }
         return texto.substring(0, maximo - 3) + "...";
+    }
+
+    public static String generarCodigoValidacion(String carnet) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String entrada = (carnet != null ? carnet.trim() : "") + ":UMG-BIOMETRICO-SEDE-Z19";
+            byte[] hash = digest.digest(entrada.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 5; i++) {
+                sb.append(String.format("%02X", hash[i]));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return "N/A";
+        }
     }
 }

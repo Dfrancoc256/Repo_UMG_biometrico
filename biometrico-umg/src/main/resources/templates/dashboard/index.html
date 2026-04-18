@@ -135,7 +135,7 @@
           <tr th:each="p, iter : ${ultimosEstudiantes}">
             <td th:text="${iter.count}">1</td>
             <td>
-              <img th:if="${p.fotoRuta != null}" th:src="@{'/' + p.fotoRuta}" class="avatar-sm" alt="Foto"/>
+              <img th:if="${p.fotoRuta != null}" th:src="@{'/' + ${p.fotoRuta}}" class="avatar-sm" alt="Foto"/>
               <div th:unless="${p.fotoRuta != null}" class="avatar-sm avatar-placeholder">
                 <i class="fas fa-user"></i>
               </div>

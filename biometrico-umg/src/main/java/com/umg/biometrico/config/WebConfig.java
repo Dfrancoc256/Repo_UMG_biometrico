@@ -16,10 +16,16 @@ public class WebConfig implements WebMvcConfigurer {
         Path rutaUploads = Paths.get("uploads").toAbsolutePath().normalize();
         Path rutaFotosPersonas = Paths.get("fotos_personas").toAbsolutePath().normalize();
 
+        String uploadsUri = rutaUploads.toUri().toString();
+        if (!uploadsUri.endsWith("/")) uploadsUri += "/";
+
+        String fotosUri = rutaFotosPersonas.toUri().toString();
+        if (!fotosUri.endsWith("/")) fotosUri += "/";
+
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + rutaUploads.toString() + "/");
+                .addResourceLocations(uploadsUri);
 
         registry.addResourceHandler("/fotos_personas/**")
-                .addResourceLocations("file:" + rutaFotosPersonas.toString() + "/");
+                .addResourceLocations(fotosUri);
     }
 }
