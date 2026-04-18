@@ -160,6 +160,25 @@ public class PersonaController {
         }
     }
 
+    @GetMapping("/{id}/qr")
+    public ResponseEntity<byte[]> qrPersona(@PathVariable Long id) {
+        try {
+            Persona persona = personaService.buscarPorId(id)
+                    .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+            String carnet = persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : "";
+            String cod = PdfService.generarCodigoValidacion(carnet);
+            String contenido = "https://um1.duckdns.org/verificar/" + carnet + "?cod=" + cod;
+            byte[] png = pdfService.generarQR(contenido, 220, 220);
+            if (png == null) return ResponseEntity.internalServerError().build();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .header(HttpHeaders.CACHE_CONTROL, "max-age=3600, public")
+                    .body(png);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/{id}/enviar-carnet")
     public String enviarCarnet(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {

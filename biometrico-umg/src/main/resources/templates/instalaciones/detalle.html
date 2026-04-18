@@ -13,7 +13,8 @@
         <span th:text="${instalacion.nombre}">nombre</span>
       </p>
     </div>
-    <a th:href="@{/instalaciones/{id}/puerta/nueva(id=${instalacion.id})}" class="btn btn-primary">
+    <a th:href="@{/instalaciones/{id}/puerta/nueva(id=${instalacion.id})}" class="btn btn-primary"
+       sec:authorize="hasRole('ADMIN')">
       <i class="fas fa-plus"></i> Agregar Acceso / Salón
     </a>
   </div>

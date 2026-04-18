@@ -155,16 +155,7 @@ public class PdfService {
                     byte[] fotoBytes = Files.readAllBytes(rutaFoto);
                     Image foto = Image.getInstance(fotoBytes);
 
-                    // Mantener proporción sin deformar
-                    foto.scaleToFit(fotoW - 4, fotoH - 4);
-
-                    float fotoRealX = fotoX + ((fotoW - foto.getScaledWidth()) / 2);
-                    float fotoRealY = fotoY + ((fotoH - foto.getScaledHeight()) / 2);
-
-                    cb.addImage(foto,
-                            foto.getScaledWidth(), 0,
-                            0, foto.getScaledHeight(),
-                            fotoRealX, fotoRealY);
+                    cb.addImage(foto, fotoW, 0, 0, fotoH, fotoX, fotoY);
                 } else {
                     log.warn("La foto no existe en la ruta: {}", rutaFoto);
                 }
@@ -515,7 +506,7 @@ public class PdfService {
         table.addCell(cell);
     }
 
-    private byte[] generarQR(String contenido, int ancho, int alto) {
+    public byte[] generarQR(String contenido, int ancho, int alto) {
         try {
             QRCodeWriter qrWriter = new QRCodeWriter();
 

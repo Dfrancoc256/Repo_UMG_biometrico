@@ -9,7 +9,8 @@
       <h2><i class="fas fa-building" style="margin-right:10px;color:var(--umg-azul);"></i>Instalaciones</h2>
       <p class="breadcrumb">Edificios y accesos registrados en el sistema</p>
     </div>
-    <a th:href="@{/instalaciones/nueva}" class="btn btn-primary">
+    <a th:href="@{/instalaciones/nueva}" class="btn btn-primary"
+       sec:authorize="hasRole('ADMIN')">
       <i class="fas fa-plus"></i> Nueva Instalación
     </a>
   </div>
@@ -45,7 +46,8 @@
       <i class="fas fa-building" style="font-size:40px;display:block;margin-bottom:14px;"></i>
       No hay instalaciones registradas.
       <br/><br/>
-      <a th:href="@{/instalaciones/nueva}" class="btn btn-primary">
+      <a th:href="@{/instalaciones/nueva}" class="btn btn-primary"
+         sec:authorize="hasRole('ADMIN')">
         <i class="fas fa-plus"></i> Registrar primera instalación
       </a>
     </div>

@@ -92,19 +92,23 @@
       <h5><i class="fas fa-bolt" style="color:var(--umg-dorado);margin-right:8px;"></i>Acciones Rápidas</h5>
     </div>
     <div class="card-body" style="display:flex;flex-wrap:wrap;gap:12px;">
-      <a th:href="@{/personas/nuevo}" class="btn btn-primary">
+      <a th:href="@{/personas/nuevo}" class="btn btn-primary"
+         sec:authorize="hasRole('ADMIN')">
         <i class="fas fa-user-plus"></i> Enrolar Persona
       </a>
       <a th:href="@{/asistencia}" class="btn btn-success">
         <i class="fas fa-clipboard-check"></i> Tomar Asistencia
       </a>
-      <a th:href="@{/ingreso}" class="btn btn-outline">
+      <a th:href="@{/ingreso}" class="btn btn-outline"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <i class="fas fa-door-open"></i> Registrar Ingreso
       </a>
-      <a th:href="@{/reportes}" class="btn btn-warning">
+      <a th:href="@{/reportes}" class="btn btn-warning"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <i class="fas fa-chart-bar"></i> Ver Reportes
       </a>
-      <a th:href="@{/personas/restringidos}" class="btn btn-danger">
+      <a th:href="@{/personas/restringidos}" class="btn btn-danger"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <i class="fas fa-user-slash"></i> Gestionar Restricciones
       </a>
     </div>
