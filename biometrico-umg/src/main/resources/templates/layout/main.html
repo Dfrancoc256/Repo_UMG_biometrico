@@ -44,16 +44,32 @@
         Personas
       </a>
     </li>
-    <li>
+    <!-- Enrolar: solo ADMIN -->
+    <li sec:authorize="hasRole('ADMIN')">
       <a th:href="@{/personas/nuevo}" th:classappend="${activeMenu == 'nuevo-persona'} ? 'active' : ''">
         <i class="fas fa-user-plus nav-icon"></i>
         Enrolar Persona
       </a>
     </li>
-    <li>
+    <li sec:authorize="!hasRole('ADMIN')">
+      <a class="nav-locked" href="#" onclick="return false;" title="Solo administradores pueden enrolar">
+        <i class="fas fa-user-plus nav-icon"></i>
+        Enrolar Persona
+        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
+      </a>
+    </li>
+    <!-- Restricciones: ADMIN + CATEDRÁTICO -->
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/personas/restringidos}" th:classappend="${activeMenu == 'restricciones'} ? 'active' : ''">
         <i class="fas fa-user-slash nav-icon"></i>
         Restricciones
+      </a>
+    </li>
+    <li sec:authorize="hasRole('ESTUDIANTE')">
+      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
+        <i class="fas fa-user-slash nav-icon"></i>
+        Restricciones
+        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
       </a>
     </li>
   </ul>
@@ -76,44 +92,69 @@
 
   <span class="sidebar-section">Control de Accesos</span>
   <ul class="sidebar-nav">
-    <li>
+    <!-- Instalaciones: ADMIN + CATEDRÁTICO -->
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/instalaciones}" th:classappend="${activeMenu == 'instalaciones'} ? 'active' : ''">
         <i class="fas fa-building nav-icon"></i>
         Instalaciones
       </a>
     </li>
-    <li>
+    <li sec:authorize="hasRole('ESTUDIANTE')">
+      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
+        <i class="fas fa-building nav-icon"></i>
+        Instalaciones
+        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
+      </a>
+    </li>
+    <!-- Registro Ingreso: ADMIN + CATEDRÁTICO -->
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/ingreso}" th:classappend="${activeMenu == 'ingreso'} ? 'active' : ''">
         <i class="fas fa-door-open nav-icon"></i>
         Registro Ingreso
+      </a>
+    </li>
+    <li sec:authorize="hasRole('ESTUDIANTE')">
+      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
+        <i class="fas fa-door-open nav-icon"></i>
+        Registro Ingreso
+        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
       </a>
     </li>
   </ul>
 
   <span class="sidebar-section">Reportes y Estadísticas</span>
   <ul class="sidebar-nav">
-    <li>
+    <!-- Reportes: ADMIN + CATEDRÁTICO -->
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/reportes}" th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
         <i class="fas fa-chart-bar nav-icon"></i>
         Dashboard Reportes
       </a>
     </li>
-    <li>
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/reportes/puerta}" th:classappend="${activeMenu == 'rep-puerta'} ? 'active' : ''">
         <i class="fas fa-door-closed nav-icon"></i>
         Por Puerta
       </a>
     </li>
-    <li>
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/reportes/salon}" th:classappend="${activeMenu == 'rep-salon'} ? 'active' : ''">
         <i class="fas fa-chalkboard-teacher nav-icon"></i>
         Por Salón
       </a>
     </li>
-    <li>
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/reportes/historico}" th:classappend="${activeMenu == 'rep-historico'} ? 'active' : ''">
         <i class="fas fa-history nav-icon"></i>
         Árbol Histórico
+      </a>
+    </li>
+    <!-- Items bloqueados para ESTUDIANTE -->
+    <li sec:authorize="hasRole('ESTUDIANTE')">
+      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
+        <i class="fas fa-chart-bar nav-icon"></i>
+        Reportes
+        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
       </a>
     </li>
   </ul>

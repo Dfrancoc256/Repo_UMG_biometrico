@@ -1,9 +1,11 @@
 package com.umg.biometrico.service;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.LineSeparator;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -27,7 +30,9 @@ import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +49,7 @@ public class PdfService {
     private static final BaseColor BLANCO = BaseColor.WHITE;
     private static final BaseColor GRIS_TEXTO = new BaseColor(70, 70, 70);
     private static final BaseColor GRIS_SUAVE = new BaseColor(235, 235, 235);
+    private static final BaseColor VERDE_ESTADO = new BaseColor(0, 120, 0);
 
     public byte[] generarCarnetPersona(Persona persona) throws Exception {
         Rectangle cardSize = new Rectangle(340, 220);
@@ -96,7 +102,7 @@ public class PdfService {
         cb.rectangle(95, 38, w - 95, 3);
         cb.fill();
 
-        // Logo UMG — se agrega via cb para quedar sobre los fondos
+        // Logo UMG
         try {
             ClassPathResource logoResource = new ClassPathResource("static/img/logo-umg.png");
             try (InputStream is = logoResource.getInputStream()) {
@@ -105,7 +111,8 @@ public class PdfService {
                 logo.scaleToFit(62, 62);
                 cb.addImage(logo, logo.getScaledWidth(), 0, 0, logo.getScaledHeight(), 16, 142);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warn("No se pudo cargar el logo del carnet: {}", e.getMessage());
         }
 
         // Textos laterales UMG
@@ -139,6 +146,7 @@ public class PdfService {
         if (persona.getFotoRuta() != null && !persona.getFotoRuta().isBlank()) {
             try {
                 Path rutaFoto = Paths.get(persona.getFotoRuta());
+
                 if (!rutaFoto.isAbsolute()) {
                     rutaFoto = Paths.get("").toAbsolutePath().resolve(persona.getFotoRuta()).normalize();
                 }
@@ -146,11 +154,13 @@ public class PdfService {
                 if (Files.exists(rutaFoto)) {
                     byte[] fotoBytes = Files.readAllBytes(rutaFoto);
                     Image foto = Image.getInstance(fotoBytes);
-                    foto.scaleAbsolute(fotoW - 4, fotoH - 4);
-                    cb.addImage(foto, foto.getScaledWidth(), 0, 0, foto.getScaledHeight(),
-                            fotoX + 2, fotoY + 2);
+
+                    cb.addImage(foto, fotoW, 0, 0, fotoH, fotoX, fotoY);
+                } else {
+                    log.warn("La foto no existe en la ruta: {}", rutaFoto);
                 }
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                log.warn("No se pudo cargar la foto de la persona {}: {}", persona.getNumeroCarnet(), e.getMessage());
             }
         } else {
             Font fotoPlaceholder = new Font(Font.FontFamily.HELVETICA, 9, Font.BOLD, UMG_AZUL);
@@ -168,10 +178,20 @@ public class PdfService {
         ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
                 new Phrase(valor(persona.getTipoPersona()).toUpperCase(), fontTipo), 220, 178, 0);
 
-        // Nombre
-        Font fontNombre = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, UMG_AZUL);
+        // Nombre ajustable
+        String nombreCompleto = valor(persona.getNombreCompleto());
+        Font fontNombre;
+
+        if (nombreCompleto.length() > 28) {
+            fontNombre = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, UMG_AZUL);
+        } else if (nombreCompleto.length() > 20) {
+            fontNombre = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, UMG_AZUL);
+        } else {
+            fontNombre = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, UMG_AZUL);
+        }
+
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase(valor(persona.getNombreCompleto()), fontNombre), 108, 148, 0);
+                new Phrase(nombreCompleto, fontNombre), 108, 148, 0);
 
         // Línea divisoria
         cb.setColorStroke(UMG_AZUL);
@@ -183,63 +203,94 @@ public class PdfService {
         // Datos
         Font labelFont = new Font(Font.FontFamily.HELVETICA, 8, Font.BOLD, UMG_AZUL);
         Font valueFont = new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL, GRIS_TEXTO);
+        Font correoFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, GRIS_TEXTO);
         Font carnetFont = new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD, UMG_ROJO);
 
         float startX = 108;
         float startY = 126;
         float salto = 16;
 
-        escribirCampo(cb, startX, startY, "Carnet:", valor(persona.getNumeroCarnet()), labelFont, carnetFont);
-        escribirCampo(cb, startX, startY - salto, "Correo:", valor(persona.getCorreo()), labelFont, valueFont);
-        escribirCampo(cb, startX, startY - (salto * 2), "Carrera:", valor(persona.getCarrera()), labelFont, valueFont);
-        escribirCampo(cb, startX, startY - (salto * 3), "Sección:", valor(persona.getSeccion()), labelFont, valueFont);
-
         String estado = Boolean.TRUE.equals(persona.getRestringido()) ? "RESTRINGIDO" : "ACTIVO";
         Font estadoFont = new Font(
                 Font.FontFamily.HELVETICA,
                 9,
                 Font.BOLD,
-                Boolean.TRUE.equals(persona.getRestringido()) ? UMG_ROJO : new BaseColor(0, 120, 0)
+                Boolean.TRUE.equals(persona.getRestringido()) ? UMG_ROJO : VERDE_ESTADO
         );
+
+        escribirCampo(cb, startX, startY, "Carnet:", valor(persona.getNumeroCarnet()), labelFont, carnetFont);
+        escribirCampo(cb, startX, startY - salto, "Correo:", recortarTexto(valor(persona.getCorreo()), 28), labelFont, correoFont);
+        escribirCampo(cb, startX, startY - (salto * 2), "Carrera:", recortarTexto(valor(persona.getCarrera()), 26), labelFont, valueFont);
+        escribirCampo(cb, startX, startY - (salto * 3), "Sección:", valor(persona.getSeccion()), labelFont, valueFont);
         escribirCampo(cb, startX, startY - (salto * 4), "Estado:", estado, labelFont, estadoFont);
 
-        // QR con código de validación incrustado
+        // QR con URL de verificación + código de validación
         String codigoValidacion = generarCodigoValidacion(persona.getNumeroCarnet());
-        String qrContenido = valor(persona.getNumeroCarnet()) + "\nCOD:" + codigoValidacion;
-        byte[] qrBytes = generarQR(qrContenido, 90, 90);
-        if (qrBytes != null) {
-            Image qr = Image.getInstance(qrBytes);
-            qr.scaleToFit(58, 58);
-            qr.setAbsolutePosition(260, 48);
-            document.add(qr);
+        String contenidoQR = "https://um1.duckdns.org/verificar/" + valor(persona.getNumeroCarnet()) + "?cod=" + codigoValidacion;
 
-            Font qrFont = new Font(Font.FontFamily.HELVETICA, 6.5f, Font.BOLD, UMG_AZUL);
-            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                    new Phrase("COD: " + codigoValidacion, qrFont), 289, 40, 0);
+        // Recuadro visual del QR
+        float qrBoxX = 248;
+        float qrBoxY = 48;
+        float qrBoxW = 62;
+        float qrBoxH = 62;
+
+        cb.setColorFill(BLANCO);
+        cb.roundRectangle(qrBoxX, qrBoxY, qrBoxW, qrBoxH, 6);
+        cb.fill();
+
+        cb.setColorStroke(UMG_AZUL);
+        cb.setLineWidth(1f);
+        cb.roundRectangle(qrBoxX, qrBoxY, qrBoxW, qrBoxH, 6);
+        cb.stroke();
+
+        byte[] qrBytes = generarQR(contenidoQR, 220, 220);
+        if (qrBytes != null) {
+            try {
+                Image qrImage = Image.getInstance(qrBytes);
+                qrImage.scaleToFit(52, 52);
+
+                float qrX = qrBoxX + (qrBoxW - qrImage.getScaledWidth()) / 2;
+                float qrY = qrBoxY + (qrBoxH - qrImage.getScaledHeight()) / 2;
+
+                qrImage.setAbsolutePosition(qrX, qrY);
+                cb.addImage(qrImage);
+
+                Font qrFont = new Font(Font.FontFamily.HELVETICA, 6, Font.BOLD, UMG_AZUL);
+                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
+                        new Phrase("COD: " + codigoValidacion, qrFont), qrBoxX + (qrBoxW / 2), 44, 0);
+
+            } catch (Exception e) {
+                log.error("Error al insertar la imagen QR en el PDF: {}", e.getMessage(), e);
+            }
+        } else {
+            log.error("El método generarQR devolvió null.");
         }
 
-        // Pie
+        // Pie institucional
         Font pieFont = new Font(Font.FontFamily.HELVETICA, 7, Font.BOLD, UMG_AZUL);
+        Font pieSecundarioFont = new Font(Font.FontFamily.HELVETICA, 6, Font.NORMAL, GRIS_TEXTO);
+
         ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
-                new Phrase("Universidad Mariano Gálvez de Guatemala", pieFont), 108, 16, 0);
+                new Phrase("Universidad Mariano Gálvez de Guatemala", pieFont), 108, 17, 0);
+
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                new Phrase("Documento institucional generado por sistema biométrico", pieSecundarioFont), 108, 9, 0);
 
         document.close();
         byte[] pdfSinFirma = baos.toByteArray();
 
-        // Aplicar firma digital electrónica reconocida por lectores PDF
         return firmarPdf(pdfSinFirma, persona);
     }
 
     /**
      * Firma el PDF con el certificado auto-firmado de UMG.
-     * Los lectores de PDF (Adobe Acrobat, Foxit, PDF-XChange, etc.)
-     * reconocen la firma como una firma digital válida en la estructura del documento.
      */
     private byte[] firmarPdf(byte[] pdfBytes, Persona persona) {
         if (!firmaDigital.isDisponible()) {
             log.warn("Firma digital no disponible, carnet se entrega sin firmar.");
             return pdfBytes;
         }
+
         try {
             ByteArrayOutputStream signedOut = new ByteArrayOutputStream();
             PdfReader reader = new PdfReader(pdfBytes);
@@ -255,22 +306,22 @@ public class PdfService {
             appearance.setContact("noreply.umg.biometrico@gmail.com");
             appearance.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
 
-            // Firma visible en la esquina inferior del carnet con hora de impresión
             appearance.setVisibleSignature(new Rectangle(108, 2, 320, 15), 1, "FirmaUMG");
             appearance.setLayer2Text("Firmado digitalmente por UMG · Impreso: " + fechaHoraImpresion);
+
             Font firmaFont = new Font(Font.FontFamily.HELVETICA, 5, Font.NORMAL, UMG_AZUL);
             appearance.setLayer2Font(firmaFont);
 
             ExternalDigest digest = new BouncyCastleDigest();
             ExternalSignature signature = new PrivateKeySignature(
-                firmaDigital.getPrivateKey(), "SHA-256", "BC"
+                    firmaDigital.getPrivateKey(), "SHA-256", "BC"
             );
 
             MakeSignature.signDetached(
-                appearance, digest, signature,
-                firmaDigital.getCertificateChain(),
-                null, null, null, 0,
-                MakeSignature.CryptoStandard.CMS
+                    appearance, digest, signature,
+                    firmaDigital.getCertificateChain(),
+                    null, null, null, 0,
+                    MakeSignature.CryptoStandard.CMS
             );
 
             reader.close();
@@ -279,7 +330,7 @@ public class PdfService {
 
         } catch (Exception e) {
             log.error("Error al firmar PDF del carnet {}: {}", persona.getNumeroCarnet(), e.getMessage());
-            return pdfBytes; // Devolver sin firma antes que fallar
+            return pdfBytes;
         }
     }
 
@@ -304,7 +355,8 @@ public class PdfService {
                 logo.setAlignment(Element.ALIGN_LEFT);
                 document.add(logo);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warn("No se pudo cargar el logo del reporte: {}", e.getMessage());
         }
 
         Paragraph titulo = new Paragraph("UNIVERSIDAD MARIANO GÁLVEZ DE GUATEMALA", titleFont);
@@ -425,8 +477,11 @@ public class PdfService {
 
     private void escribirCampo(PdfContentByte cb, float x, float y, String etiqueta, String valor,
                                Font fontEtiqueta, Font fontValor) {
-        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(etiqueta, fontEtiqueta), x, y, 0);
-        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT, new Phrase(valor != null ? valor : "", fontValor), x + 42, y, 0);
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                new Phrase(etiqueta, fontEtiqueta), x, y, 0);
+
+        ColumnText.showTextAligned(cb, Element.ALIGN_LEFT,
+                new Phrase(valor != null ? valor : "", fontValor), x + 42, y, 0);
     }
 
     private void addInfoRow(PdfPTable table, String label, String value, Font font) {
@@ -451,16 +506,34 @@ public class PdfService {
         table.addCell(cell);
     }
 
-    private byte[] generarQR(String contenido, int ancho, int alto) {
+    public byte[] generarQR(String contenido, int ancho, int alto) {
         try {
             QRCodeWriter qrWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrWriter.encode(contenido, BarcodeFormat.QR_CODE, ancho, alto);
+
+            Map<EncodeHintType, Object> hints = new HashMap<>();
+            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+            hints.put(EncodeHintType.MARGIN, 0);
+            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+
+            BitMatrix bitMatrix = qrWriter.encode(
+                    contenido,
+                    BarcodeFormat.QR_CODE,
+                    ancho,
+                    alto,
+                    hints
+            );
+
             BufferedImage qrImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(qrImage, "PNG", baos);
-            return baos.toByteArray();
+
+            byte[] resultado = baos.toByteArray();
+            log.info("QR generado correctamente. Tamaño en bytes: {}", resultado.length);
+            return resultado;
+
         } catch (Exception e) {
+            log.error("Error al generar el QR: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -469,11 +542,16 @@ public class PdfService {
         return texto != null ? texto : "";
     }
 
-    /**
-     * Genera un código de validación de 10 caracteres hexadecimales derivado del
-     * número de carnet. Es determinístico: el mismo carnet siempre produce el mismo código,
-     * lo que permite verificar la autenticidad del PDF sin acceso a base de datos.
-     */
+    private String recortarTexto(String texto, int maximo) {
+        if (texto == null) {
+            return "";
+        }
+        if (texto.length() <= maximo) {
+            return texto;
+        }
+        return texto.substring(0, maximo - 3) + "...";
+    }
+
     public static String generarCodigoValidacion(String carnet) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

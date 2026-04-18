@@ -25,16 +25,35 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        // ── Público ─────────────────────────────────────────────
                         .requestMatchers(
-                                "/auth/**",
-                                "/css/**",
-                                "/js/**",
-                                "/img/**",
-                                "/webjars/**",
-                                "/uploads/**",
-                                "/personas/*/carnet-publico"
+                                "/auth/**", "/css/**", "/js/**", "/img/**",
+                                "/webjars/**", "/uploads/**", "/fotos_personas/**",
+                                "/personas/*/carnet-publico", "/acceso-denegado"
                         ).permitAll()
+
+                        // ── Solo ADMIN ───────────────────────────────────────────
+                        .requestMatchers(
+                                "/personas/nuevo", "/personas/guardar", "/personas/*/editar",
+                                "/personas/*/eliminar", "/personas/*/restringir",
+                                "/personas/*/levantar-restriccion",
+                                "/instalaciones/nueva", "/instalaciones/guardar",
+                                "/instalaciones/*/puerta/nueva", "/instalaciones/*/puerta/guardar",
+                                "/cursos/nuevo", "/cursos/guardar", "/cursos/*/editar"
+                        ).hasRole("ADMIN")
+
+                        // ── ADMIN + CATEDRÁTICO ──────────────────────────────────
+                        .requestMatchers(
+                                "/ingreso/**", "/reportes/**",
+                                "/cursos/*/inscribir", "/cursos/*/desinscribir",
+                                "/personas/restringidos"
+                        ).hasAnyRole("ADMIN", "CATEDRATICO")
+
+                        // ── Cualquier usuario autenticado ────────────────────────
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/acceso-denegado")
                 )
                 .formLogin(form -> form
                         .loginPage("/auth/login")

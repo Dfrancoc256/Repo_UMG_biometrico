@@ -9,7 +9,8 @@
       <h2><i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>Cursos</h2>
       <p class="breadcrumb">Listado de cursos activos</p>
     </div>
-    <a th:href="@{/cursos/nuevo}" class="btn btn-primary">
+    <a th:href="@{/cursos/nuevo}" class="btn btn-primary"
+       sec:authorize="hasRole('ADMIN')">
       <i class="fas fa-plus"></i> Nuevo Curso
     </a>
   </div>
@@ -44,7 +45,8 @@
                 <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs" title="Asistencia">
                   <i class="fas fa-clipboard-check"></i> Asistencia
                 </a>
-                <a th:href="@{/cursos/{id}/editar(id=${c.id})}" class="btn btn-warning btn-xs" title="Editar curso">
+                <a th:href="@{/cursos/{id}/editar(id=${c.id})}" class="btn btn-warning btn-xs" title="Editar curso"
+                   sec:authorize="hasRole('ADMIN')">
                   <i class="fas fa-edit"></i>
                 </a>
               </td>

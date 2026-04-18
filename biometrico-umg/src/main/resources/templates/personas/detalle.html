@@ -9,19 +9,20 @@
       <h2><i class="fas fa-user-circle" style="margin-right:10px;color:var(--umg-azul);"></i>Detalle de Persona</h2>
       <p class="breadcrumb"><a th:href="@{/personas}">Personas</a> &rsaquo; Detalle</p>
     </div>
-    <div style="display:flex;gap:10px;">
-      <a th:href="@{/personas/{id}/editar(id=${persona.id})}" class="btn btn-warning">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a th:href="@{/personas/{id}/editar(id=${persona.id})}" class="btn btn-warning"
+         sec:authorize="hasRole('ADMIN')">
         <i class="fas fa-edit"></i> Editar
       </a>
       <a th:href="@{/personas/{id}/carnet(id=${persona.id})}" class="btn btn-primary">
         <i class="fas fa-id-card"></i> Descargar Carnet PDF
       </a>
-      <a th:href="@{/personas/{id}/enviar-carnet(id=${persona.id})}"
-         class="btn btn-success">
-        Enviar por Correo
+      <a th:href="@{/personas/{id}/enviar-carnet(id=${persona.id})}" class="btn btn-success"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <i class="fas fa-envelope"></i> Enviar por Correo
       </a>
-      <a th:href="@{/personas/{id}/enviar-whatsapp(id=${persona.id})}"
-         class="btn btn-success">
+      <a th:href="@{/personas/{id}/enviar-whatsapp(id=${persona.id})}" class="btn btn-success"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
       </a>
     </div>
@@ -47,6 +48,15 @@
           <span class="badge"
                 th:classappend="${persona.tipoPersona == 'estudiante'} ? 'badge-info' : (${persona.tipoPersona == 'catedratico'} ? 'badge-warning' : 'badge-secondary')"
                 th:text="${persona.tipoPersona}">tipo</span>
+          <!-- QR de validación -->
+          <div th:if="${persona.numeroCarnet != null}" style="margin-top:18px;">
+            <img th:src="@{/personas/{id}/qr(id=${persona.id})}"
+                 alt="QR de validación"
+                 style="width:120px;height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:4px;background:#fff;"/>
+            <div style="font-size:10px;color:#7a8898;margin-top:4px;">
+              Escanear para verificar carné
+            </div>
+          </div>
           <br/><br/>
           <span class="badge" style="font-size:13px;"
                 th:classappend="${persona.restringido} ? 'badge-danger' : 'badge-success'"
@@ -58,8 +68,9 @@
         </div>
       </div>
 
-      <!-- Acciones de restricción -->
-      <div class="card" style="margin-top:16px;" th:unless="${persona.restringido}">
+      <!-- Acciones de restricción — solo ADMIN -->
+      <div class="card" style="margin-top:16px;" th:unless="${persona.restringido}"
+           sec:authorize="hasRole('ADMIN')">
         <div class="card-header"><h5><i class="fas fa-user-slash"></i> Restricción</h5></div>
         <div class="card-body">
           <form th:action="@{/personas/{id}/restringir(id=${persona.id})}" method="post">
@@ -75,7 +86,8 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:16px;" th:if="${persona.restringido}">
+      <div class="card" style="margin-top:16px;" th:if="${persona.restringido}"
+           sec:authorize="hasRole('ADMIN')">
         <div class="card-body">
           <form th:action="@{/personas/{id}/levantar-restriccion(id=${persona.id})}" method="post">
             <button type="submit" class="btn btn-success" style="width:100%;"
