@@ -2,9 +2,11 @@ package com.umg.biometrico.repository;
 
 import com.umg.biometrico.model.Persona;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,22 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     List<Persona> findByActivoTrue();
 
     List<Persona> findByRestringidoTrue();
+
+    /** Restricción directa con UPDATE — evita problemas de caché Hibernate */
+    @Transactional
+    @Modifying
+    @Query("UPDATE Persona p SET p.restringido = true, p.motivoRestriccion = :motivo WHERE p.id = :id")
+    void restriccionDirecta(@Param("id") Long id, @Param("motivo") String motivo);
+
+    /** Levanta restricción con UPDATE directo */
+    @Transactional
+    @Modifying
+    @Query("UPDATE Persona p SET p.restringido = false, p.motivoRestriccion = null WHERE p.id = :id")
+    void levantarRestriccionDirecta(@Param("id") Long id);
+
+    /** Lista restringidos con JPQL explícito */
+    @Query("SELECT p FROM Persona p WHERE p.restringido = true ORDER BY p.apellido, p.nombre")
+    List<Persona> findRestringidosOrdenados();
 
     @Query("SELECT p FROM Persona p WHERE p.activo = true AND " +
            "(LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR " +

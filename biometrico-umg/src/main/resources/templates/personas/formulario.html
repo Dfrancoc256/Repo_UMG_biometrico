@@ -4,269 +4,389 @@
 <body>
 <th:block th:fragment="content">
 
-  <div class="page-header">
-    <div>
-      <h2><i class="fas fa-user-plus" style="margin-right:10px;color:var(--umg-azul);"></i>
-        <span th:text="${persona.id != null} ? 'Editar Persona' : 'Enrolar Nueva Persona'">Enrolar</span>
-      </h2>
-      <p class="breadcrumb">
-        <a th:href="@{/personas}">Personas</a> &rsaquo;
-        <span th:text="${persona.id != null} ? 'Editar' : 'Nuevo Registro'">Nuevo</span>
-      </p>
+    <div class="page-header">
+        <div>
+            <h2><i class="fas fa-user-plus" style="margin-right:10px;color:var(--umg-azul);"></i>
+                <span th:text="${persona.id != null} ? 'Editar Persona' : 'Enrolar Nueva Persona'">Enrolar</span>
+            </h2>
+            <p class="breadcrumb">
+                <a th:href="@{/personas}">Personas</a> &rsaquo;
+                <span th:text="${persona.id != null} ? 'Editar' : 'Nuevo Registro'">Nuevo</span>
+            </p>
+        </div>
     </div>
-  </div>
 
-  <form th:action="@{/personas/guardar}" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="id" th:value="${persona.id}"/>
+    <form th:action="@{/personas/guardar}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="id" th:value="${persona.id}"/>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
 
-      <!-- Columna datos biográficos -->
-      <div>
-        <div class="card">
-          <div class="card-header">
-            <h5><i class="fas fa-id-card" style="margin-right:8px;"></i>Datos Biográficos</h5>
-          </div>
-          <div class="card-body">
+            <!-- Columna datos biográficos -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-id-card" style="margin-right:8px;"></i>Datos Biográficos</h5>
+                    </div>
+                    <div class="card-body">
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                            <div class="form-group">
+                                <label class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" name="nombre" th:value="${persona.nombre}"
+                                       placeholder="Ej: Juan Carlos" required/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Apellido *</label>
+                                <input type="text" class="form-control" name="apellido" th:value="${persona.apellido}"
+                                       placeholder="Ej: Pérez López" required/>
+                            </div>
+                        </div>
 
-              <div class="form-group">
-                <label class="form-label">Nombre *</label>
-                <input type="text" class="form-control" name="nombre" th:value="${persona.nombre}"
-                       placeholder="Ej: Juan Carlos" required/>
-              </div>
+                        <div class="form-group">
+                            <label class="form-label">Correo Electrónico UMG *</label>
+                            <input type="email" class="form-control" name="correo" th:value="${persona.correo}"
+                                   placeholder="usuario@umg.edu.gt" required/>
+                        </div>
 
-              <div class="form-group">
-                <label class="form-label">Apellido *</label>
-                <input type="text" class="form-control" name="apellido" th:value="${persona.apellido}"
-                       placeholder="Ej: Pérez López" required/>
-              </div>
+                        <div class="form-group">
+                            <label class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" name="telefono" th:value="${persona.telefono}"
+                                   placeholder="+502 1234-5678"/>
+                        </div>
 
-            </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Persona *</label>
+                            <select class="form-control" name="tipoPersona" required onchange="actualizarTipo(this.value)">
+                                <option value="">-- Seleccione --</option>
+                                <option value="estudiante" th:selected="${persona.tipoPersona == 'estudiante'}">Estudiante</option>
+                                <option value="catedratico" th:selected="${persona.tipoPersona == 'catedratico'}">Catedrático</option>
+                                <option value="admin" th:selected="${persona.tipoPersona == 'admin'}">Administrador</option>
+                            </select>
+                        </div>
 
-            <div class="form-group">
-              <label class="form-label">Correo Electrónico UMG *</label>
-              <input type="email" class="form-control" name="correo" th:value="${persona.correo}"
-                     placeholder="usuario@umg.edu.gt" required/>
-            </div>
+                        <div class="form-group">
+                            <label class="form-label">Carrera</label>
+                            <select class="form-control" name="carrera">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Ingeniería en Sistemas" th:selected="${persona.carrera == 'Ingeniería en Sistemas'}">Ingeniería en Sistemas</option>
+                                <option value="Psicología" th:selected="${persona.carrera == 'Psicología'}">Psicología</option>
+                                <option value="Derecho" th:selected="${persona.carrera == 'Derecho'}">Derecho</option>
+                                <option value="Arquitectura" th:selected="${persona.carrera == 'Arquitectura'}">Arquitectura</option>
+                            </select>
+                        </div>
 
-            <div class="form-group">
-              <label class="form-label">Teléfono</label>
-              <input type="tel" class="form-control" name="telefono" th:value="${persona.telefono}"
-                     placeholder="+502 1234-5678"/>
-            </div>
+                        <div class="form-group" id="grupoSeccion">
+                            <label class="form-label">Sección</label>
+                            <select class="form-control" name="seccion">
+                                <option value="">-- Seleccione --</option>
+                                <option value="A" th:selected="${persona.seccion == 'A'}">Sección A</option>
+                                <option value="B" th:selected="${persona.seccion == 'B'}">Sección B</option>
+                                <option value="C" th:selected="${persona.seccion == 'C'}">Sección C</option>
+                                <option value="D" th:selected="${persona.seccion == 'D'}">Sección D</option>
+                            </select>
+                        </div>
 
-            <div class="form-group">
-              <label class="form-label">Tipo de Persona *</label>
-              <select class="form-control" name="tipoPersona" required>
-                <option value="">-- Seleccione --</option>
-                <option value="estudiante" th:selected="${persona.tipoPersona == 'estudiante'}">Estudiante</option>
-                <option value="catedratico" th:selected="${persona.tipoPersona == 'catedratico'}">Catedrático</option>
-                <option value="mantenimiento" th:selected="${persona.tipoPersona == 'mantenimiento'}">Mantenimiento</option>
-                <option value="admin" th:selected="${persona.tipoPersona == 'admin'}">Administrador</option>
-                <option value="otro" th:selected="${persona.tipoPersona == 'otro'}">Otro</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Carrera</label>
-              <select class="form-control" name="carrera">
-                <option value="">-- Seleccione --</option>
-                <option value="Ingeniería en Sistemas"
-                        th:selected="${persona.carrera == 'Ingeniería en Sistemas'}">Ingeniería en Sistemas</option>
-                <option value="Psicología"
-                        th:selected="${persona.carrera == 'Psicología'}">Psicología</option>
-                <option value="Derecho"
-                        th:selected="${persona.carrera == 'Derecho'}">Derecho</option>
-                <option value="Arquitectura"
-                        th:selected="${persona.carrera == 'Arquitectura'}">Arquitectura</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Sección</label>
-              <select class="form-control" name="seccion">
-                <option value="">-- Seleccione --</option>
-                <option value="A" th:selected="${persona.seccion == 'A'}">Sección A</option>
-                <option value="B" th:selected="${persona.seccion == 'B'}">Sección B</option>
-                <option value="C" th:selected="${persona.seccion == 'C'}">Sección C</option>
-                <option value="D" th:selected="${persona.seccion == 'D'}">Sección D</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Contraseña (para acceso al sistema)</label>
-              <div style="position:relative;">
-                <input type="password" class="form-control" name="contrasena"
-                       id="campoContrasena"
-                       placeholder="Dejar en blanco para no cambiar"
-                       style="padding-right:42px;"/>
-                <button type="button" onclick="toggleContrasena()"
-                        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
+                        <div class="form-group">
+                            <label class="form-label">Contraseña (para acceso al sistema)</label>
+                            <div style="position:relative;">
+                                <input type="password" class="form-control" name="contrasena"
+                                       id="campoContrasena"
+                                       placeholder="Dejar en blanco para no cambiar"
+                                       style="padding-right:42px;"/>
+                                <button type="button" onclick="toggleContrasena()"
+                                        style="position:absolute;right:10px;top:50%;transform:translateY(-50%);
                                background:none;border:none;color:#7a8898;cursor:pointer;padding:4px;">
-                  <i class="fas fa-eye" id="iconoContrasena"></i>
-                </button>
-              </div>
-              <small style="color:#7a8898;font-size:11px;">
-                <i class="fas fa-info-circle"></i>
-                Solo requerido para catedráticos y administradores. Se cifrará automáticamente.
-              </small>
+                                    <i class="fas fa-eye" id="iconoContrasena"></i>
+                                </button>
+                            </div>
+                            <small style="color:#7a8898;font-size:11px;">
+                                <i class="fas fa-info-circle"></i>
+                                Solo requerido para catedráticos y administradores. Se cifrará automáticamente.
+                            </small>
+                        </div>
+
+                    </div>
+                </div>
             </div>
 
-          </div>
-        </div>
-      </div>
+            <!-- Columna foto y biométrico -->
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-camera" style="margin-right:8px;"></i>Fotografía Biométrica</h5>
+                    </div>
+                    <div class="card-body" style="text-align:center;">
 
-      <!-- Columna foto y biométrico -->
-      <div>
-        <div class="card">
-          <div class="card-header">
-            <h5><i class="fas fa-camera" style="margin-right:8px;"></i>Fotografía Biométrica</h5>
-          </div>
-          <div class="card-body" style="text-align:center;">
+                        <!-- Preview -->
+                        <div style="margin-bottom:16px;">
+                            <img th:if="${persona.fotoRuta != null}"
+                                 th:src="@{'/' + ${persona.fotoRuta}}"
+                                 id="previewFoto"
+                                 class="avatar-lg"
+                                 style="width:110px;height:110px;margin-bottom:10px;"
+                                 alt="Foto actual"/>
+                            <img th:unless="${persona.fotoRuta != null}"
+                                 id="previewFoto"
+                                 class="avatar-lg"
+                                 style="width:110px;height:110px;margin-bottom:10px;display:none;"
+                                 alt="Vista previa"/>
+                        </div>
 
-            <!-- Preview de foto actual -->
-            <div style="margin-bottom:16px;">
-              <img th:if="${persona.fotoRuta != null}"
-                   th:src="@{'/' + ${persona.fotoRuta}}"
-                   id="previewFoto"
-                   class="avatar-lg"
-                   style="width:110px;height:110px;margin-bottom:10px;"
-                   alt="Foto actual"/>
-              <img th:unless="${persona.fotoRuta != null}"
-                   id="previewFoto"
-                   class="avatar-lg"
-                   style="width:110px;height:110px;margin-bottom:10px;display:none;"
-                   alt="Vista previa"/>
-            </div>
+                        <!-- Selector de fuente de cámara -->
+                        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
+                            <button type="button" id="btnFuenteWebcam" onclick="cambiarFuenteCamara('webcam')"
+                                    style="padding:5px 12px;border-radius:20px;border:2px solid var(--umg-azul);
+                             background:var(--umg-azul);color:white;cursor:pointer;font-size:12px;">
+                                💻 Webcam PC
+                            </button>
+                            <button type="button" id="btnFuenteDroid" onclick="cambiarFuenteCamara('droid')"
+                                    style="padding:5px 12px;border-radius:20px;border:2px solid var(--umg-azul);
+                             background:transparent;color:var(--umg-azul);cursor:pointer;font-size:12px;">
+                                📱 DroidCam
+                            </button>
+                        </div>
 
-            <!-- Webcam -->
-            <div class="webcam-box" style="margin:0 auto 14px;display:inline-block;border-radius:10px;overflow:hidden;">
-              <video id="webcamVideo" width="280" height="210" autoplay muted
-                     style="display:block;background:#111;"></video>
-              <div class="webcam-overlay">📹 Cámara en vivo</div>
-            </div>
-            <canvas id="webcamCanvas" style="display:none;"></canvas>
-            <input type="hidden" id="fotoBase64" name="fotoBase64"/>
+                        <!-- Webcam nativa -->
+                        <div id="contenedorWebcamNativa" style="margin:0 auto 14px;display:inline-block;border-radius:10px;overflow:hidden;">
+                            <video id="webcamVideo" width="280" height="210" autoplay muted
+                                   style="display:block;background:#111;"></video>
+                            <div class="webcam-overlay">📹 Cámara en vivo</div>
+                        </div>
 
-            <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
-              <button type="button" class="btn btn-success" id="btnCapturar">
-                <i class="fas fa-camera"></i> Capturar Foto
-              </button>
-              <div style="color:#7a8898;font-size:12px;">— o —</div>
-              <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
-                <span class="btn btn-outline btn-sm"><i class="fas fa-upload"></i> Subir desde archivo</span>
-                <input type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif"
-                       style="display:none;" onchange="previewFotoArchivo(this)"/>
-                <small id="nombreArchivoFoto" style="color:#7a8898;font-size:11px;max-width:180px;
+                        <!-- DroidCam stream -->
+                        <div id="contenedorDroidCam" style="margin:0 auto 14px;display:none;border-radius:10px;overflow:hidden;">
+                            <img id="streamDroidEnrol"
+                                 src="/camara/stream"
+                                 width="280" height="210"
+                                 style="display:block;object-fit:cover;background:#111;"
+                                 alt="DroidCam"/>
+                            <div class="webcam-overlay">📱 DroidCam en vivo</div>
+                        </div>
+
+                        <canvas id="webcamCanvas" style="display:none;"></canvas>
+                        <input type="hidden" id="fotoBase64" name="fotoBase64"/>
+
+                        <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+                            <button type="button" class="btn btn-success" id="btnCapturar">
+                                <i class="fas fa-camera"></i> Capturar Foto
+                            </button>
+                            <div style="color:#7a8898;font-size:12px;">— o —</div>
+                            <label style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                                <span class="btn btn-outline btn-sm"><i class="fas fa-upload"></i> Subir desde archivo</span>
+                                <input type="file" name="foto" accept="image/jpeg,image/png,image/webp,image/gif"
+                                       style="display:none;" onchange="previewFotoArchivo(this)"/>
+                                <small id="nombreArchivoFoto" style="color:#7a8898;font-size:11px;max-width:180px;
                        overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></small>
-              </label>
-            </div>
+                            </label>
+                        </div>
 
-          </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:20px;">
+                    <div class="card-header">
+                        <h5><i class="fas fa-fingerprint" style="margin-right:8px;"></i>Número de Carnet</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">No. Carnet (se genera automáticamente si está vacío)</label>
+                            <input type="text" class="form-control" name="numeroCarnet" th:value="${persona.numeroCarnet}"
+                                   placeholder="UMG-XXXXXXX"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <div class="card" style="margin-top:20px;">
-          <div class="card-header">
-            <h5><i class="fas fa-fingerprint" style="margin-right:8px;"></i>Número de Carnet</h5>
-          </div>
-          <div class="card-body">
-            <div class="form-group">
-              <label class="form-label">No. Carnet (se genera automáticamente si está vacío)</label>
-              <input type="text" class="form-control" name="numeroCarnet" th:value="${persona.numeroCarnet}"
-                     placeholder="UMG-XXXXXXX"/>
-            </div>
-          </div>
+        <div style="display:flex;gap:14px;margin-top:10px;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                <span th:text="${persona.id != null} ? 'Actualizar Persona' : 'Registrar Persona'">Guardar</span>
+            </button>
+            <a th:href="@{/personas}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
         </div>
 
-      </div>
-    </div>
+    </form>
 
-    <div style="display:flex;gap:14px;margin-top:10px;">
-      <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save"></i>
-        <span th:text="${persona.id != null} ? 'Actualizar Persona' : 'Registrar Persona'">Guardar</span>
-      </button>
-      <a th:href="@{/personas}" class="btn btn-outline">
-        <i class="fas fa-arrow-left"></i> Cancelar
-      </a>
-    </div>
+    <script>
+        // ── Tipo persona ──────────────────────────────────────────────────────────
+        function actualizarTipo(tipo) {
+          const grupoSeccion = document.getElementById('grupoSeccion');
+          const ocultar = (tipo === 'catedratico' || tipo === 'admin');
+          grupoSeccion.style.display = ocultar ? 'none' : '';
+          if (ocultar) grupoSeccion.querySelector('select').value = '';
+        }
 
-  </form>
+        document.addEventListener('DOMContentLoaded', function() {
+          const sel = document.querySelector('select[name="tipoPersona"]');
+          if (sel) actualizarTipo(sel.value);
+        });
 
-  <script>
-    // Toggle ver/ocultar contraseña
-    function toggleContrasena() {
-      const campo = document.getElementById('campoContrasena');
-      const icono = document.getElementById('iconoContrasena');
-      if (campo.type === 'password') {
-        campo.type = 'text';
-        icono.className = 'fas fa-eye-slash';
-      } else {
-        campo.type = 'password';
-        icono.className = 'fas fa-eye';
-      }
-    }
+        // ── Toggle contraseña ─────────────────────────────────────────────────────
+        function toggleContrasena() {
+          const campo = document.getElementById('campoContrasena');
+          const icono = document.getElementById('iconoContrasena');
+          if (campo.type === 'password') {
+            campo.type = 'text';
+            icono.className = 'fas fa-eye-slash';
+          } else {
+            campo.type = 'password';
+            icono.className = 'fas fa-eye';
+          }
+        }
 
-    const video   = document.getElementById('webcamVideo');
-    const canvas  = document.getElementById('webcamCanvas');
-    const b64Input = document.getElementById('fotoBase64');
-    const preview = document.getElementById('previewFoto');
-    let streamActivo = null;
+        // ── Variables cámara ──────────────────────────────────────────────────────
+        const video    = document.getElementById('webcamVideo');
+        const canvas   = document.getElementById('webcamCanvas');
+        const b64Input = document.getElementById('fotoBase64');
+        const preview  = document.getElementById('previewFoto');
+        let streamActivo  = null;
+        let fuenteActual  = 'webcam';
 
-    // Inicializar webcam al cargar la página
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      .then(stream => {
-        streamActivo = stream;
-        video.srcObject = stream;
-      })
-      .catch(() => {
-        video.style.display = 'none';
-        document.getElementById('btnCapturar').style.display = 'none';
-      });
+        // ── Iniciar webcam nativa por defecto ─────────────────────────────────────
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+          .then(stream => {
+            streamActivo = stream;
+            video.srcObject = stream;
+          })
+          .catch(() => {
+            video.style.display = 'none';
+            document.getElementById('btnCapturar').style.display = 'none';
+          });
 
-    // Capturar foto desde webcam
-    document.getElementById('btnCapturar').addEventListener('click', () => {
-      if (!streamActivo) return;
-      canvas.width  = video.videoWidth  || 320;
-      canvas.height = video.videoHeight || 240;
-      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
-      b64Input.value = dataUrl;
-      preview.src    = dataUrl;
-      preview.style.display = 'block';
-    });
+        // ── Cambiar fuente de cámara ──────────────────────────────────────────────
+        function cambiarFuenteCamara(fuente) {
+          fuenteActual = fuente;
+          const contWebcam = document.getElementById('contenedorWebcamNativa');
+          const contDroid  = document.getElementById('contenedorDroidCam');
+          const btnWebcam  = document.getElementById('btnFuenteWebcam');
+          const btnDroid   = document.getElementById('btnFuenteDroid');
 
-    // Preview al subir archivo — también limpia el base64 para que no interfiera
-    function previewFotoArchivo(input) {
-      const file = input.files[0];
-      if (!file) return;
+          if (fuente === 'webcam') {
+            contWebcam.style.display = 'inline-block';
+            contDroid.style.display  = 'none';
+            btnWebcam.style.background = 'var(--umg-azul)';
+            btnWebcam.style.color      = 'white';
+            btnDroid.style.background  = 'transparent';
+            btnDroid.style.color       = 'var(--umg-azul)';
 
-      const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-      if (!tiposPermitidos.includes(file.type)) {
-        alert('Solo se permiten imágenes (JPG, PNG, WEBP, GIF).');
-        input.value = '';
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen no puede superar 5 MB.');
-        input.value = '';
-        return;
-      }
+            // Reiniciar webcam si fue detenida
+            if (!streamActivo) {
+              navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(stream => {
+                  streamActivo = stream;
+                  video.srcObject = stream;
+                })
+                .catch(() => alert('No se pudo acceder a la webcam'));
+            }
 
-      b64Input.value = '';          // archivo tiene prioridad sobre base64
-      const nombreElem = document.getElementById('nombreArchivoFoto');
-      if (nombreElem) nombreElem.textContent = file.name;
+          } else {
+            // Detener webcam para liberar el recurso
+            if (streamActivo) {
+              streamActivo.getTracks().forEach(t => t.stop());
+              streamActivo = null;
+              video.srcObject = null;
+            }
+            contWebcam.style.display = 'none';
+            contDroid.style.display  = 'inline-block';
+            btnDroid.style.background  = 'var(--umg-azul)';
+            btnDroid.style.color       = 'white';
+            btnWebcam.style.background = 'transparent';
+            btnWebcam.style.color      = 'var(--umg-azul)';
 
-      const reader = new FileReader();
-      reader.onload = e => {
-        preview.src = e.target.result;
+            // Refrescar stream DroidCam
+            const imgDroid = document.getElementById('streamDroidEnrol');
+            imgDroid.src = '/camara/stream?' + Date.now();
+          }
+        }
+
+        // ── Capturar foto ─────────────────────────────────────────────────────────
+       document.getElementById('btnCapturar').addEventListener('click', () => {
+    if (fuenteActual === 'webcam') {
+        if (!streamActivo) { alert('La webcam no está disponible'); return; }
+        canvas.width  = video.videoWidth  || 320;
+        canvas.height = video.videoHeight || 240;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+        b64Input.value = dataUrl;
+        preview.src    = dataUrl;
         preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+
+    } else {
+        const imgStream = document.getElementById('streamDroidEnrol');
+        const btnCap    = document.getElementById('btnCapturar');
+
+        btnCap.disabled = true;
+        btnCap.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Capturando...';
+
+        // 1. Pausar stream para liberar la conexión
+        imgStream.src = '';
+
+        // 2. Esperar que se libere y tomar foto
+        setTimeout(() => {
+            fetch('/camara/foto')
+                .then(r => {
+                    if (!r.ok) throw new Error('no disponible');
+                    return r.blob();
+                })
+                .then(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        b64Input.value = reader.result;
+                        preview.src    = reader.result;
+                        preview.style.display = 'block';
+
+                        // 3. Reanudar stream
+                        setTimeout(() => {
+                            imgStream.src = '/camara/stream?' + Date.now();
+                            btnCap.disabled = false;
+                            btnCap.innerHTML = '<i class="fas fa-camera"></i> Capturar Foto';
+                        }, 800);
+                    };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(err => {
+                    alert('Error: ' + err.message);
+                    imgStream.src = '/camara/stream?' + Date.now();
+                    btnCap.disabled = false;
+                    btnCap.innerHTML = '<i class="fas fa-camera"></i> Capturar Foto';
+                });
+        }, 600);
     }
-  </script>
+});
+
+        // ── Preview archivo ───────────────────────────────────────────────────────
+        function previewFotoArchivo(input) {
+          const file = input.files[0];
+          if (!file) return;
+
+          const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+          if (!tiposPermitidos.includes(file.type)) {
+            alert('Solo se permiten imágenes (JPG, PNG, WEBP, GIF).');
+            input.value = '';
+            return;
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            alert('La imagen no puede superar 5 MB.');
+            input.value = '';
+            return;
+          }
+
+          b64Input.value = '';
+          const nombreElem = document.getElementById('nombreArchivoFoto');
+          if (nombreElem) nombreElem.textContent = file.name;
+
+          const reader = new FileReader();
+          reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+    </script>
 
 </th:block>
 </body>

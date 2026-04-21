@@ -1,8 +1,10 @@
 package com.umg.biometrico.service;
 
-import com.umg.biometrico.model.Persona;
+import
+        com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +29,7 @@ public class PersonaService {
 
     private final PersonaRepository personaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FacialApiService facialApiService;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -39,7 +43,7 @@ public class PersonaService {
     }
 
     public List<Persona> listarRestringidas() {
-        return personaRepository.findByRestringidoTrue();
+        return personaRepository.findRestringidosOrdenados();
     }
 
     public Optional<Persona> buscarPorId(Long id) {
@@ -115,6 +119,29 @@ public class PersonaService {
             persona.setContrasena(null);
         }
 
+        // ─── Enrolamiento facial automático si tiene foto ─────────────────────
+        if (persona.getFotoRuta() != null && persona.getEncodingFacial() == null) {
+            try {
+                Path rutaFoto = Paths.get(persona.getFotoRuta()).isAbsolute()
+                        ? Paths.get(persona.getFotoRuta())
+                        : Paths.get("").toAbsolutePath().resolve(persona.getFotoRuta());
+
+                if (Files.exists(rutaFoto)) {
+                    byte[] fotoBytes = Files.readAllBytes(rutaFoto);
+                    String base64 = java.util.Base64.getEncoder().encodeToString(fotoBytes);
+                    List<Double> descriptor = facialApiService.enrolar(
+                            persona.getId() != null ? persona.getId() : 0L, base64
+                    );
+                    if (descriptor != null) {
+                        persona.setEncodingFacial(facialApiService.descriptorAJson(descriptor));
+                        log.info("✅ Descriptor facial guardado para {}", persona.getNombreCompleto());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ No se pudo enrolar facialmente: {}", e.getMessage(), e);
+            }
+        }
+
         return personaRepository.save(persona);
     }
 
@@ -129,20 +156,14 @@ public class PersonaService {
         });
     }
 
+    @Transactional
     public void restringir(Long id, String motivo) {
-        personaRepository.findById(id).ifPresent(p -> {
-            p.setRestringido(true);
-            p.setMotivoRestriccion(motivo);
-            personaRepository.save(p);
-        });
+        personaRepository.restriccionDirecta(id, motivo);
     }
 
+    @Transactional
     public void levantarRestriccion(Long id) {
-        personaRepository.findById(id).ifPresent(p -> {
-            p.setRestringido(false);
-            p.setMotivoRestriccion(null);
-            personaRepository.save(p);
-        });
+        personaRepository.levantarRestriccionDirecta(id);
     }
 
     private String generarNumeroCarnetUnico() {

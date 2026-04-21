@@ -70,27 +70,86 @@
   <!-- Formulario para agregar restricción desde aquí -->
   <div class="card" style="margin-top:24px;">
     <div class="card-header">
-      <h5><i class="fas fa-plus-circle" style="margin-right:8px;color:var(--umg-rojo);"></i>Agregar Restricción por ID</h5>
+      <h5><i class="fas fa-plus-circle" style="margin-right:8px;color:var(--umg-rojo);"></i>Agregar Restricción por Carnet / Correo</h5>
     </div>
     <div class="card-body">
-      <form th:action="@{/personas/0/restringir}" method="post"
-            style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
-        <div class="form-group" style="margin:0;">
-          <label class="form-label">ID de Persona</label>
-          <input type="number" class="form-control" name="personaId" placeholder="ID" style="width:120px;"/>
+      <!-- Buscar persona primero -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+        <div class="form-group" style="margin:0;flex:1;min-width:220px;">
+          <label class="form-label">Carnet o Correo</label>
+          <input type="text" class="form-control" id="buscarRestriccion"
+                 placeholder="UMG-0001234 o correo@umg.edu.gt"/>
         </div>
+        <button type="button" class="btn btn-outline" onclick="buscarParaRestringir()">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+      </div>
+
+      <!-- Resultado búsqueda -->
+      <div id="resultadoBusqueda" style="display:none;border:1px solid #dde8f5;border-radius:8px;
+           padding:12px;margin-bottom:14px;background:#f8fafc;">
+        <strong id="rNombre">—</strong>
+        <small id="rCarnet" style="color:#7a8898;margin-left:8px;">—</small>
+      </div>
+
+      <!-- Form real — el action se construye con JS -->
+      <form id="formRestringir" action="#" method="post"
+            style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <input type="hidden" id="rPersonaId" name="_personaId"/>
         <div class="form-group" style="margin:0;flex:1;min-width:240px;">
           <label class="form-label">Motivo *</label>
-          <input type="text" class="form-control" name="motivo" placeholder="Motivo de restricción" required/>
+          <input type="text" class="form-control" name="motivo"
+                 placeholder="Motivo de restricción" required/>
         </div>
-        <div>
-          <button type="submit" class="btn btn-danger">
-            <i class="fas fa-ban"></i> Aplicar Restricción
-          </button>
-        </div>
+        <button type="button" class="btn btn-danger" onclick="enviarRestriccion()">
+          <i class="fas fa-ban"></i> Aplicar Restricción
+        </button>
       </form>
+      <div id="msgRestriccion" style="margin-top:8px;"></div>
     </div>
   </div>
+
+  <script>
+    function buscarParaRestringir() {
+      const q = document.getElementById('buscarRestriccion').value.trim();
+      if (!q) return;
+      fetch('/personas/buscar-correo?correo=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+          if (data.encontrado) {
+            document.getElementById('rNombre').textContent = data.nombre;
+            document.getElementById('rCarnet').textContent = 'Carnet: ' + data.carnet + ' · ID: ' + data.id;
+            document.getElementById('rPersonaId').value = data.id;
+            document.getElementById('resultadoBusqueda').style.display = 'block';
+            document.getElementById('msgRestriccion').innerHTML = '';
+          } else {
+            document.getElementById('resultadoBusqueda').style.display = 'none';
+            document.getElementById('msgRestriccion').innerHTML =
+              '<div style="color:#c62828;">No se encontró persona con ese dato.</div>';
+          }
+        })
+        .catch(() => {
+          document.getElementById('msgRestriccion').innerHTML =
+            '<div style="color:#c62828;">Error de conexión.</div>';
+        });
+    }
+
+    function enviarRestriccion() {
+      const id = document.getElementById('rPersonaId').value;
+      if (!id) {
+        document.getElementById('msgRestriccion').innerHTML =
+          '<div style="color:#c62828;">Busca primero a la persona.</div>';
+        return;
+      }
+      const form = document.getElementById('formRestringir');
+      form.action = '/personas/' + id + '/restringir';
+      form.submit();
+    }
+
+    document.getElementById('buscarRestriccion').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); buscarParaRestringir(); }
+    });
+  </script>
 
 </th:block>
 </body>

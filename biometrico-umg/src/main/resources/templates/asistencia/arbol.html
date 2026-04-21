@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/main :: layout(~{::content}, 'Árbol de Asistencia', ${activeMenu})}">
 <body>
 <th:block th:fragment="content">
@@ -141,7 +142,8 @@
         <span th:text="${curso.codigo}">COD</span>
       </p>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <!-- Acciones solo para ADMIN y CATEDRÁTICO -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <!-- Confirmar asistencia del día -->
       <form th:action="@{/asistencia/curso/{id}/confirmar(id=${curso.id})}" method="post" id="formConfirmar">
         <input type="hidden" name="fecha" th:value="${fechaStr}"/>
@@ -250,9 +252,14 @@
             <i class="fas fa-chalkboard-teacher"></i>
           </div>
           <div class="root-info">
-            <div class="root-role">Catedrático</div>
+            <div class="root-role">
+              Catedrático
+              <span th:if="${seccionesAsignadas != null and not #lists.isEmpty(seccionesAsignadas)}"
+                    th:text="' · Secciones: ' + ${#strings.listJoin(seccionesAsignadas, ', ')}"
+                    style="font-size:9px;opacity:.85;"></span>
+            </div>
             <div class="root-name"
-                 th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar'}">
+                 th:text="${catedraticoActual != null ? catedraticoActual.nombreCompleto : (curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar')}">
               Nombre
             </div>
             <div class="root-meta">
@@ -315,8 +322,8 @@
     </div>
   </div>
 
-  <!-- Modal enviar asistencia -->
-  <div class="modal-overlay" id="modalEnvio">
+  <!-- Modal enviar asistencia — solo ADMIN y CATEDRÁTICO -->
+  <div class="modal-overlay" id="modalEnvio" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
     <div class="modal-box">
       <button class="modal-close" onclick="cerrarModalEnvio()" type="button">&times;</button>
       <h4><i class="fas fa-paper-plane" style="margin-right:8px;color:var(--umg-azul);"></i>Enviar Asistencia</h4>
