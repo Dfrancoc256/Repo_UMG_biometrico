@@ -36,8 +36,13 @@
     </li>
   </ul>
 
-  <span class="sidebar-section">Registro Biométrico</span>
-  <ul class="sidebar-nav">
+  <div class="menu-group">
+    <button class="menu-toggle" type="button" data-menu="registro">
+      <span class="arrow">▶</span>
+      <i class="fas fa-id-card section-icon"></i>
+      <span class="sidebar-section">Registro Biométrico</span>
+    </button>
+  <ul class="sidebar-nav submenu">
     <!-- ADMIN + CATEDRÁTICO: ven lista completa de personas -->
     <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/personas}" th:classappend="${activeMenu == 'personas'} ? 'active' : ''">
@@ -82,9 +87,15 @@
       </a>
     </li>
   </ul>
-
-  <span class="sidebar-section">Cursos y Asistencia</span>
-  <ul class="sidebar-nav">
+  </div>
+<!--CURSOS Y ASISTENCIA-->
+  <div class="menu-group">
+    <button class="menu-toggle" type="button" data-menu="cursos">
+      <span class="arrow">▶</span>
+      <i class="fas fa-book-open section-icon"></i>
+      <span class="sidebar-section">Cursos y Asistencia</span>
+    </button>
+  <ul class="sidebar-nav submenu">
     <li>
       <a th:href="@{/cursos}" th:classappend="${activeMenu == 'cursos'} ? 'active' : ''">
         <i class="fas fa-book nav-icon"></i>
@@ -98,9 +109,15 @@
       </a>
     </li>
   </ul>
+  </div>
 
-  <span class="sidebar-section">Control de Accesos</span>
-  <ul class="sidebar-nav">
+  <div class="menu-group">
+    <button class="menu-toggle" type="button" data-menu="accesos">
+      <span class="arrow">▶</span>
+      <i class="fas fa-shield-alt section-icon"></i>
+      <span class="sidebar-section">Control de Accesos</span>
+    </button>
+  <ul class="sidebar-nav submenu">
     <!-- Instalaciones: ADMIN + CATEDRÁTICO -->
     <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/instalaciones}" th:classappend="${activeMenu == 'instalaciones'} ? 'active' : ''">
@@ -130,9 +147,15 @@
       </a>
     </li>
   </ul>
+  </div>
 
-  <span class="sidebar-section">Reportes y Estadísticas</span>
-  <ul class="sidebar-nav">
+  <div class="menu-group">
+    <button class="menu-toggle" type="button" data-menu="reportes">
+      <span class="arrow">▶</span>
+      <i class="fas fa-chart-line section-icon"></i>
+      <span class="sidebar-section">Reportes y Estadísticas</span>
+    </button>
+  <ul class="sidebar-nav submenu">
     <!-- Reportes: ADMIN + CATEDRÁTICO -->
     <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/reportes}" th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
@@ -167,11 +190,13 @@
       </a>
     </li>
   </ul>
+  </div>
 
   <div class="sidebar-footer">
     UMG &copy; 2026 · Biométrico v2.0
   </div>
 </aside>
+
 
 <!-- ── TOPBAR ────────────────────────────────────────────── -->
 <header class="topbar">

@@ -6,6 +6,81 @@
   <title>Iniciar Sesión | Biométrico UMG</title>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .tab-btn {
+      flex: 1;
+      justify-content: center;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--umg-azul, #1a3a6b);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(26,58,107,0.25);
+    }
+    .tab-btn.inactive {
+      background: #f0f3f8;
+      color: #7a8898;
+    }
+    .tab-btn.inactive:hover {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+    #video-container {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #0d1117;
+      margin-bottom: 12px;
+    }
+    #video {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+    .scan-line {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #00e5ff, transparent);
+      animation: scan 2s linear infinite;
+    }
+    @keyframes scan {
+      0%   { top: 0; }
+      100% { top: 100%; }
+    }
+    #estado-facial {
+      font-size: 14px;
+      color: #7a8898;
+      min-height: 22px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    .facial-idle {
+      text-align: center;
+      padding: 20px 0 8px;
+    }
+    .facial-idle i {
+      font-size: 48px;
+      color: #c8d0da;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .facial-idle p {
+      font-size: 13px;
+      color: #aab;
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
 <div class="login-page">
@@ -28,8 +103,9 @@
     <div class="login-form-inner">
 
       <h2>Bienvenido</h2>
-      <p>Ingrese sus credenciales para acceder al sistema.</p>
+      <p>Seleccione su método de acceso al sistema.</p>
 
+      <!-- Alertas -->
       <div th:if="${errorMsg}" class="alert alert-danger">
         <i class="fas fa-exclamation-triangle"></i>
         <span th:text="${errorMsg}"></span>
@@ -39,33 +115,71 @@
         <span th:text="${logoutMsg}"></span>
       </div>
 
-      <form th:action="@{/auth/login}" method="post">
+      <!-- Pestañas -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        <button onclick="mostrarTab('manual')" id="tab-manual" class="tab-btn active">
+          <i class="fas fa-keyboard"></i> Manual
+        </button>
+        <button onclick="mostrarTab('facial')" id="tab-facial" class="tab-btn inactive">
+          <i class="fas fa-camera"></i> Reconocimiento Facial
+        </button>
+      </div>
 
-        <div class="form-group">
-          <label class="form-label" for="correo">
-            <i class="fas fa-envelope" style="margin-right:6px;color:#7a8898;"></i>
-            Correo Electrónico
-          </label>
-          <input type="email" class="form-control" id="correo" name="correo"
-                 placeholder="usuario@umg.edu.gt" required autofocus/>
+      <!-- ── Tab: Login Manual ── -->
+      <div id="tab-content-manual">
+        <form th:action="@{/auth/login}" method="post">
+          <div class="form-group">
+            <label class="form-label" for="correo">
+              <i class="fas fa-envelope" style="margin-right:6px;color:#7a8898;"></i>
+              Correo Electrónico
+            </label>
+            <input type="email" class="form-control" id="correo" name="correo"
+                   placeholder="usuario@umg.edu.gt" required autofocus/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contrasena">
+              <i class="fas fa-lock" style="margin-right:6px;color:#7a8898;"></i>
+              Contraseña
+            </label>
+            <input type="password" class="form-control" id="contrasena" name="contrasena"
+                   placeholder="••••••••" required/>
+          </div>
+          <button type="submit" class="btn btn-primary"
+                  style="width:100%;justify-content:center;padding:12px;">
+            <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
+          </button>
+        </form>
+      </div>
+
+      <!-- ── Tab: Login Facial ── -->
+      <div id="tab-content-facial" style="display:none;">
+
+        <!-- Estado inactivo (antes de abrir cámara) -->
+        <div class="facial-idle" id="facial-idle">
+          <i class="fas fa-user-circle"></i>
+          <p>Presione el botón para activar la cámara<br/>y verificar su identidad.</p>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="contrasena">
-            <i class="fas fa-lock" style="margin-right:6px;color:#7a8898;"></i>
-            Contraseña
-          </label>
-          <input type="password" class="form-control" id="contrasena" name="contrasena"
-                 placeholder="••••••••" required/>
+        <!-- Video en vivo -->
+        <div id="video-container" style="display:none;">
+          <video id="video" autoplay playsinline></video>
+          <div class="scan-line" id="scan-line" style="display:none;"></div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;">
-          <i class="fas fa-sign-in-alt"></i>
-          Ingresar al Sistema
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <!-- Mensaje de estado -->
+        <div id="estado-facial"></div>
+
+        <!-- Botón principal -->
+        <button onclick="iniciarReconocimiento()" id="btn-facial"
+                class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;">
+          <i class="fas fa-camera"></i> Iniciar Cámara
         </button>
 
-      </form>
+      </div>
 
+      <!-- Enlace verificación carné -->
       <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #e8ecf0;">
         <a th:href="@{/auth/validar-carnet}"
            style="font-size:13px;color:var(--umg-azul);text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
@@ -82,6 +196,132 @@
   </div>
 
 </div>
+
 <script th:src="@{/js/main.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+  // ── Cambio de pestañas ──────────────────────────────────────────────────
+  function mostrarTab(tab) {
+    const esManual = tab === 'manual';
+    document.getElementById('tab-content-manual').style.display = esManual ? 'block' : 'none';
+    document.getElementById('tab-content-facial').style.display = esManual ? 'none' : 'block';
+    document.getElementById('tab-manual').className = 'tab-btn ' + (esManual ? 'active' : 'inactive');
+    document.getElementById('tab-facial').className = 'tab-btn ' + (esManual ? 'inactive' : 'active');
+
+    // Si cierra pestaña facial, detiene cámara si estaba activa
+    if (esManual && window._stream) {
+      window._stream.getTracks().forEach(t => t.stop());
+      window._stream = null;
+      resetFacial();
+    }
+  }
+
+  // ── Reset UI facial ─────────────────────────────────────────────────────
+  function resetFacial() {
+    document.getElementById('video-container').style.display = 'none';
+    document.getElementById('facial-idle').style.display = 'block';
+    document.getElementById('scan-line').style.display = 'none';
+    document.getElementById('estado-facial').innerHTML = '';
+    const btn = document.getElementById('btn-facial');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-camera"></i> Iniciar Cámara';
+  }
+
+  // ── Reconocimiento facial ───────────────────────────────────────────────
+  async function iniciarReconocimiento() {
+    const estado  = document.getElementById('estado-facial');
+    const btn     = document.getElementById('btn-facial');
+    const video   = document.getElementById('video');
+    const videoCont = document.getElementById('video-container');
+    const idleDiv   = document.getElementById('facial-idle');
+
+    btn.disabled = true;
+
+    try {
+      // 1. Cargar modelos
+      estado.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando modelos de reconocimiento...';
+      const MODEL_URL = '/models';
+      await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+      ]);
+
+      // 2. Abrir cámara
+      estado.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accediendo a la cámara...';
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      window._stream = stream;
+      video.srcObject = stream;
+
+      idleDiv.style.display = 'none';
+      videoCont.style.display = 'block';
+      document.getElementById('scan-line').style.display = 'block';
+
+      estado.innerHTML = '<i class="fas fa-eye"></i> Mire directo a la cámara...';
+
+      // 3. Esperar 2.5 segundos y capturar
+      await new Promise(r => setTimeout(r, 2500));
+
+      // Detener cámara
+      stream.getTracks().forEach(t => t.stop());
+      window._stream = null;
+      videoCont.style.display = 'none';
+      document.getElementById('scan-line').style.display = 'none';
+
+      estado.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando identidad...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+      // 4. Capturar frame
+      const canvas = document.getElementById('canvas');
+      canvas.width  = video.videoWidth  || 320;
+      canvas.height = video.videoHeight || 240;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      const imagenBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+      // 5. Enviar al backend
+      const response = await fetch('/auth/facial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagen: imagenBase64 })
+      });
+
+      if (!response.ok) throw new Error('Error del servidor: ' + response.status);
+      const result = await response.json();
+
+      // 6. Resultado
+      if (result.success) {
+        estado.innerHTML =
+                '<span style="color:#22863a;font-weight:600;">' +
+                '<i class="fas fa-check-circle"></i> ¡Acceso concedido! Redirigiendo...</span>';
+        setTimeout(() => { window.location.href = result.redirectUrl || '/dashboard'; }, 800);
+      } else {
+        estado.innerHTML =
+                '<span style="color:#cb2431;">' +
+                '<i class="fas fa-times-circle"></i> ' +
+                (result.mensaje || 'No se reconoció el rostro. Intente de nuevo.') + '</span>';
+        idleDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-redo"></i> Intentar de nuevo';
+      }
+
+    } catch (err) {
+      let msg = err.message || 'Error desconocido';
+      if (msg.includes('Permission') || msg.includes('NotAllowed')) {
+        msg = 'Permiso de cámara denegado. Habilítelo en su navegador.';
+      } else if (msg.includes('NotFound')) {
+        msg = 'No se encontró una cámara disponible.';
+      }
+      estado.innerHTML =
+              '<span style="color:#e36209;"><i class="fas fa-exclamation-triangle"></i> ' + msg + '</span>';
+      idleDiv.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-camera"></i> Iniciar Cámara';
+      if (window._stream) {
+        window._stream.getTracks().forEach(t => t.stop());
+        window._stream = null;
+      }
+    }
+  }
+</script>
 </body>
 </html>
