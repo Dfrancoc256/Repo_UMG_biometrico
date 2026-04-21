@@ -1,6 +1,8 @@
 package com.umg.biometrico.controller;
 
 import com.umg.biometrico.model.Curso;
+import com.umg.biometrico.model.CursoSeccionAsignacion;
+import com.umg.biometrico.repository.CursoSeccionAsignacionRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ public class CursoController {
 
     private final CursoService cursoService;
     private final PersonaService personaService;
+    private final CursoSeccionAsignacionRepository asignacionRepo;
 
     @GetMapping
     public String listar(Model model) {
@@ -58,9 +61,46 @@ public class CursoController {
             model.addAttribute("curso", c);
             model.addAttribute("estudiantes", cursoService.listarEstudiantesDeCurso(id));
             model.addAttribute("todosEstudiantes", personaService.listarEstudiantes());
+            model.addAttribute("catedraticos", personaService.listarCatedraticos());
+            // Tabla curso_seccion_asignacion puede no existir aún (pendiente de migración SQL)
+            try {
+                model.addAttribute("asignaciones", asignacionRepo.findByCurso_Id(id));
+            } catch (Exception e) {
+                model.addAttribute("asignaciones", java.util.List.of());
+            }
         });
         model.addAttribute("activeMenu", "cursos");
         return "cursos/detalle";
+    }
+
+    @PostMapping("/{id}/asignar-seccion")
+    public String asignarSeccion(@PathVariable Long id,
+                                 @RequestParam String seccion,
+                                 @RequestParam Long catedraticoId,
+                                 RedirectAttributes ra) {
+        cursoService.buscarPorId(id).ifPresent(curso -> {
+            personaService.buscarPorId(catedraticoId).ifPresent(cat -> {
+                CursoSeccionAsignacion a = asignacionRepo
+                        .findByCurso_IdAndSeccion(id, seccion)
+                        .orElseGet(CursoSeccionAsignacion::new);
+                a.setCurso(curso);
+                a.setSeccion(seccion);
+                a.setCatedratico(cat);
+                asignacionRepo.save(a);
+            });
+        });
+        ra.addFlashAttribute("success", "Sección " + seccion + " asignada.");
+        return "redirect:/cursos/" + id;
+    }
+
+    @PostMapping("/{id}/quitar-seccion")
+    public String quitarSeccion(@PathVariable Long id,
+                                @RequestParam String seccion,
+                                RedirectAttributes ra) {
+        asignacionRepo.findByCurso_IdAndSeccion(id, seccion)
+                .ifPresent(asignacionRepo::delete);
+        ra.addFlashAttribute("success", "Asignación de sección " + seccion + " eliminada.");
+        return "redirect:/cursos/" + id;
     }
 
     @PostMapping("/{id}/inscribir")

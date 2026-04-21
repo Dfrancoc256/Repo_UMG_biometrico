@@ -26,6 +26,10 @@ public class RegistroIngreso {
     @JoinColumn(name = "puerta_id")
     private Puerta puerta;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curso_id")
+    private Curso curso;
+
     @Column(name = "fecha_hora")
     private LocalDateTime fechaHora;
 
