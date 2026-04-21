@@ -38,10 +38,19 @@
 
   <span class="sidebar-section">Registro Biométrico</span>
   <ul class="sidebar-nav">
-    <li>
+    <!-- ADMIN + CATEDRÁTICO: ven lista completa de personas -->
+    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <a th:href="@{/personas}" th:classappend="${activeMenu == 'personas'} ? 'active' : ''">
         <i class="fas fa-users nav-icon"></i>
         Personas
+      </a>
+    </li>
+    <!-- ESTUDIANTE: solo ve su propio perfil -->
+    <li sec:authorize="hasRole('ESTUDIANTE')">
+      <a th:href="@{/personas/{id}/ver(id=${currentUser != null ? currentUser.id : 0})}"
+         th:classappend="${activeMenu == 'mi-perfil'} ? 'active' : ''">
+        <i class="fas fa-user-circle nav-icon"></i>
+        Mi Perfil
       </a>
     </li>
     <!-- Enrolar: solo ADMIN -->
@@ -85,7 +94,7 @@
     <li>
       <a th:href="@{/asistencia}" th:classappend="${activeMenu == 'asistencia'} ? 'active' : ''">
         <i class="fas fa-clipboard-check nav-icon"></i>
-        Árbol de Asistencia
+        Asistencia
       </a>
     </li>
   </ul>

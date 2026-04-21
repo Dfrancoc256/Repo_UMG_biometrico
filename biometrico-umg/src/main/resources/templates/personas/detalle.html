@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
       th:replace="~{layout/main :: layout(~{::content}, 'Detalle Persona', ${activeMenu})}">
+
 <body>
 <th:block th:fragment="content">
 
@@ -68,9 +70,9 @@
         </div>
       </div>
 
-      <!-- Acciones de restricción — solo ADMIN -->
+      <!-- Acciones de restricción — ADMIN y CATEDRÁTICO pueden restringir -->
       <div class="card" style="margin-top:16px;" th:unless="${persona.restringido}"
-           sec:authorize="hasRole('ADMIN')">
+           sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <div class="card-header"><h5><i class="fas fa-user-slash"></i> Restricción</h5></div>
         <div class="card-body">
           <form th:action="@{/personas/{id}/restringir(id=${persona.id})}" method="post">

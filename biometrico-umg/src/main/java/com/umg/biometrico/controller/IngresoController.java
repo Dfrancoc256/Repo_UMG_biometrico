@@ -1,5 +1,7 @@
 package com.umg.biometrico.controller;
 
+import com.umg.biometrico.service.CursoService;
+import com.umg.biometrico.repository.CursoRepository;
 import com.umg.biometrico.model.RegistroIngreso;
 import com.umg.biometrico.repository.InstalacionRepository;
 import com.umg.biometrico.repository.PuertaRepository;
@@ -11,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -21,14 +25,33 @@ public class IngresoController {
     private final RegistroIngresoService registroIngresoService;
     private final InstalacionRepository instalacionRepository;
     private final PuertaRepository puertaRepository;
+    private final CursoService cursoService;
 
     @GetMapping
     public String formulario(Model model) {
         model.addAttribute("instalaciones", instalacionRepository.findAll());
-        model.addAttribute("puertas", puertaRepository.findAll());
+        model.addAttribute("cursos", cursoService.listarActivos());
         model.addAttribute("activeMenu", "ingreso");
         return "ingreso/formulario";
     }
+
+    /** API: puertas de una instalación (evita lazy-loading en Thymeleaf) */
+    @GetMapping("/api/puertas")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> puertasPorInstalacion(
+            @RequestParam Long instalacionId) {
+        List<Map<String, Object>> result = puertaRepository
+                .findByInstalacionId(instalacionId).stream()
+                .map(p -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id",     p.getId());
+                    m.put("nombre", p.getNombre() != null ? p.getNombre() : "Puerta " + p.getId());
+                    return m;
+                }).toList();
+        return ResponseEntity.ok(result);
+    }
+
+
 
     @PostMapping("/registrar")
     public String registrar(@RequestParam Long personaId,
@@ -45,10 +68,20 @@ public class IngresoController {
     public ResponseEntity<Map<String, Object>> registrarApi(@RequestBody Map<String, Object> payload) {
         try {
             Long personaId = Long.parseLong(payload.get("personaId").toString());
-            Long puertaId = Long.parseLong(payload.get("puertaId").toString());
-            String metodo = payload.getOrDefault("metodo", "facial").toString();
-            RegistroIngreso registro = registroIngresoService.registrarIngreso(personaId, puertaId, metodo);
-            return ResponseEntity.ok(Map.of("success", true, "registroId", registro.getId()));
+            Long puertaId  = Long.parseLong(payload.get("puertaId").toString());
+            String metodo  = payload.getOrDefault("metodo", "facial").toString();
+            Long cursoId   = payload.get("cursoId") != null
+                    ? Long.parseLong(payload.get("cursoId").toString())
+                    : null;
+
+            RegistroIngreso registro = registroIngresoService.registrarIngreso(
+                    personaId, puertaId, metodo, cursoId
+            );
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "registroId", registro.getId(),
+                    "fechaHora", registro.getFechaHora().toString()
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
         }

@@ -1,12 +1,15 @@
 package com.umg.biometrico.service;
 
+import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.model.Puerta;
 import com.umg.biometrico.model.RegistroIngreso;
+import com.umg.biometrico.repository.CursoRepository;
 import com.umg.biometrico.repository.PersonaRepository;
 import com.umg.biometrico.repository.PuertaRepository;
 import com.umg.biometrico.repository.RegistroIngresoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +17,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,18 +27,41 @@ public class RegistroIngresoService {
     private final RegistroIngresoRepository registroIngresoRepository;
     private final PersonaRepository personaRepository;
     private final PuertaRepository puertaRepository;
+    private final CursoRepository cursoRepository;
+    private final AsistenciaService asistenciaService;
 
+    // ─── Original: sin curso ──────────────────────────────────────────────────
     public RegistroIngreso registrarIngreso(Long personaId, Long puertaId, String metodo) {
-        Persona persona = personaRepository.findById(personaId).orElseThrow(
-                () -> new RuntimeException("Persona no encontrada"));
-        Puerta puerta = puertaRepository.findById(puertaId).orElseThrow(
-                () -> new RuntimeException("Puerta no encontrada"));
+        return registrarIngreso(personaId, puertaId, metodo, null);
+    }
+
+    // ─── Con curso opcional ───────────────────────────────────────────────────
+    public RegistroIngreso registrarIngreso(Long personaId, Long puertaId, String metodo, Long cursoId) {
+        Persona persona = personaRepository.findById(personaId)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        // ─── Verificar restricción ────────────────────────────────────────────
+        if (Boolean.TRUE.equals(persona.getRestringido())) {
+            String motivo = persona.getMotivoRestriccion() != null
+                    ? persona.getMotivoRestriccion()
+                    : "Sin motivo especificado";
+            throw new RuntimeException("ACCESO DENEGADO: " + persona.getNombreCompleto() +
+                    " tiene acceso restringido. Motivo: " + motivo);
+        }
+
+        Puerta puerta = puertaRepository.findById(puertaId)
+                .orElseThrow(() -> new RuntimeException("Puerta no encontrada"));
 
         RegistroIngreso registro = new RegistroIngreso();
         registro.setPersona(persona);
         registro.setPuerta(puerta);
         registro.setFechaHora(LocalDateTime.now());
         registro.setMetodo(metodo);
+
+        if (cursoId != null) {
+            cursoRepository.findById(cursoId).ifPresent(registro::setCurso);
+        }
+
         return registroIngresoRepository.save(registro);
     }
 

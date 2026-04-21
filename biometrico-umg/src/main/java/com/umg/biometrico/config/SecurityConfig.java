@@ -35,7 +35,7 @@ public class SecurityConfig {
                         // ── Solo ADMIN ───────────────────────────────────────────
                         .requestMatchers(
                                 "/personas/nuevo", "/personas/guardar", "/personas/*/editar",
-                                "/personas/*/eliminar", "/personas/*/restringir",
+                                "/personas/*/eliminar",
                                 "/personas/*/levantar-restriccion",
                                 "/instalaciones/nueva", "/instalaciones/guardar",
                                 "/instalaciones/*/puerta/nueva", "/instalaciones/*/puerta/guardar",
@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/ingreso/**", "/reportes/**",
                                 "/cursos/*/inscribir", "/cursos/*/desinscribir",
+                                "/cursos/*/asignar-seccion", "/cursos/*/quitar-seccion",
+                                "/personas/*/restringir",
                                 "/personas/restringidos"
                         ).hasAnyRole("ADMIN", "CATEDRATICO")
 
