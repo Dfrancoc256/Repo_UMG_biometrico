@@ -21,6 +21,12 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CustomLoginSuccessHandler customLoginSuccessHandler;
+
+    public SecurityConfig(CustomLoginSuccessHandler customLoginSuccessHandler) {
+        this.customLoginSuccessHandler = customLoginSuccessHandler;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -34,22 +40,38 @@ public class SecurityConfig {
 
                         // ── Solo ADMIN ───────────────────────────────────────────
                         .requestMatchers(
+                                "/dashboard",
+                                "/personas",
                                 "/personas/nuevo", "/personas/guardar", "/personas/*/editar",
                                 "/personas/*/eliminar",
                                 "/personas/*/levantar-restriccion",
+                                "/personas/*/restringir",
+                                "/personas/restringidos",
                                 "/instalaciones/nueva", "/instalaciones/guardar",
                                 "/instalaciones/*/puerta/nueva", "/instalaciones/*/puerta/guardar",
-                                "/cursos/nuevo", "/cursos/guardar", "/cursos/*/editar"
+                                "/cursos/nuevo", "/cursos/guardar", "/cursos/*/editar",
+                                "/reportes/**"
                         ).hasRole("ADMIN")
 
                         // ── ADMIN + CATEDRÁTICO ──────────────────────────────────
                         .requestMatchers(
-                                "/ingreso/**", "/reportes/**",
+                                "/cursos",
+                                "/asistencia", "/asistencia/**",
+                                "/ingreso/**",
+                                "/instalaciones",
                                 "/cursos/*/inscribir", "/cursos/*/desinscribir",
-                                "/cursos/*/asignar-seccion", "/cursos/*/quitar-seccion",
-                                "/personas/*/restringir",
-                                "/personas/restringidos"
+                                "/cursos/*/asignar-seccion", "/cursos/*/quitar-seccion"
                         ).hasAnyRole("ADMIN", "CATEDRATICO")
+
+                        // ── ADMIN + ESTUDIANTE ───────────────────────────────────
+                        .requestMatchers(
+                                "/personas/*/ver"
+                        ).hasAnyRole("ADMIN", "ESTUDIANTE")
+
+                        // ── ESTUDIANTE ────────────────────────────────────────────
+                        .requestMatchers(
+                                "/mis-cursos", "/mi-asistencia"
+                        ).hasRole("ESTUDIANTE")
 
                         // ── Cualquier usuario autenticado ────────────────────────
                         .anyRequest().authenticated()
@@ -60,7 +82,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        .successHandler(customLoginSuccessHandler)
                         .failureUrl("/auth/login?error=true")
                         .usernameParameter("correo")
                         .passwordParameter("contrasena")
@@ -75,7 +97,6 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.disable());
 
-
         return http.build();
     }
 
@@ -89,11 +110,11 @@ public class SecurityConfig {
                 throw new UsernameNotFoundException("Cuenta desactivada");
             }
 
-            String rol = switch (persona.getTipoPersona() != null ? persona.getTipoPersona().toLowerCase() : "") {
-                case "catedratico" -> "ROLE_CATEDRATICO";
-                case "admin" -> "ROLE_ADMIN";
-                default -> "ROLE_ESTUDIANTE";
-            };
+            if (persona.getRol() == null || persona.getRol().getNombre() == null) {
+                throw new UsernameNotFoundException("El usuario no tiene un rol asignado");
+            }
+
+            String rol = "ROLE_" + persona.getRol().getNombre().toUpperCase();
 
             return new User(
                     persona.getCorreo(),
@@ -107,5 +128,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }

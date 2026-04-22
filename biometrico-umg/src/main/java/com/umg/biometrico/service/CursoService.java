@@ -72,6 +72,10 @@ public class CursoService {
         return cursoEstudianteRepository.findByCurso_Id(cursoId);
     }
 
+    public List<Curso> obtenerCursosDeEstudiante(Long estudianteId) {
+        return cursoRepository.findCursosByEstudiante(estudianteId);
+    }
+
     public Long contarActivos() {
         return cursoRepository.contarActivos();
     }

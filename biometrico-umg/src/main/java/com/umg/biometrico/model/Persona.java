@@ -37,6 +37,10 @@ public class Persona {
     @Column(name = "tipo_persona", length = 30)
     private String tipoPersona;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "rol_id")
+    private Rol rol;
+
     @Column(length = 200)
     private String carrera;
 
@@ -68,4 +72,5 @@ public class Persona {
     public String getNombreCompleto() {
         return nombre + " " + apellido;
     }
+
 }

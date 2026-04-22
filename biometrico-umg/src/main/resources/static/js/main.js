@@ -81,3 +81,58 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+//sidebar tipo arbol
+document.addEventListener("DOMContentLoaded", function () {
+  const menuGroups = document.querySelectorAll(".menu-group");
+  const toggles = document.querySelectorAll(".menu-toggle");
+  const STORAGE_KEY = "sidebar-open-menu";
+
+  function closeAllGroups() {
+    menuGroups.forEach(group => group.classList.remove("active"));
+  }
+
+  function openGroup(group) {
+    if (group) {
+      group.classList.add("active");
+    }
+  }
+
+  toggles.forEach(toggle => {
+    toggle.addEventListener("click", function () {
+      const currentGroup = this.parentElement;
+      const menuName = this.dataset.menu;
+      const isActive = currentGroup.classList.contains("active");
+
+      closeAllGroups();
+
+      if (!isActive) {
+        openGroup(currentGroup);
+        if (menuName) {
+          localStorage.setItem(STORAGE_KEY, menuName);
+        }
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    });
+  });
+
+  const activeLink = document.querySelector(".submenu a.active");
+  if (activeLink) {
+    const parentGroup = activeLink.closest(".menu-group");
+    openGroup(parentGroup);
+
+    const activeToggle = parentGroup ? parentGroup.querySelector(".menu-toggle") : null;
+    if (activeToggle && activeToggle.dataset.menu) {
+      localStorage.setItem(STORAGE_KEY, activeToggle.dataset.menu);
+    }
+    return;
+  }
+
+  const savedMenu = localStorage.getItem(STORAGE_KEY);
+  if (savedMenu) {
+    const savedToggle = document.querySelector(`.menu-toggle[data-menu="${savedMenu}"]`);
+    if (savedToggle) {
+      openGroup(savedToggle.parentElement);
+    }
+  }
+});

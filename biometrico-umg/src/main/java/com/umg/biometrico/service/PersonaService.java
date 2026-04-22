@@ -1,10 +1,8 @@
 package com.umg.biometrico.service;
 
-import
-        com.umg.biometrico.model.Persona;
+import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -29,7 +26,6 @@ public class PersonaService {
 
     private final PersonaRepository personaRepository;
     private final PasswordEncoder passwordEncoder;
-    private final FacialApiService facialApiService;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -43,7 +39,7 @@ public class PersonaService {
     }
 
     public List<Persona> listarRestringidas() {
-        return personaRepository.findRestringidosOrdenados();
+        return personaRepository.findByRestringidoTrue();
     }
 
     public Optional<Persona> buscarPorId(Long id) {
@@ -63,11 +59,11 @@ public class PersonaService {
     }
 
     public List<Persona> listarEstudiantes() {
-        return personaRepository.findByTipoPersonaAndActivo("estudiante", true);
+        return personaRepository.findByRol_NombreAndActivo("ESTUDIANTE", true);
     }
 
     public List<Persona> listarCatedraticos() {
-        return personaRepository.findByTipoPersonaAndActivo("catedratico", true);
+        return personaRepository.findByRol_NombreAndActivo("CATEDRATICO", true);
     }
 
     public Persona guardar(Persona persona, MultipartFile foto, String fotoBase64) throws IOException {
@@ -76,16 +72,16 @@ public class PersonaService {
         } else {
             // Validar que el carnet no esté asignado a otra persona
             personaRepository.findByNumeroCarnet(persona.getNumeroCarnet().trim())
-                .ifPresent(existente -> {
-                    boolean esMismaPersona = existente.getId() != null
-                            && existente.getId().equals(persona.getId());
-                    if (!esMismaPersona) {
-                        throw new IllegalArgumentException(
-                            "El número de carnet '" + persona.getNumeroCarnet() +
-                            "' ya está asignado a " + existente.getNombreCompleto() +
-                            ". Deje el campo vacío para generar uno automáticamente.");
-                    }
-                });
+                    .ifPresent(existente -> {
+                        boolean esMismaPersona = existente.getId() != null
+                                && existente.getId().equals(persona.getId());
+                        if (!esMismaPersona) {
+                            throw new IllegalArgumentException(
+                                    "El número de carnet '" + persona.getNumeroCarnet() +
+                                            "' ya está asignado a " + existente.getNombreCompleto() +
+                                            ". Deje el campo vacío para generar uno automáticamente.");
+                        }
+                    });
             persona.setNumeroCarnet(persona.getNumeroCarnet().trim());
         }
 
@@ -119,29 +115,6 @@ public class PersonaService {
             persona.setContrasena(null);
         }
 
-        // ─── Enrolamiento facial automático si tiene foto ─────────────────────
-        if (persona.getFotoRuta() != null && persona.getEncodingFacial() == null) {
-            try {
-                Path rutaFoto = Paths.get(persona.getFotoRuta()).isAbsolute()
-                        ? Paths.get(persona.getFotoRuta())
-                        : Paths.get("").toAbsolutePath().resolve(persona.getFotoRuta());
-
-                if (Files.exists(rutaFoto)) {
-                    byte[] fotoBytes = Files.readAllBytes(rutaFoto);
-                    String base64 = java.util.Base64.getEncoder().encodeToString(fotoBytes);
-                    List<Double> descriptor = facialApiService.enrolar(
-                            persona.getId() != null ? persona.getId() : 0L, base64
-                    );
-                    if (descriptor != null) {
-                        persona.setEncodingFacial(facialApiService.descriptorAJson(descriptor));
-                        log.info("✅ Descriptor facial guardado para {}", persona.getNombreCompleto());
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("⚠️ No se pudo enrolar facialmente: {}", e.getMessage(), e);
-            }
-        }
-
         return personaRepository.save(persona);
     }
 
@@ -156,14 +129,20 @@ public class PersonaService {
         });
     }
 
-    @Transactional
     public void restringir(Long id, String motivo) {
-        personaRepository.restriccionDirecta(id, motivo);
+        personaRepository.findById(id).ifPresent(p -> {
+            p.setRestringido(true);
+            p.setMotivoRestriccion(motivo);
+            personaRepository.save(p);
+        });
     }
 
-    @Transactional
     public void levantarRestriccion(Long id) {
-        personaRepository.levantarRestriccionDirecta(id);
+        personaRepository.findById(id).ifPresent(p -> {
+            p.setRestringido(false);
+            p.setMotivoRestriccion(null);
+            personaRepository.save(p);
+        });
     }
 
     private String generarNumeroCarnetUnico() {
@@ -171,7 +150,7 @@ public class PersonaService {
         do {
             // Combina timestamp + random para garantizar unicidad
             long suffix = System.currentTimeMillis() % 10_000_000L
-                        + ThreadLocalRandom.current().nextInt(1000);
+                    + ThreadLocalRandom.current().nextInt(1000);
             carnet = String.format("UMG-%07d", suffix % 10_000_000L);
         } while (personaRepository.findByNumeroCarnet(carnet).isPresent());
         return carnet;
@@ -211,7 +190,7 @@ public class PersonaService {
     }
 
     public Long contarPorTipo(String tipo) {
-        return personaRepository.contarPorTipo(tipo);
+        return personaRepository.contarPorRol(tipo);
     }
 
     public Long contarActivos() {

@@ -110,4 +110,9 @@ public class AsistenciaService {
     public List<Asistencia> obtenerAsistenciasPorCursoYFecha(Long cursoId, LocalDate fecha) {
         return asistenciaRepository.findByCursoAndFechaOrdenado(cursoId, fecha);
     }
+
+    public List<Asistencia> obtenerAsistenciaDeEstudiante(Long estudianteId) {
+        return asistenciaRepository.findByEstudiante_IdOrderByFechaDescHoraRegistroDesc(estudianteId);
+    }
+
 }

@@ -27,4 +27,7 @@ public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
 
     @Query("SELECT COUNT(a) FROM Asistencia a WHERE a.curso.id = :cursoId AND a.fecha = :fecha AND a.presente = true")
     Long contarPresentesByCursoFecha(@Param("cursoId") Long cursoId, @Param("fecha") LocalDate fecha);
+
+    List<Asistencia> findByEstudiante_IdOrderByFechaDescHoraRegistroDesc(Long estudianteId);
+    
 }
