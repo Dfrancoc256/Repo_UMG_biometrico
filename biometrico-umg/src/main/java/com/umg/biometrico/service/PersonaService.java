@@ -59,11 +59,11 @@ public class PersonaService {
     }
 
     public List<Persona> listarEstudiantes() {
-        return personaRepository.findByTipoPersonaAndActivo("estudiante", true);
+        return personaRepository.findByRol_NombreAndActivo("ESTUDIANTE", true);
     }
 
     public List<Persona> listarCatedraticos() {
-        return personaRepository.findByTipoPersonaAndActivo("catedratico", true);
+        return personaRepository.findByRol_NombreAndActivo("CATEDRATICO", true);
     }
 
     public Persona guardar(Persona persona, MultipartFile foto, String fotoBase64) throws IOException {
@@ -190,7 +190,7 @@ public class PersonaService {
     }
 
     public Long contarPorTipo(String tipo) {
-        return personaRepository.contarPorTipo(tipo);
+        return personaRepository.contarPorRol(tipo);
     }
 
     public Long contarActivos() {

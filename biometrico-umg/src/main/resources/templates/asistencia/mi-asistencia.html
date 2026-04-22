@@ -1,117 +1,54 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::content}, 'Mi Asistencia', ${activeMenu})}">
-<body>
-<th:block th:fragment="content">
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Mi Asistencia', 'mi-asistencia')}">
 
-<style>
-.curso-card {
-  background: #fff;
-  border: 1px solid #dde8f5;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-.curso-card-header {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 20px;
-  background: linear-gradient(to right, var(--umg-azul), #1a5276);
-  color: #fff;
-}
-.curso-card-header h5 { margin: 0; font-size: 15px; }
-.curso-card-header small { opacity: .75; font-size: 11px; }
-.asistencia-grid {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 16px 20px;
-}
-.fecha-chip {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 12px; border-radius: 20px;
-  font-size: 12px; font-weight: 600;
-}
-.fecha-chip.presente {
-  background: #e8f5e9; color: #2e7d32;
-  border: 1px solid #a5d6a7;
-}
-.fecha-chip.ausente {
-  background: #fdecea; color: var(--umg-rojo);
-  border: 1px solid #ffcdd2;
-}
-.resumen-bar {
-  display: flex; gap: 20px; padding: 10px 20px;
-  background: #f8fafc; border-top: 1px solid #eef2f7;
-  font-size: 12px; color: #7a8898;
-}
-.resumen-bar span { display: flex; align-items: center; gap: 4px; }
-</style>
-
+<div th:fragment="content">
   <div class="page-header">
     <div>
-      <h2><i class="fas fa-clipboard-check" style="margin-right:10px;color:var(--umg-azul);"></i>Mi Asistencia</h2>
-      <p class="breadcrumb">Historial de asistencia por curso</p>
+      <h2>Mi Asistencia</h2>
+      <div class="breadcrumb">Historial de asistencia de mis cursos</div>
     </div>
   </div>
 
-  <!-- Sin cursos -->
-  <div th:if="${historial == null or historial.isEmpty()}"
-       style="text-align:center;padding:60px 20px;color:#7a8898;">
-    <i class="fas fa-book-open" style="font-size:40px;display:block;margin-bottom:12px;"></i>
-    No estás inscrito en ningún curso activo.
+  <div class="card">
+    <div class="card-header">
+      <h5>Listado de asistencias</h5>
+    </div>
+
+    <div class="card-body">
+      <div th:if="${#lists.isEmpty(asistencias)}" class="alert alert-warning">
+        No tienes registros de asistencia por el momento.
+      </div>
+
+      <div th:if="${not #lists.isEmpty(asistencias)}" class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Curso</th>
+            <th>Código</th>
+            <th>Estado</th>
+            <th>Hora de Registro</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="asistencia : ${asistencias}">
+            <td th:text="${asistencia.fecha}">2026-04-22</td>
+            <td th:text="${asistencia.curso != null ? asistencia.curso.nombre : 'Sin curso'}">Programación</td>
+            <td th:text="${asistencia.curso != null ? asistencia.curso.codigo : '---'}">CUR-001</td>
+            <td>
+              <span th:if="${asistencia.presente}" class="badge badge-success">Presente</span>
+              <span th:unless="${asistencia.presente}" class="badge badge-danger">Ausente</span>
+            </td>
+            <td th:text="${asistencia.horaRegistro != null ? #temporals.format(asistencia.horaRegistro, 'dd/MM/yyyy HH:mm') : 'Sin registro'}">
+              22/04/2026 07:10
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
-
-  <!-- Un bloque por curso -->
-  <div th:each="entry : ${historial}" class="curso-card">
-
-    <div class="curso-card-header">
-      <i class="fas fa-book" style="font-size:20px;flex-shrink:0;"></i>
-      <div>
-        <h5 th:text="${entry.key.nombre}">Curso</h5>
-        <small>
-          <span th:text="${entry.key.codigo}">COD</span>
-          &nbsp;·&nbsp;
-          <span th:text="${entry.key.horario != null ? entry.key.horario : '—'}">Horario</span>
-          &nbsp;·&nbsp; Catedrático:
-          <span th:text="${entry.key.catedratico != null ? entry.key.catedratico.nombreCompleto : 'Sin asignar'}">—</span>
-        </small>
-      </div>
-    </div>
-
-    <!-- Sin registros aún -->
-    <div th:if="${entry.value == null or entry.value.isEmpty()}"
-         style="padding:20px;color:#7a8898;font-size:13px;text-align:center;">
-      <i class="fas fa-calendar-times" style="margin-right:6px;"></i>
-      Sin registros de asistencia aún.
-    </div>
-
-    <!-- Chips de fechas -->
-    <div th:if="${entry.value != null and not entry.value.isEmpty()}">
-      <div class="asistencia-grid">
-        <div th:each="a : ${entry.value}"
-             class="fecha-chip"
-             th:classappend="${a.presente} ? 'presente' : 'ausente'">
-          <i class="fas" th:classappend="${a.presente} ? 'fa-check-circle' : 'fa-times-circle'"></i>
-          <span th:text="${#temporals.format(a.fecha, 'dd/MM/yyyy')}">01/01/2026</span>
-        </div>
-      </div>
-
-      <div class="resumen-bar">
-        <span style="color:#2e7d32;">
-          <i class="fas fa-check-circle"></i>
-          Presentes: <strong th:text="${#lists.size(entry.value.?[presente == true])}">0</strong>
-        </span>
-        <span style="color:var(--umg-rojo);">
-          <i class="fas fa-times-circle"></i>
-          Ausentes: <strong th:text="${#lists.size(entry.value.?[presente == false])}">0</strong>
-        </span>
-        <span>
-          <i class="fas fa-calendar-alt"></i>
-          Total clases: <strong th:text="${#lists.size(entry.value)}">0</strong>
-        </span>
-      </div>
-    </div>
-
-  </div>
-
-</th:block>
-</body>
+</div>
 </html>

@@ -26,8 +26,9 @@
     </div>
   </a>
 
-  <span class="sidebar-section">Principal</span>
-  <ul class="sidebar-nav">
+  <!-- SOLO ADMIN -->
+  <span class="sidebar-section" sec:authorize="hasRole('ADMIN')">Principal</span>
+  <ul class="sidebar-nav" sec:authorize="hasRole('ADMIN')">
     <li>
       <a th:href="@{/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''">
         <i class="fas fa-tachometer-alt nav-icon"></i>
@@ -36,167 +37,156 @@
     </li>
   </ul>
 
-  <div class="menu-group">
+  <!-- REGISTRO BIOMÉTRICO -->
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')">
     <button class="menu-toggle" type="button" data-menu="registro">
       <span class="arrow">▶</span>
       <i class="fas fa-id-card section-icon"></i>
       <span class="sidebar-section">Registro Biométrico</span>
     </button>
-  <ul class="sidebar-nav submenu">
-    <!-- ADMIN + CATEDRÁTICO: ven lista completa de personas -->
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/personas}" th:classappend="${activeMenu == 'personas'} ? 'active' : ''">
-        <i class="fas fa-users nav-icon"></i>
-        Personas
-      </a>
-    </li>
-    <!-- ESTUDIANTE: solo ve su propio perfil -->
-    <li sec:authorize="hasRole('ESTUDIANTE')">
-      <a th:href="@{/personas/{id}/ver(id=${currentUser != null ? currentUser.id : 0})}"
-         th:classappend="${activeMenu == 'mi-perfil'} ? 'active' : ''">
-        <i class="fas fa-user-circle nav-icon"></i>
-        Mi Perfil
-      </a>
-    </li>
-    <!-- Enrolar: solo ADMIN -->
-    <li sec:authorize="hasRole('ADMIN')">
-      <a th:href="@{/personas/nuevo}" th:classappend="${activeMenu == 'nuevo-persona'} ? 'active' : ''">
-        <i class="fas fa-user-plus nav-icon"></i>
-        Enrolar Persona
-      </a>
-    </li>
-    <li sec:authorize="!hasRole('ADMIN')">
-      <a class="nav-locked" href="#" onclick="return false;" title="Solo administradores pueden enrolar">
-        <i class="fas fa-user-plus nav-icon"></i>
-        Enrolar Persona
-        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
-      </a>
-    </li>
-    <!-- Restricciones: ADMIN + CATEDRÁTICO -->
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/personas/restringidos}" th:classappend="${activeMenu == 'restricciones'} ? 'active' : ''">
-        <i class="fas fa-user-slash nav-icon"></i>
-        Restricciones
-      </a>
-    </li>
-    <li sec:authorize="hasRole('ESTUDIANTE')">
-      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
-        <i class="fas fa-user-slash nav-icon"></i>
-        Restricciones
-        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
-      </a>
-    </li>
-  </ul>
+
+    <ul class="sidebar-nav submenu">
+      <!-- SOLO ADMIN -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas}" th:classappend="${activeMenu == 'personas'} ? 'active' : ''">
+          <i class="fas fa-users nav-icon"></i>
+          Personas
+        </a>
+      </li>
+
+      <!-- SOLO ESTUDIANTE -->
+      <li sec:authorize="hasRole('ESTUDIANTE')">
+        <a th:href="@{/personas/{id}/ver(id=${currentUser != null ? currentUser.id : 0})}"
+           th:classappend="${activeMenu == 'mi-perfil'} ? 'active' : ''">
+          <i class="fas fa-user-circle nav-icon"></i>
+          Mi Perfil
+        </a>
+      </li>
+
+      <!-- SOLO ADMIN -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas/nuevo}" th:classappend="${activeMenu == 'nuevo-persona'} ? 'active' : ''">
+          <i class="fas fa-user-plus nav-icon"></i>
+          Enrolar Persona
+        </a>
+      </li>
+
+      <!-- SOLO ADMIN -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas/restringidos}" th:classappend="${activeMenu == 'restricciones'} ? 'active' : ''">
+          <i class="fas fa-user-slash nav-icon"></i>
+          Restricciones
+        </a>
+      </li>
+    </ul>
   </div>
-<!--CURSOS Y ASISTENCIA-->
-  <div class="menu-group">
+
+  <!-- CURSOS Y ASISTENCIA -->
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO','ESTUDIANTE')">
     <button class="menu-toggle" type="button" data-menu="cursos">
       <span class="arrow">▶</span>
       <i class="fas fa-book-open section-icon"></i>
       <span class="sidebar-section">Cursos y Asistencia</span>
     </button>
-  <ul class="sidebar-nav submenu">
-    <li>
-      <a th:href="@{/cursos}" th:classappend="${activeMenu == 'cursos'} ? 'active' : ''">
-        <i class="fas fa-book nav-icon"></i>
-        Cursos
-      </a>
-    </li>
-    <li>
-      <a th:href="@{/asistencia}" th:classappend="${activeMenu == 'asistencia'} ? 'active' : ''">
-        <i class="fas fa-clipboard-check nav-icon"></i>
-        Asistencia
-      </a>
-    </li>
-  </ul>
+
+    <ul class="sidebar-nav submenu">
+      <!-- ADMIN + CATEDRATICO -->
+      <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <a th:href="@{/cursos}" th:classappend="${activeMenu == 'cursos'} ? 'active' : ''">
+          <i class="fas fa-book nav-icon"></i>
+          Cursos
+        </a>
+      </li>
+
+      <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <a th:href="@{/asistencia}" th:classappend="${activeMenu == 'asistencia'} ? 'active' : ''">
+          <i class="fas fa-clipboard-check nav-icon"></i>
+          Asistencia
+        </a>
+      </li>
+
+      <!-- ESTUDIANTE -->
+      <li sec:authorize="hasRole('ESTUDIANTE')">
+        <a th:href="@{/mis-cursos}" th:classappend="${activeMenu == 'mis-cursos'} ? 'active' : ''">
+          <i class="fas fa-book nav-icon"></i>
+          Mis Cursos
+        </a>
+      </li>
+
+      <li sec:authorize="hasRole('ESTUDIANTE')">
+        <a th:href="@{/mi-asistencia}" th:classappend="${activeMenu == 'mi-asistencia'} ? 'active' : ''">
+          <i class="fas fa-clipboard-check nav-icon"></i>
+          Mi Asistencia
+        </a>
+      </li>
+    </ul>
   </div>
 
-  <div class="menu-group">
+  <!-- CONTROL DE ACCESOS -->
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
     <button class="menu-toggle" type="button" data-menu="accesos">
       <span class="arrow">▶</span>
       <i class="fas fa-shield-alt section-icon"></i>
       <span class="sidebar-section">Control de Accesos</span>
     </button>
-  <ul class="sidebar-nav submenu">
-    <!-- Instalaciones: ADMIN + CATEDRÁTICO -->
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/instalaciones}" th:classappend="${activeMenu == 'instalaciones'} ? 'active' : ''">
-        <i class="fas fa-building nav-icon"></i>
-        Instalaciones
-      </a>
-    </li>
-    <li sec:authorize="hasRole('ESTUDIANTE')">
-      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
-        <i class="fas fa-building nav-icon"></i>
-        Instalaciones
-        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
-      </a>
-    </li>
-    <!-- Registro Ingreso: ADMIN + CATEDRÁTICO -->
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/ingreso}" th:classappend="${activeMenu == 'ingreso'} ? 'active' : ''">
-        <i class="fas fa-door-open nav-icon"></i>
-        Registro Ingreso
-      </a>
-    </li>
-    <li sec:authorize="hasRole('ESTUDIANTE')">
-      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
-        <i class="fas fa-door-open nav-icon"></i>
-        Registro Ingreso
-        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
-      </a>
-    </li>
-  </ul>
+
+    <ul class="sidebar-nav submenu">
+      <li>
+        <a th:href="@{/instalaciones}" th:classappend="${activeMenu == 'instalaciones'} ? 'active' : ''">
+          <i class="fas fa-building nav-icon"></i>
+          Instalaciones
+        </a>
+      </li>
+
+      <li>
+        <a th:href="@{/ingreso}" th:classappend="${activeMenu == 'ingreso'} ? 'active' : ''">
+          <i class="fas fa-door-open nav-icon"></i>
+          Registro Ingreso
+        </a>
+      </li>
+    </ul>
   </div>
 
-  <div class="menu-group">
+  <!-- SOLO ADMIN -->
+  <div class="menu-group" sec:authorize="hasRole('ADMIN')">
     <button class="menu-toggle" type="button" data-menu="reportes">
       <span class="arrow">▶</span>
       <i class="fas fa-chart-line section-icon"></i>
       <span class="sidebar-section">Reportes y Estadísticas</span>
     </button>
-  <ul class="sidebar-nav submenu">
-    <!-- Reportes: ADMIN + CATEDRÁTICO -->
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/reportes}" th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
-        <i class="fas fa-chart-bar nav-icon"></i>
-        Dashboard Reportes
-      </a>
-    </li>
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/reportes/puerta}" th:classappend="${activeMenu == 'rep-puerta'} ? 'active' : ''">
-        <i class="fas fa-door-closed nav-icon"></i>
-        Por Puerta
-      </a>
-    </li>
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/reportes/salon}" th:classappend="${activeMenu == 'rep-salon'} ? 'active' : ''">
-        <i class="fas fa-chalkboard-teacher nav-icon"></i>
-        Por Salón
-      </a>
-    </li>
-    <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
-      <a th:href="@{/reportes/historico}" th:classappend="${activeMenu == 'rep-historico'} ? 'active' : ''">
-        <i class="fas fa-history nav-icon"></i>
-        Árbol Histórico
-      </a>
-    </li>
-    <!-- Items bloqueados para ESTUDIANTE -->
-    <li sec:authorize="hasRole('ESTUDIANTE')">
-      <a class="nav-locked" href="#" onclick="return false;" title="Acceso restringido">
-        <i class="fas fa-chart-bar nav-icon"></i>
-        Reportes
-        <i class="fas fa-lock" style="margin-left:auto;font-size:9px;"></i>
-      </a>
-    </li>
-  </ul>
+
+    <ul class="sidebar-nav submenu">
+      <li>
+        <a th:href="@{/reportes}" th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
+          <i class="fas fa-chart-bar nav-icon"></i>
+          Dashboard Reportes
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/puerta}" th:classappend="${activeMenu == 'rep-puerta'} ? 'active' : ''">
+          <i class="fas fa-door-closed nav-icon"></i>
+          Por Puerta
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/salon}" th:classappend="${activeMenu == 'rep-salon'} ? 'active' : ''">
+          <i class="fas fa-chalkboard-teacher nav-icon"></i>
+          Por Salón
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/historico}" th:classappend="${activeMenu == 'rep-historico'} ? 'active' : ''">
+          <i class="fas fa-history nav-icon"></i>
+          Árbol Histórico
+        </a>
+      </li>
+    </ul>
   </div>
 
   <div class="sidebar-footer">
     UMG &copy; 2026 · Biométrico v2.0
   </div>
 </aside>
-
 
 <!-- ── TOPBAR ────────────────────────────────────────────── -->
 <header class="topbar">
@@ -208,7 +198,6 @@
   </div>
   <div class="topbar-right">
     <div class="user-pill">
-      <!-- Foto del usuario si existe, icono si no -->
       <div class="user-avatar">
         <img th:if="${currentUser != null and currentUser.fotoRuta != null}"
              th:src="@{'/' + ${currentUser.fotoRuta}}"
@@ -216,19 +205,21 @@
         <i th:unless="${currentUser != null and currentUser.fotoRuta != null}"
            class="fas fa-user" style="font-size:11px;"></i>
       </div>
-      <!-- Nombre completo del usuario autenticado -->
+
       <span th:if="${currentUser != null}"
             th:text="${currentUser.nombreCompleto}"
             style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
         Usuario
       </span>
+
       <span th:unless="${currentUser != null}" sec:authentication="name">Usuario</span>
-      <!-- Badge de rol -->
-      <span th:if="${currentUser != null}"
-            th:text="${currentUser.tipoPersona}"
+
+      <span th:if="${currentUser != null and currentUser.rol != null}"
+            th:text="${currentUser.rol.nombre}"
             style="font-size:10px;background:rgba(0,51,102,0.12);color:var(--umg-azul);
                    padding:2px 7px;border-radius:10px;margin-left:2px;">
       </span>
+
       <a th:href="@{/auth/logout}" style="margin-left:8px;color:#7a8898;" title="Cerrar sesión">
         <i class="fas fa-sign-out-alt"></i>
       </a>

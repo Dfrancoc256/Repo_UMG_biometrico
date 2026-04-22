@@ -18,7 +18,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
     Optional<Persona> findByNumeroCarnet(String numeroCarnet);
 
-    List<Persona> findByTipoPersonaAndActivo(String tipoPersona, Boolean activo);
+    List<Persona> findByRol_NombreAndActivo(String nombreRol, Boolean activo);
 
     List<Persona> findByActivoTrue();
 
@@ -47,8 +47,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
            "LOWER(p.numeroCarnet) LIKE LOWER(CONCAT('%', :busqueda, '%')))")
     List<Persona> buscarPersonas(@Param("busqueda") String busqueda);
 
-    @Query("SELECT COUNT(p) FROM Persona p WHERE p.activo = true AND p.tipoPersona = :tipo")
-    Long contarPorTipo(@Param("tipo") String tipo);
+    @Query("SELECT COUNT(p) FROM Persona p WHERE p.activo = true AND p.rol.nombre = :tipo")
+    Long contarPorRol(@Param("tipo") String tipo);
 
     @Query("SELECT COUNT(p) FROM Persona p WHERE p.activo = true")
     Long contarActivos();
@@ -56,7 +56,7 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     @Query("SELECT COUNT(p) FROM Persona p WHERE p.restringido = true")
     Long contarRestringidos();
 
-    List<Persona> findByTipoPersonaIn(List<String> tipos);
+    List<Persona> findByRol_NombreIn(List<String> nombresRol);
 
     List<Persona> findTop5ByActivoTrueOrderByIdDesc();
 }
