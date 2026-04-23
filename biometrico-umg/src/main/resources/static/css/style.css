@@ -699,23 +699,6 @@ select.form-control { cursor: pointer; }
   color: #ffffff;
 }
 
-.arrow {
-  width: 14px;
-  text-align: center;
-  font-size: 11px;
-  color: rgba(255,255,255,.88);
-  flex-shrink: 0;
-  transition: transform .28s ease, color .22s ease;
-}
-
-.menu-toggle:hover .arrow {
-  color: var(--umg-dorado);
-}
-
-.menu-group.active .arrow {
-  transform: rotate(90deg);
-  color: var(--umg-dorado);
-}
 
 .section-icon {
   width: 16px;
@@ -757,6 +740,7 @@ select.form-control { cursor: pointer; }
 
 .submenu li {
   list-style: none;
+  border: none !important;
 }
 
 .submenu a {
@@ -780,12 +764,7 @@ select.form-control { cursor: pointer; }
 }
 
 .submenu a::before {
-  content: "";
-  position: absolute;
-  left: 24px;
-  width: 10px;
-  height: 1px;
-  background: rgba(255,255,255,.28);
+  display: none;
 }
 
 .submenu a:hover {
