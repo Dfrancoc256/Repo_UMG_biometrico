@@ -11,18 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.bind.annotation.RequestBody;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,22 +26,30 @@ public class AuthController {
     public String login(@RequestParam(required = false) String error,
                         @RequestParam(required = false) String logout,
                         Model model) {
+
         if (error != null) {
             model.addAttribute("errorMsg", "Correo o contraseña incorrectos.");
         }
+
         if (logout != null) {
             model.addAttribute("logoutMsg", "Sesión cerrada correctamente.");
         }
+
+        model.addAttribute("paginaActual", "login");
         return "auth/login";
     }
 
     @GetMapping("/validar-carnet")
-    public String mostrarValidacion() {
+    public String mostrarValidacion(Model model) {
+        model.addAttribute("paginaActual", "validar-carnet");
         return "auth/validar";
     }
 
     @PostMapping("/validar-carnet")
     public String validarCarnet(@RequestParam("archivo") MultipartFile archivo, Model model) {
+
+        model.addAttribute("paginaActual", "validar-carnet");
+
         if (archivo == null || archivo.isEmpty()) {
             model.addAttribute("mensajeError", "No se seleccionó ningún archivo PDF.");
             return "auth/validar";
@@ -70,16 +66,18 @@ public class AuthController {
                 textoBuilder.append(PdfTextExtractor.getTextFromPage(reader, i)).append("\n");
             }
             reader.close();
+
             String texto = textoBuilder.toString();
 
             Pattern carnetPattern = Pattern.compile("Carnet[:\\s]+([A-Z0-9-]+)");
             Matcher carnetMatcher = carnetPattern.matcher(texto);
             String carnetExtraido = carnetMatcher.find() ? carnetMatcher.group(1).trim() : null;
 
-            // Fallback: buscar cualquier patrón UMG-XXXXX en el texto
             if (carnetExtraido == null) {
                 Matcher fallback = Pattern.compile("UMG-[A-Z0-9]+").matcher(texto);
-                if (fallback.find()) carnetExtraido = fallback.group();
+                if (fallback.find()) {
+                    carnetExtraido = fallback.group();
+                }
             }
 
             Pattern codigoPattern = Pattern.compile("COD:\\s*([A-F0-9]{10})");
@@ -87,7 +85,9 @@ public class AuthController {
             String codigoExtraido = codigoMatcher.find() ? codigoMatcher.group(1) : null;
 
             String codigoEsperado = carnetExtraido != null
-                    ? PdfService.generarCodigoValidacion(carnetExtraido) : null;
+                    ? PdfService.generarCodigoValidacion(carnetExtraido)
+                    : null;
+
             boolean codigoValido = codigoEsperado != null && codigoEsperado.equals(codigoExtraido);
 
             Optional<Persona> personaOpt = carnetExtraido != null
@@ -104,8 +104,10 @@ public class AuthController {
             model.addAttribute("esValido", esValido);
 
         } catch (Exception e) {
-            model.addAttribute("mensajeError",
-                    "No se pudo procesar el archivo. Asegúrese de subir un PDF de carné UMG válido.");
+            model.addAttribute(
+                    "mensajeError",
+                    "No se pudo procesar el archivo. Asegúrese de subir un PDF de carné UMG válido."
+            );
         }
 
         return "auth/validar";

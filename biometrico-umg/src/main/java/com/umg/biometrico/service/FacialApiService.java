@@ -19,7 +19,7 @@ public class FacialApiService {
     private Process proceso;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String FACIAL_URL = "https://umg1.duckdns.org";
+    private static final String FACIAL_URL = "http://localhost:8000";
 
     @PostConstruct
     public void iniciar() {

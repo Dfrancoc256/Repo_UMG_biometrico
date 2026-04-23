@@ -21,19 +21,23 @@
       gap: 6px;
       transition: all 0.2s;
     }
+
     .tab-btn.active {
       background: var(--umg-azul, #1a3a6b);
       color: #fff;
       box-shadow: 0 2px 8px rgba(26,58,107,0.25);
     }
+
     .tab-btn.inactive {
       background: #f0f3f8;
       color: #7a8898;
     }
+
     .tab-btn.inactive:hover {
       background: #e2e8f0;
       color: #4a5568;
     }
+
     #video-container {
       position: relative;
       border-radius: 10px;
@@ -41,23 +45,29 @@
       background: #0d1117;
       margin-bottom: 12px;
     }
+
     #video {
       width: 100%;
       max-height: 220px;
       object-fit: cover;
       display: block;
     }
+
     .scan-line {
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 3px;
       background: linear-gradient(90deg, transparent, #00e5ff, transparent);
       animation: scan 2s linear infinite;
     }
+
     @keyframes scan {
-      0%   { top: 0; }
+      0% { top: 0; }
       100% { top: 100%; }
     }
+
     #estado-facial {
       font-size: 14px;
       color: #7a8898;
@@ -65,40 +75,145 @@
       margin: 10px 0;
       text-align: center;
     }
+
     .facial-idle {
       text-align: center;
       padding: 20px 0 8px;
     }
+
     .facial-idle i {
       font-size: 48px;
       color: #c8d0da;
       display: block;
       margin-bottom: 10px;
     }
+
     .facial-idle p {
       font-size: 13px;
       color: #aab;
       margin: 0;
+    }
+
+    /* CAMBIOS SOLO EN EL PANEL IZQUIERDO */
+    .login-art {
+      justify-content: flex-start;
+      padding-top: 46px;
+      position: relative;
+    }
+
+    .login-art-inner {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .login-art-actions {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .login-art-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center; /* ✅ CENTRADO */
+      padding: 13px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all .2s ease;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+
+    .login-art-btn:hover {
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.30);
+      transform: translateX(2px);
+    }
+
+    .login-art-btn i {
+      font-size: 14px;
+      color: var(--umg-dorado, #cc9933);
+    }
+
+    .login-art-btn.active-side {
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.35);
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    }
+
+    .login-art-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(255,255,255,.14);
+      margin: 22px 0 16px;
+    }
+
+    .login-art-subtitle {
+      font-size: 12px;
+      opacity: .72;
+      margin-bottom: 10px;
+      letter-spacing: .3px;
+    }
+
+    @media (max-width: 768px) {
+      .login-art {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
 <div class="login-page">
 
-  <!-- Arte lateral -->
+  <!-- PANEL IZQUIERDO: SOLO AQUÍ HAY CAMBIOS -->
   <div class="login-art">
-    <img th:src="@{/img/logo-umg1.png}" alt="Universidad Mariano Gálvez"/>
-    <h1>Universidad Mariano Gálvez<br/>de Guatemala</h1>
-    <p>Sistema de Registro Biométrico de Ingreso<br/>Sede La Florida · Zona 19 · 2026</p>
-    <div style="margin-top:32px;display:flex;gap:24px;opacity:.6;font-size:28px;">
-      <i class="fas fa-camera"></i>
-      <i class="fas fa-fingerprint"></i>
-      <i class="fas fa-shield-alt"></i>
-      <i class="fas fa-id-card"></i>
+    <div class="login-art-inner">
+      <div style="display:flex;justify-content:center;margin-bottom:16px;">
+        <img th:src="@{/img/logo-umg1.png}"
+             alt="Universidad Mariano Gálvez"
+             style="max-width:120px;"/>
+      </div>
+      <h1>Universidad Mariano Gálvez<br/>de Guatemala</h1>
+      <p>Sistema de Registro Biométrico de Ingreso<br/>Sede La Florida · Zona 19 · 2026</p>
+
+      <div style="margin-top:32px;display:flex;gap:24px;opacity:.6;font-size:28px;justify-content:center;">
+        <i class="fas fa-camera"></i>
+        <i class="fas fa-fingerprint"></i>
+        <i class="fas fa-shield-alt"></i>
+        <i class="fas fa-id-card"></i>
+      </div>
+
+      <div class="login-art-divider"></div>
+      <div class="login-art-subtitle">OPCIONES DE ACCESO</div>
+
+      <div class="login-art-actions">
+        <button type="button"
+                id="btn-side-manual"
+                class="login-art-btn active-side"
+                onclick="mostrarTab('manual')">
+          <i class="fas fa-keyboard"></i>
+          <span>Login Manual</span>
+        </button>
+
+
+        <a th:href="@{/auth/validar-carnet}" class="login-art-btn">
+          <i class="fas fa-shield-alt"></i>
+          <span>Validar Carné PDF</span>
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Panel de formulario -->
+  <!-- PANEL DERECHO: SE MANTIENE -->
   <div class="login-form-panel">
     <div class="login-form-inner">
 
@@ -117,15 +232,15 @@
 
       <!-- Pestañas -->
       <div style="display:flex;gap:8px;margin-bottom:20px;">
-        <button onclick="mostrarTab('manual')" id="tab-manual" class="tab-btn active">
+        <button type="button" onclick="mostrarTab('manual')" id="tab-manual" class="tab-btn active">
           <i class="fas fa-keyboard"></i> Manual
         </button>
-        <button onclick="mostrarTab('facial')" id="tab-facial" class="tab-btn inactive">
+        <button type="button" onclick="mostrarTab('facial')" id="tab-facial" class="tab-btn inactive">
           <i class="fas fa-camera"></i> Reconocimiento Facial
         </button>
       </div>
 
-      <!-- ── Tab: Login Manual ── -->
+      <!-- Login Manual -->
       <div id="tab-content-manual">
         <form th:action="@{/auth/login}" method="post">
           <div class="form-group">
@@ -136,6 +251,7 @@
             <input type="email" class="form-control" id="correo" name="correo"
                    placeholder="usuario@umg.edu.gt" required autofocus/>
           </div>
+
           <div class="form-group">
             <label class="form-label" for="contrasena">
               <i class="fas fa-lock" style="margin-right:6px;color:#7a8898;"></i>
@@ -144,6 +260,7 @@
             <input type="password" class="form-control" id="contrasena" name="contrasena"
                    placeholder="••••••••" required/>
           </div>
+
           <button type="submit" class="btn btn-primary"
                   style="width:100%;justify-content:center;padding:12px;">
             <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
@@ -151,16 +268,13 @@
         </form>
       </div>
 
-      <!-- ── Tab: Login Facial ── -->
+      <!-- Login Facial -->
       <div id="tab-content-facial" style="display:none;">
-
-        <!-- Estado inactivo (antes de abrir cámara) -->
         <div class="facial-idle" id="facial-idle">
           <i class="fas fa-user-circle"></i>
           <p>Presione el botón para activar la cámara<br/>y verificar su identidad.</p>
         </div>
 
-        <!-- Video en vivo -->
         <div id="video-container" style="display:none;">
           <video id="video" autoplay playsinline></video>
           <div class="scan-line" id="scan-line" style="display:none;"></div>
@@ -168,25 +282,17 @@
 
         <canvas id="canvas" style="display:none;"></canvas>
 
-        <!-- Mensaje de estado -->
         <div id="estado-facial"></div>
 
-        <!-- Botón principal -->
-        <button onclick="iniciarReconocimiento()" id="btn-facial"
-                class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;">
+        <button type="button"
+                onclick="iniciarReconocimiento()"
+                id="btn-facial"
+                class="btn btn-primary"
+                style="width:100%;justify-content:center;padding:12px;">
           <i class="fas fa-camera"></i> Iniciar Cámara
         </button>
-
       </div>
 
-      <!-- Enlace verificación carné -->
-      <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #e8ecf0;">
-        <a th:href="@{/auth/validar-carnet}"
-           style="font-size:13px;color:var(--umg-azul);text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
-          <i class="fas fa-shield-alt"></i>
-          Verificar autenticidad de un carné PDF
-        </a>
-      </div>
 
       <p style="font-size:11px;color:#aab;margin-top:20px;text-align:center;line-height:1.5;">
         Sistema Biométrico UMG v2.0 &mdash; 2026<br/>
@@ -200,15 +306,31 @@
 <script th:src="@{/js/main.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script>
-  // ── Cambio de pestañas ──────────────────────────────────────────────────
+  function actualizarBotonesLaterales(tab) {
+    const btnManual = document.getElementById('btn-side-manual');
+
+
+    if (!btnManual || !btnFacial) return;
+
+    btnManual.classList.remove('active-side');
+
+    if (tab === 'manual') {
+      btnManual.classList.add('active-side');
+    } else {
+
+    }
+  }
+
   function mostrarTab(tab) {
     const esManual = tab === 'manual';
+
     document.getElementById('tab-content-manual').style.display = esManual ? 'block' : 'none';
     document.getElementById('tab-content-facial').style.display = esManual ? 'none' : 'block';
     document.getElementById('tab-manual').className = 'tab-btn ' + (esManual ? 'active' : 'inactive');
     document.getElementById('tab-facial').className = 'tab-btn ' + (esManual ? 'inactive' : 'active');
 
-    // Si cierra pestaña facial, detiene cámara si estaba activa
+    actualizarBotonesLaterales(tab);
+
     if (esManual && window._stream) {
       window._stream.getTracks().forEach(t => t.stop());
       window._stream = null;
@@ -216,30 +338,29 @@
     }
   }
 
-  // ── Reset UI facial ─────────────────────────────────────────────────────
   function resetFacial() {
     document.getElementById('video-container').style.display = 'none';
     document.getElementById('facial-idle').style.display = 'block';
     document.getElementById('scan-line').style.display = 'none';
     document.getElementById('estado-facial').innerHTML = '';
+
     const btn = document.getElementById('btn-facial');
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-camera"></i> Iniciar Cámara';
   }
 
-  // ── Reconocimiento facial ───────────────────────────────────────────────
   async function iniciarReconocimiento() {
-    const estado  = document.getElementById('estado-facial');
-    const btn     = document.getElementById('btn-facial');
-    const video   = document.getElementById('video');
+    const estado = document.getElementById('estado-facial');
+    const btn = document.getElementById('btn-facial');
+    const video = document.getElementById('video');
     const videoCont = document.getElementById('video-container');
-    const idleDiv   = document.getElementById('facial-idle');
+    const idleDiv = document.getElementById('facial-idle');
 
     btn.disabled = true;
 
     try {
-      // 1. Cargar modelos
       estado.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando modelos de reconocimiento...';
+
       const MODEL_URL = '/models';
       await Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
@@ -247,9 +368,12 @@
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
       ]);
 
-      // 2. Abrir cámara
       estado.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accediendo a la cámara...';
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' }
+      });
+
       window._stream = stream;
       video.srcObject = stream;
 
@@ -259,10 +383,8 @@
 
       estado.innerHTML = '<i class="fas fa-eye"></i> Mire directo a la cámara...';
 
-      // 3. Esperar 2.5 segundos y capturar
       await new Promise(r => setTimeout(r, 2500));
 
-      // Detener cámara
       stream.getTracks().forEach(t => t.stop());
       window._stream = null;
       videoCont.style.display = 'none';
@@ -271,34 +393,40 @@
       estado.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando identidad...';
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
 
-      // 4. Capturar frame
       const canvas = document.getElementById('canvas');
-      canvas.width  = video.videoWidth  || 320;
+      canvas.width = video.videoWidth || 320;
       canvas.height = video.videoHeight || 240;
       canvas.getContext('2d').drawImage(video, 0, 0);
+
       const imagenBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
-      // 5. Enviar al backend
       const response = await fetch('/auth/facial', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imagen: imagenBase64 })
       });
 
-      if (!response.ok) throw new Error('Error del servidor: ' + response.status);
+      if (!response.ok) {
+        throw new Error('Error del servidor: ' + response.status);
+      }
+
       const result = await response.json();
 
-      // 6. Resultado
       if (result.success) {
         estado.innerHTML =
                 '<span style="color:#22863a;font-weight:600;">' +
                 '<i class="fas fa-check-circle"></i> ¡Acceso concedido! Redirigiendo...</span>';
-        setTimeout(() => { window.location.href = result.redirectUrl || '/dashboard'; }, 800);
+
+        setTimeout(() => {
+          window.location.href = result.redirectUrl || '/dashboard';
+        }, 800);
       } else {
         estado.innerHTML =
                 '<span style="color:#cb2431;">' +
                 '<i class="fas fa-times-circle"></i> ' +
-                (result.mensaje || 'No se reconoció el rostro. Intente de nuevo.') + '</span>';
+                (result.mensaje || 'No se reconoció el rostro. Intente de nuevo.') +
+                '</span>';
+
         idleDiv.style.display = 'block';
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-redo"></i> Intentar de nuevo';
@@ -306,16 +434,20 @@
 
     } catch (err) {
       let msg = err.message || 'Error desconocido';
+
       if (msg.includes('Permission') || msg.includes('NotAllowed')) {
         msg = 'Permiso de cámara denegado. Habilítelo en su navegador.';
       } else if (msg.includes('NotFound')) {
         msg = 'No se encontró una cámara disponible.';
       }
+
       estado.innerHTML =
               '<span style="color:#e36209;"><i class="fas fa-exclamation-triangle"></i> ' + msg + '</span>';
+
       idleDiv.style.display = 'block';
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-camera"></i> Iniciar Cámara';
+
       if (window._stream) {
         window._stream.getTracks().forEach(t => t.stop());
         window._stream = null;
