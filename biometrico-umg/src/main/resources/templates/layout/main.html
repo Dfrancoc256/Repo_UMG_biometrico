@@ -40,7 +40,6 @@
   <!-- REGISTRO BIOMÉTRICO -->
   <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')">
     <button class="menu-toggle" type="button" data-menu="registro">
-      <span class="arrow">▶</span>
       <i class="fas fa-id-card section-icon"></i>
       <span class="sidebar-section">Registro Biométrico</span>
     </button>
@@ -84,7 +83,6 @@
   <!-- CURSOS Y ASISTENCIA -->
   <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO','ESTUDIANTE')">
     <button class="menu-toggle" type="button" data-menu="cursos">
-      <span class="arrow">▶</span>
       <i class="fas fa-book-open section-icon"></i>
       <span class="sidebar-section">Cursos y Asistencia</span>
     </button>
@@ -125,7 +123,6 @@
   <!-- CONTROL DE ACCESOS -->
   <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
     <button class="menu-toggle" type="button" data-menu="accesos">
-      <span class="arrow">▶</span>
       <i class="fas fa-shield-alt section-icon"></i>
       <span class="sidebar-section">Control de Accesos</span>
     </button>
@@ -150,7 +147,6 @@
   <!-- SOLO ADMIN -->
   <div class="menu-group" sec:authorize="hasRole('ADMIN')">
     <button class="menu-toggle" type="button" data-menu="reportes">
-      <span class="arrow">▶</span>
       <i class="fas fa-chart-line section-icon"></i>
       <span class="sidebar-section">Reportes y Estadísticas</span>
     </button>
