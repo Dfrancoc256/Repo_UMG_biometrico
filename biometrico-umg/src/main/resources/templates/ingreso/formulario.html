@@ -11,212 +11,262 @@
         </div>
     </div>
 
-    <!-- Selector de método -->
-    <div class="card mb-4">
-        <div class="card-body" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
-            <strong>Método:</strong>
-            <label style="cursor:pointer;">
-                <input type="radio" name="metodoIngreso" value="manual" checked onchange="cambiarMetodo(this.value)"/>
-                &nbsp;Manual
-            </label>
-            <label style="cursor:pointer;">
-                <input type="radio" name="metodoIngreso" value="facial" onchange="cambiarMetodo(this.value)"/>
-                &nbsp;Biométrico (Facial)
-            </label>
-
-            <div style="margin-left:auto;display:flex;gap:12px;flex-wrap:wrap;">
-                <select class="form-control" id="selInstalacion" onchange="filtrarPuertas(this.value)" style="min-width:180px;">
-                    <option value="">-- Instalación --</option>
+    <!-- Configuración de sesión -->
+    <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
+                border-radius:12px;padding:1.25rem;margin-bottom:1rem;">
+        <p style="font-size:11px;font-weight:500;color:var(--color-text-secondary);
+                  margin:0 0 12px;text-transform:uppercase;letter-spacing:0.05em;">
+            Configuración de sesión
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div>
+                <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:4px;">
+                    Instalación
+                </label>
+                <select class="form-control" id="selInstalacion" onchange="filtrarPuertas(this.value)"
+                        style="width:100%;font-size:13px;">
+                    <option value="">-- Selecciona --</option>
                     <option th:each="inst : ${instalaciones}" th:value="${inst.id}" th:text="${inst.nombre}"></option>
                 </select>
-
-                <select class="form-control" id="selPuerta" style="min-width:180px;" disabled>
-                    <option value="">-- Selecciona un edificio --</option>
+            </div>
+            <div>
+                <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:4px;">
+                    Puerta / Acceso
+                </label>
+                <select class="form-control" id="selPuerta" style="width:100%;font-size:13px;" disabled>
+                    <option value="">-- Selecciona edificio --</option>
                 </select>
-
-                <select class="form-control" id="selCurso" style="min-width:180px;">
-                    <option value="">-- Curso (opcional) --</option>
-                    <option th:each="c : ${cursos}" th:value="${c.id}" th:text="${c.nombre + ' — ' + c.codigo}"></option>
+            </div>
+            <div>
+                <label style="font-size:12px;color:var(--color-text-secondary);display:block;margin-bottom:4px;">
+                    Curso (opcional)
+                </label>
+                <select class="form-control" id="selCurso" style="width:100%;font-size:13px;">
+                    <option value="">-- Ninguno --</option>
+                    <option th:each="c : ${cursos}" th:value="${c.id}"
+                            th:text="${c.nombre + ' — ' + c.codigo}"></option>
                 </select>
             </div>
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-
-        <!-- ── Panel Manual ── -->
-        <div class="card" id="panelManual">
-            <div class="card-header">
-                <h5><i class="fas fa-keyboard" style="margin-right:8px;"></i>Registro Manual</h5>
+    <!-- Tabs de método -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;padding:2px;">
+        <div id="tabManual" onclick="cambiarMetodo('manual')"
+             style="background:#003366;border:0.5px solid #003366;border-radius:12px;
+            padding:1rem 1.25rem;cursor:pointer;display:flex;align-items:center;gap:12px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.15);
+                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-keyboard" style="color:white;font-size:14px;"></i>
             </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Correo electrónico</label>
-                    <div style="display:flex;gap:8px;">
-                        <input type="email" class="form-control" id="correoManual" placeholder="correo@ejemplo.com"/>
-                        <button type="button" class="btn btn-primary" onclick="buscarPorCorreo()">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
+            <div>
+                <p style="font-size:14px;font-weight:500;color:white;margin:0;">Registro Manual</p>
+                <p style="font-size:11px;color:rgba(255,255,255,0.7);margin:0;">Búsqueda por correo</p>
+            </div>
+        </div>
+        <div id="tabFacial" onclick="cambiarMetodo('facial')"
+             style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
+            border-radius:12px;padding:1rem 1.25rem;cursor:pointer;display:flex;align-items:center;gap:12px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+            <div id="tabFacialIcon"
+                 style="width:36px;height:36px;border-radius:8px;background:var(--color-background-secondary);
+                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-camera" style="color:var(--color-text-secondary);font-size:14px;"></i>
+            </div>
+            <div>
+                <p id="tabFacialTitle" style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin:0;">
+                    Reconocimiento Facial
+                </p>
+                <p id="tabFacialSub" style="font-size:11px;color:var(--color-text-secondary);margin:0;">
+                    Cámara DroidCam o Webcam
+                </p>
+            </div>
+        </div>
+    </div>
 
-                <div id="resultadoManual" style="display:none;" class="mt-3">
-                    <div class="card" style="border:2px solid var(--umg-azul);">
-                        <div class="card-body">
-                            <div style="display:flex;align-items:center;gap:16px;">
-                                <img id="fotoManual" src="" alt="foto"
-                                     style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:2px solid var(--umg-azul);"/>
-                                <div>
-                                    <h5 id="nombreManual" style="margin:0;"></h5>
-                                    <small id="carnetManual" style="color:#7a8898;"></small><br/>
-                                    <small id="tipoManual" style="color:#7a8898;"></small>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-success w-100 mt-3" onclick="registrarManual()">
-                                <i class="fas fa-check-circle"></i> Confirmar Ingreso
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <!-- Panel Manual -->
+    <div id="panelManual"
+         style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
+                border-radius:12px;padding:1.25rem;margin-bottom:1rem;">
+        <p style="font-size:11px;font-weight:500;color:var(--color-text-secondary);
+                  margin:0 0 12px;text-transform:uppercase;letter-spacing:0.05em;">Buscar persona</p>
+        <div style="display:flex;gap:8px;">
+            <input type="email" class="form-control" id="correoManual"
+                   placeholder="correo@miumg.edu.gt"
+                   style="flex:1;font-size:13px;"
+                   onkeydown="if(event.key==='Enter') buscarPorCorreo()"/>
+            <button type="button" onclick="buscarPorCorreo()"
+                    style="padding:0 20px;font-size:13px;background:#003366;color:white;
+                           border:none;border-radius:8px;cursor:pointer;white-space:nowrap;">
+                <i class="fas fa-search" style="margin-right:6px;"></i>Buscar
+            </button>
+        </div>
 
-                <div id="mensajeManual" class="mt-3"></div>
+        <div id="resultadoManual" style="display:none;margin-top:12px;">
+            <div style="padding:12px;background:var(--color-background-secondary);
+                        border-radius:8px;border:0.5px solid var(--color-border-tertiary);
+                        display:flex;align-items:center;gap:12px;">
+                <img id="fotoManual" src="" alt="foto"
+                     style="width:48px;height:48px;border-radius:50%;object-fit:cover;
+                            border:2px solid #003366;flex-shrink:0;"/>
+                <div style="flex:1;">
+                    <p id="nombreManual" style="font-size:14px;font-weight:500;
+                                                color:var(--color-text-primary);margin:0;"></p>
+                    <p style="font-size:12px;color:var(--color-text-secondary);margin:0;">
+                        <span id="carnetManual"></span>
+                        &nbsp;·&nbsp;
+                        <span id="tipoManual"></span>
+                    </p>
+                </div>
+                <button type="button" onclick="registrarManual()"
+                        style="padding:8px 16px;font-size:12px;background:#1b5e20;color:white;
+                               border:none;border-radius:8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                    <i class="fas fa-check-circle" style="margin-right:4px;"></i>Confirmar ingreso
+                </button>
             </div>
         </div>
 
-        <!-- ── Panel Facial ── -->
-        <div class="card" id="panelFacial" style="display:none;">
-            <div class="card-header">
-                <h5><i class="fas fa-camera" style="margin-right:8px;"></i>Reconocimiento Facial</h5>
+        <div id="mensajeManual" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Panel Facial -->
+    <div id="panelFacial"
+         style="display:none;background:var(--color-background-primary);
+                border:0.5px solid var(--color-border-tertiary);border-radius:12px;
+                padding:1.25rem;margin-bottom:1rem;">
+
+        <!-- Selector de cámara -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <button type="button" id="btnUsarCelu" onclick="usarCamara('celu')"
+                    style="padding:8px;font-size:12px;background:#003366;color:white;
+                           border:none;border-radius:8px;cursor:pointer;">
+                <i class="fas fa-mobile-alt" style="margin-right:4px;"></i>Teléfono (DroidCam)
+            </button>
+            <button type="button" id="btnUsarWebcam" onclick="usarCamara('webcam')"
+                    style="padding:8px;font-size:12px;background:var(--color-background-secondary);
+                           color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);
+                           border-radius:8px;cursor:pointer;">
+                <i class="fas fa-laptop" style="margin-right:4px;"></i>Webcam PC
+            </button>
+        </div>
+
+        <!-- Contenedor cámara -->
+        <div style="position:relative;border-radius:10px;overflow:hidden;width:100%;background:#0d1b2a;min-height:260px;margin-bottom:12px;">
+            <div id="contenedorCelu" style="display:block;">
+                <img id="streamCamara" src="/camara/stream"
+                     style="width:100%;max-height:300px;object-fit:cover;display:block;" alt="Cámara"/>
             </div>
-            <div class="card-body" style="text-align:center;">
-
-                <!-- Selector de cámara -->
-                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
-                    <button type="button" id="btnUsarCelu" onclick="usarCamara('celu')"
-                            style="padding:6px 14px;border-radius:20px;border:2px solid var(--umg-azul);
-                                   background:var(--umg-azul);color:white;cursor:pointer;font-size:12px;">
-                        📱 Teléfono (DroidCam)
-                    </button>
-                    <button type="button" id="btnUsarWebcam" onclick="usarCamara('webcam')"
-                            style="padding:6px 14px;border-radius:20px;border:2px solid var(--umg-azul);
-                                   background:transparent;color:var(--umg-azul);cursor:pointer;font-size:12px;">
-                        💻 Webcam PC
-                    </button>
-                </div>
-
-                <!-- Contenedor cámara -->
-                <div style="position:relative;border-radius:12px;overflow:hidden;width:100%;background:#0d1b2a;min-height:260px;">
-                    <div id="contenedorCelu" style="display:block;">
-                        <img id="streamCamara"
-                             src="/camara/stream"
-                             style="width:100%;max-height:300px;object-fit:cover;display:block;"
-                             alt="Cámara"/>
-                    </div>
-                    <div id="contenedorWebcam" style="display:none;">
-                        <video id="videoWebcam" autoplay muted playsinline
-                               style="width:100%;max-height:300px;object-fit:cover;display:block;background:#0a1e35;">
-                        </video>
-                    </div>
-                    <div id="overlayEscaneando"
-                         style="position:absolute;bottom:0;left:0;right:0;
-                                background:rgba(0,51,102,0.75);color:white;padding:6px;font-size:13px;">
-                        📱 DroidCam activo
-                    </div>
-                </div>
-
-                <canvas id="canvas" style="display:none;"></canvas>
-
-                <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-                    <button type="button" class="btn btn-success" id="btnCapturar" onclick="capturarYVerificar()">
-                        <i class="fas fa-camera"></i> Capturar y Verificar
-                    </button>
-                    <button type="button" class="btn btn-outline" id="btnAuto" onclick="toggleAuto()">
-                        <i class="fas fa-sync"></i> Auto OFF
-                    </button>
-                </div>
-                <small style="color:#7a8898;font-size:11px;display:block;margin-top:6px;">
-                    <i class="fas fa-info-circle"></i>
-                    <strong>Auto OFF/ON</strong>: captura y verifica automáticamente cada 3 segundos.
-                </small>
-
-                <div id="resultadoFacial" class="mt-3"></div>
-
-                <!-- ── Panel de confirmación (amarillo) ── -->
-                <div id="panelConfirmacion" style="display:none;" class="mt-3">
-                    <div class="card" style="border:2px solid #f0a500;text-align:left;">
-                        <div class="card-body">
-                            <h6 style="color:#f0a500;margin-bottom:12px;">
-                                <i class="fas fa-question-circle"></i> ¿Es esta la persona correcta?
-                            </h6>
-                            <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-                                <div style="font-size:40px;">🤔</div>
-                                <div>
-                                    <h5 id="nombreConfirm" style="margin:0;"></h5>
-                                    <small id="carnetConfirm" style="color:#7a8898;"></small><br/>
-                                    <small id="confianzaConfirm" style="color:#7a8898;"></small>
-                                </div>
-                            </div>
-                            <div style="display:flex;gap:8px;">
-                                <button type="button" class="btn btn-success" style="flex:1;" onclick="confirmarIngreso()">
-                                    <i class="fas fa-check"></i> Sí, confirmar ingreso
-                                </button>
-                                <button type="button" class="btn btn-outline"
-                                        style="flex:1;border-color:#dc3545;color:#dc3545;" onclick="rechazarIngreso()">
-                                    <i class="fas fa-times"></i> No, intentar de nuevo
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ── Panel persona confirmada (verde) ── -->
-                <div id="personaReconocida" style="display:none;" class="mt-3">
-                    <div class="card" style="border:2px solid #28a745;text-align:left;">
-                        <div class="card-body">
-                            <div style="display:flex;align-items:center;gap:16px;">
-                                <div style="font-size:48px;">✅</div>
-                                <div>
-                                    <h5 id="nombreReconocido" style="margin:0;color:#28a745;"></h5>
-                                    <small id="correoReconocido" style="color:#7a8898;"></small><br/>
-                                    <small id="horaReconocido" style="color:#7a8898;"></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <div id="contenedorWebcam" style="display:none;">
+                <video id="videoWebcam" autoplay muted playsinline
+                       style="width:100%;max-height:300px;object-fit:cover;display:block;background:#0a1e35;">
+                </video>
+            </div>
+            <div id="overlayEscaneando"
+                 style="position:absolute;bottom:0;left:0;right:0;
+                        background:rgba(0,51,102,0.75);color:white;padding:6px 12px;font-size:12px;">
+                <i class="fas fa-circle" style="font-size:8px;color:#4caf50;margin-right:6px;"></i>
+                DroidCam activo
             </div>
         </div>
 
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <!-- Botones -->
+        <div style="display:flex;gap:8px;">
+            <button type="button" id="btnCapturar" onclick="capturarYVerificar()"
+                    style="flex:1;padding:10px;font-size:13px;background:#1b5e20;color:white;
+                           border:none;border-radius:8px;cursor:pointer;">
+                <i class="fas fa-camera" style="margin-right:6px;"></i>Capturar y Verificar
+            </button>
+            <button type="button" id="btnAuto" onclick="toggleAuto()"
+                    style="padding:10px 20px;font-size:13px;background:var(--color-background-secondary);
+                           color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);
+                           border-radius:8px;cursor:pointer;">
+                <i class="fas fa-sync" style="margin-right:4px;"></i>Auto OFF
+            </button>
+        </div>
+        <p style="font-size:11px;color:var(--color-text-secondary);margin:8px 0 0;text-align:center;">
+            Auto OFF/ON captura y verifica automáticamente cada 3 segundos
+        </p>
+
+        <div id="resultadoFacial" style="margin-top:12px;"></div>
+
+        <!-- Panel confirmación -->
+        <div id="panelConfirmacion" style="display:none;margin-top:12px;">
+            <div style="border:1.5px solid #f0a500;border-radius:10px;padding:1rem;">
+                <p style="font-size:12px;font-weight:500;color:#f0a500;margin:0 0 10px;">
+                    <i class="fas fa-question-circle" style="margin-right:6px;"></i>
+                    ¿Es esta la persona correcta?
+                </p>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <div style="font-size:32px;">🤔</div>
+                    <div>
+                        <p id="nombreConfirm" style="font-size:14px;font-weight:500;color:var(--color-text-primary);margin:0;"></p>
+                        <p style="font-size:12px;color:var(--color-text-secondary);margin:0;">
+                            <span id="carnetConfirm"></span> ·
+                            <span id="confianzaConfirm"></span>
+                        </p>
+                    </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" onclick="confirmarIngreso()"
+                            style="flex:1;padding:8px;font-size:12px;background:#1b5e20;color:white;
+                                   border:none;border-radius:8px;cursor:pointer;">
+                        <i class="fas fa-check" style="margin-right:4px;"></i>Sí, confirmar
+                    </button>
+                    <button type="button" onclick="rechazarIngreso()"
+                            style="flex:1;padding:8px;font-size:12px;background:transparent;
+                                   color:#dc3545;border:1px solid #dc3545;border-radius:8px;cursor:pointer;">
+                        <i class="fas fa-times" style="margin-right:4px;"></i>No, reintentar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel confirmado -->
+        <div id="personaReconocida" style="display:none;margin-top:12px;">
+            <div style="border:1.5px solid #28a745;border-radius:10px;padding:1rem;
+                        display:flex;align-items:center;gap:12px;">
+                <div style="font-size:32px;">✅</div>
+                <div>
+                    <p id="nombreReconocido" style="font-size:14px;font-weight:500;color:#28a745;margin:0;"></p>
+                    <p style="font-size:12px;color:var(--color-text-secondary);margin:0;">
+                        <span id="correoReconocido"></span><br/>
+                        <span id="horaReconocido"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Historial -->
-    <div class="card mt-4">
-        <div class="card-header">
-            <h5><i class="fas fa-list" style="margin-right:8px;"></i>Ingresos registrados en esta sesión</h5>
+    <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
+                border-radius:12px;overflow:hidden;">
+        <div style="padding:1rem 1.25rem;border-bottom:0.5px solid var(--color-border-tertiary);">
+            <p style="font-size:11px;font-weight:500;color:var(--color-text-secondary);
+                      margin:0;text-transform:uppercase;letter-spacing:0.05em;">
+                <i class="fas fa-list" style="margin-right:6px;"></i>Ingresos en esta sesión
+            </p>
         </div>
-        <div class="card-body" style="padding:0;">
-            <div class="table-wrapper">
-                <table class="umg-table" style="margin:0;">
-                    <thead>
-                    <tr>
-                        <th style="width:90px;">Hora</th>
-                        <th>Nombre</th>
-                        <th style="width:100px;">Método</th>
-                        <th>Curso</th>
-                    </tr>
-                    </thead>
-                    <tbody id="tablaIngresos">
-                    <tr id="trVacio">
-                        <td colspan="4" style="text-align:center;color:#7a8898;padding:24px;">
-                            <i class="fas fa-clipboard-list" style="margin-right:6px;"></i>
-                            Sin registros en esta sesión
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <table class="umg-table" style="margin:0;width:100%;">
+            <thead>
+            <tr>
+                <th style="width:90px;">Hora</th>
+                <th>Nombre</th>
+                <th style="width:100px;">Método</th>
+                <th>Curso</th>
+            </tr>
+            </thead>
+            <tbody id="tablaIngresos">
+            <tr id="trVacio">
+                <td colspan="4" style="text-align:center;color:var(--color-text-secondary);padding:32px;">
+                    <i class="fas fa-clipboard-list" style="margin-right:6px;opacity:0.4;"></i>
+                    Sin registros en esta sesión
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 
     <script th:inline="none">
@@ -227,9 +277,31 @@
         let autoInterval       = null;
         let streamWebcam       = null;
         let camaraActual       = 'celu';
-        let resultadoPendiente = null;  // ← guarda el resultado esperando confirmación
+        let resultadoPendiente = null;
 
-        // ── Selector de cámara ────────────────────────────────────────────────
+        function cambiarMetodo(metodo) {
+            const isManual = metodo === 'manual';
+            document.getElementById('panelManual').style.display  = isManual ? 'block' : 'none';
+            document.getElementById('panelFacial').style.display  = isManual ? 'none'  : 'block';
+            if (!isManual && autoMode) toggleAuto();
+
+            const tabM = document.getElementById('tabManual');
+            const tabF = document.getElementById('tabFacial');
+            tabM.style.background = isManual ? '#003366' : 'var(--color-background-primary)';
+            tabM.style.border     = isManual ? '0.5px solid #003366' : '0.5px solid var(--color-border-tertiary)';
+            tabM.querySelectorAll('p')[0].style.color = isManual ? 'white' : 'var(--color-text-primary)';
+            tabM.querySelectorAll('p')[1].style.color = isManual ? 'rgba(255,255,255,0.7)' : 'var(--color-text-secondary)';
+            tabM.querySelector('div').style.background = isManual ? 'rgba(255,255,255,0.15)' : 'var(--color-background-secondary)';
+            tabM.querySelector('i').style.color = isManual ? 'white' : 'var(--color-text-secondary)';
+
+            tabF.style.background = !isManual ? '#003366' : 'var(--color-background-primary)';
+            tabF.style.border     = !isManual ? '0.5px solid #003366' : '0.5px solid var(--color-border-tertiary)';
+            document.getElementById('tabFacialTitle').style.color = !isManual ? 'white' : 'var(--color-text-primary)';
+            document.getElementById('tabFacialSub').style.color   = !isManual ? 'rgba(255,255,255,0.7)' : 'var(--color-text-secondary)';
+            document.getElementById('tabFacialIcon').style.background = !isManual ? 'rgba(255,255,255,0.15)' : 'var(--color-background-secondary)';
+            tabF.querySelector('i').style.color = !isManual ? 'white' : 'var(--color-text-secondary)';
+        }
+
         function usarCamara(tipo) {
             camaraActual = tipo;
             const btnCelu    = document.getElementById('btnUsarCelu');
@@ -246,19 +318,23 @@
                 }
                 contCelu.style.display   = 'block';
                 contWebcam.style.display = 'none';
-                overlay.textContent      = '📱 DroidCam activo';
-                btnCelu.style.background   = 'var(--umg-azul)';
-                btnCelu.style.color        = 'white';
-                btnWebcam.style.background = 'transparent';
-                btnWebcam.style.color      = 'var(--umg-azul)';
+                overlay.innerHTML = '<i class="fas fa-circle" style="font-size:8px;color:#4caf50;margin-right:6px;"></i>DroidCam activo';
+                btnCelu.style.background = '#003366';
+                btnCelu.style.color      = 'white';
+                btnCelu.style.border     = 'none';
+                btnWebcam.style.background = 'var(--color-background-secondary)';
+                btnWebcam.style.color      = 'var(--color-text-primary)';
+                btnWebcam.style.border     = '0.5px solid var(--color-border-tertiary)';
             } else {
                 contCelu.style.display   = 'none';
                 contWebcam.style.display = 'block';
-                overlay.textContent      = '💻 Webcam PC activa';
-                btnWebcam.style.background = 'var(--umg-azul)';
+                overlay.innerHTML = '<i class="fas fa-circle" style="font-size:8px;color:#4caf50;margin-right:6px;"></i>Webcam PC activa';
+                btnWebcam.style.background = '#003366';
                 btnWebcam.style.color      = 'white';
-                btnCelu.style.background   = 'transparent';
-                btnCelu.style.color        = 'var(--umg-azul)';
+                btnWebcam.style.border     = 'none';
+                btnCelu.style.background   = 'var(--color-background-secondary)';
+                btnCelu.style.color        = 'var(--color-text-primary)';
+                btnCelu.style.border       = '0.5px solid var(--color-border-tertiary)';
 
                 navigator.mediaDevices.getUserMedia({ video: true })
                     .then(stream => {
@@ -272,20 +348,12 @@
             }
         }
 
-        // ── Cambiar método ────────────────────────────────────────────────────
-        function cambiarMetodo(metodo) {
-            document.getElementById('panelManual').style.display = metodo === 'manual' ? 'block' : 'none';
-            document.getElementById('panelFacial').style.display = metodo === 'facial' ? 'block' : 'none';
-            if (metodo === 'manual' && autoMode) toggleAuto();
-        }
-
-        // ── Filtrar puertas via API (evita problemas de lazy-loading) ────────
         function filtrarPuertas(instId) {
             const sel = document.getElementById('selPuerta');
             sel.innerHTML = '<option value="">Cargando...</option>';
             sel.disabled  = true;
             if (!instId) {
-                sel.innerHTML = '<option value="">-- Puerta --</option>';
+                sel.innerHTML = '<option value="">-- Selecciona edificio --</option>';
                 return;
             }
             fetch('/ingreso/api/puertas?instalacionId=' + instId)
@@ -299,7 +367,7 @@
                     sel.innerHTML = '<option value="">-- Puerta --</option>';
                     puertas.forEach(p => {
                         const opt = document.createElement('option');
-                        opt.value       = p.id;
+                        opt.value = p.id;
                         opt.textContent = p.nombre;
                         sel.appendChild(opt);
                     });
@@ -310,11 +378,9 @@
                 });
         }
 
-        // ── Buscar por correo ─────────────────────────────────────────────────
         function buscarPorCorreo() {
             const correo = document.getElementById('correoManual').value.trim();
             if (!correo) { alert('Ingresa un correo'); return; }
-
             fetch('/personas/buscar-correo?correo=' + encodeURIComponent(correo))
                 .then(r => r.json())
                 .then(data => {
@@ -329,70 +395,52 @@
                     } else {
                         document.getElementById('resultadoManual').style.display = 'none';
                         document.getElementById('mensajeManual').innerHTML =
-                            '<div class="alert alert-danger">No se encontró persona con ese correo.</div>';
+                            '<p style="font-size:13px;color:#dc3545;margin:8px 0 0;">No se encontró persona con ese correo.</p>';
                     }
                 })
                 .catch(() => alert('Error de conexión'));
         }
 
-        // ── Registrar manual ──────────────────────────────────────────────────
         function registrarManual() {
             if (!personaEncontrada) return;
             const puertaId = document.getElementById('selPuerta').value;
             const cursoId  = document.getElementById('selCurso').value;
             if (!puertaId) { alert('Selecciona una puerta'); return; }
-
             fetch('/ingreso/api/registrar', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    personaId: personaEncontrada.id,
-                    puertaId:  puertaId,
-                    cursoId:   cursoId || null,
-                    metodo:    'manual'
-                })
+                body: JSON.stringify({ personaId: personaEncontrada.id, puertaId, cursoId: cursoId || null, metodo: 'manual' })
             })
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
                     agregarATabla(personaEncontrada.nombre, 'Manual', data.fechaHora);
                     document.getElementById('mensajeManual').innerHTML =
-                        '<div class="alert alert-success">Ingreso registrado: ' + personaEncontrada.nombre + '</div>';
+                        '<p style="font-size:13px;color:#1b5e20;margin:8px 0 0;">Ingreso registrado: ' + personaEncontrada.nombre + '</p>';
                     document.getElementById('resultadoManual').style.display = 'none';
                     document.getElementById('correoManual').value = '';
                     personaEncontrada = null;
                 } else {
                     document.getElementById('mensajeManual').innerHTML =
-                        '<div class="alert alert-danger">' + data.error + '</div>';
+                        '<p style="font-size:13px;color:#dc3545;margin:8px 0 0;">' + data.error + '</p>';
                 }
             });
         }
 
-        // ── Capturar y verificar ──────────────────────────────────────────────
         function capturarYVerificar() {
-            // Si hay una confirmación pendiente, no capturar
             if (resultadoPendiente) return;
-
             document.getElementById('resultadoFacial').innerHTML =
-                '<small style="color:#7a8898;">⏳ Capturando...</small>';
-
+                '<p style="font-size:13px;color:var(--color-text-secondary);margin:0;">Capturando...</p>';
             if (camaraActual === 'celu') {
                 fetch('/camara/foto')
-                    .then(r => {
-                        if (!r.ok) throw new Error('DroidCam no disponible');
-                        return r.blob();
-                    })
-                    .then(blob => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => procesarVerificacion(reader.result);
-                        reader.readAsDataURL(blob);
-                    })
+                    .then(r => { if (!r.ok) throw new Error('DroidCam no disponible'); return r.blob(); })
+                    .then(blob => { const reader = new FileReader(); reader.onloadend = () => procesarVerificacion(reader.result); reader.readAsDataURL(blob); })
                     .catch(err => {
                         document.getElementById('resultadoFacial').innerHTML =
-                            '<div style="color:#dc3545;">❌ ' + err.message + ' — Cambia a Webcam PC</div>';
+                            '<p style="font-size:13px;color:#dc3545;margin:0;">' + err.message + ' — Cambia a Webcam PC</p>';
                     });
             } else {
-                const video  = document.getElementById('videoWebcam');
+                const video = document.getElementById('videoWebcam');
                 const canvas = document.getElementById('canvas');
                 canvas.width  = video.videoWidth  || 640;
                 canvas.height = video.videoHeight || 480;
@@ -401,11 +449,9 @@
             }
         }
 
-        // ── Procesar verificación ─────────────────────────────────────────────
         function procesarVerificacion(base64) {
             document.getElementById('resultadoFacial').innerHTML =
-                '<small style="color:#7a8898;">⏳ Procesando...</small>';
-
+                '<p style="font-size:13px;color:var(--color-text-secondary);margin:0;">Procesando...</p>';
             fetch('/facial/verificar', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -414,25 +460,22 @@
             .then(r => r.json())
             .then(data => {
                 if (data.ok && data.reconocido) {
-                    // Guardar resultado y mostrar confirmación
                     resultadoPendiente = data;
                     mostrarConfirmacion(data);
-                    // Pausar auto si estaba activo
                     if (autoMode) toggleAuto();
                 } else {
                     document.getElementById('resultadoFacial').innerHTML =
-                        '<div style="color:#dc3545;font-size:13px;">❌ No reconocido — intenta de nuevo</div>';
+                        '<p style="font-size:13px;color:#dc3545;margin:0;">No reconocido — intenta de nuevo</p>';
                     document.getElementById('panelConfirmacion').style.display = 'none';
                     document.getElementById('personaReconocida').style.display = 'none';
                 }
             })
             .catch(() => {
                 document.getElementById('resultadoFacial').innerHTML =
-                    '<div style="color:#dc3545;">Error de conexión</div>';
+                    '<p style="font-size:13px;color:#dc3545;margin:0;">Error de conexión</p>';
             });
         }
 
-        // ── Mostrar panel de confirmación ─────────────────────────────────────
         function mostrarConfirmacion(data) {
             document.getElementById('nombreConfirm').textContent    = data.nombre;
             document.getElementById('carnetConfirm').textContent    = 'Carnet: ' + data.carnet;
@@ -440,25 +483,18 @@
             document.getElementById('panelConfirmacion').style.display = 'block';
             document.getElementById('personaReconocida').style.display = 'none';
             document.getElementById('resultadoFacial').innerHTML =
-                '<div style="color:#f0a500;font-size:13px;">⚠️ Confirma si es la persona correcta</div>';
+                '<p style="font-size:13px;color:#f0a500;margin:0;">Confirma si es la persona correcta</p>';
         }
 
-        // ── Confirmar ingreso ─────────────────────────────────────────────────
         function confirmarIngreso() {
             if (!resultadoPendiente) return;
             const puertaId = document.getElementById('selPuerta').value;
             const cursoId  = document.getElementById('selCurso').value;
             if (!puertaId) { alert('Selecciona una puerta primero'); return; }
-
             fetch('/ingreso/api/registrar', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    personaId: resultadoPendiente.persona_id,
-                    puertaId:  puertaId,
-                    cursoId:   cursoId || null,
-                    metodo:    'facial'
-                })
+                body: JSON.stringify({ personaId: resultadoPendiente.persona_id, puertaId, cursoId: cursoId || null, metodo: 'facial' })
             })
             .then(r => r.json())
             .then(result => {
@@ -471,46 +507,42 @@
             });
         }
 
-        // ── Rechazar y reintentar ─────────────────────────────────────────────
         function rechazarIngreso() {
             resultadoPendiente = null;
-            document.getElementById('panelConfirmacion').style.display  = 'none';
-            document.getElementById('personaReconocida').style.display  = 'none';
+            document.getElementById('panelConfirmacion').style.display = 'none';
+            document.getElementById('personaReconocida').style.display = 'none';
             document.getElementById('resultadoFacial').innerHTML =
-                '<div style="color:#7a8898;font-size:13px;">🔄 Intenta de nuevo</div>';
+                '<p style="font-size:13px;color:var(--color-text-secondary);margin:0;">Intenta de nuevo</p>';
         }
 
-        // ── Mostrar persona confirmada ────────────────────────────────────────
         function mostrarPersonaReconocida(data, fechaHora) {
-            const hora = fechaHora
-                ? new Date(fechaHora).toLocaleTimeString('es-GT')
-                : new Date().toLocaleTimeString('es-GT');
+            const hora = fechaHora ? new Date(fechaHora).toLocaleTimeString('es-GT') : new Date().toLocaleTimeString('es-GT');
             document.getElementById('nombreReconocido').textContent = data.nombre;
             document.getElementById('correoReconocido').textContent = 'Carnet: ' + data.carnet;
             document.getElementById('horaReconocido').textContent   = 'Hora: ' + hora + ' — Confianza: ' + data.confianza + '%';
             document.getElementById('personaReconocida').style.display = 'block';
             document.getElementById('resultadoFacial').innerHTML =
-                '<div style="color:#28a745;font-size:13px;">✅ Ingreso confirmado</div>';
+                '<p style="font-size:13px;color:#28a745;margin:0;">Ingreso confirmado</p>';
         }
 
-        // ── Auto mode ─────────────────────────────────────────────────────────
         function toggleAuto() {
             autoMode = !autoMode;
             const btn = document.getElementById('btnAuto');
             if (autoMode) {
-                btn.innerHTML = '<i class="fas fa-stop"></i> Auto ON';
+                btn.innerHTML = '<i class="fas fa-stop" style="margin-right:4px;"></i>Auto ON';
                 btn.style.background = '#dc3545';
                 btn.style.color = 'white';
+                btn.style.border = 'none';
                 autoInterval = setInterval(capturarYVerificar, 3000);
             } else {
-                btn.innerHTML = '<i class="fas fa-sync"></i> Auto OFF';
-                btn.style.background = '';
-                btn.style.color = '';
+                btn.innerHTML = '<i class="fas fa-sync" style="margin-right:4px;"></i>Auto OFF';
+                btn.style.background = 'var(--color-background-secondary)';
+                btn.style.color = 'var(--color-text-primary)';
+                btn.style.border = '0.5px solid var(--color-border-tertiary)';
                 clearInterval(autoInterval);
             }
         }
 
-        // ── Tabla sesión ──────────────────────────────────────────────────────
         function agregarATabla(nombre, metodo, fechaHora) {
             const tbody = document.getElementById('tablaIngresos');
             const hora  = fechaHora
@@ -519,20 +551,18 @@
             const curso = document.getElementById('selCurso');
             const cursoTexto = curso.options[curso.selectedIndex] && curso.options[curso.selectedIndex].value
                 ? curso.options[curso.selectedIndex].text : '—';
-
             const trVacio = document.getElementById('trVacio');
             if (trVacio) trVacio.remove();
-
             const esFacial = metodo === 'Facial';
             const tr = document.createElement('tr');
             tr.innerHTML =
                 '<td style="font-family:monospace;font-size:13px;">' + hora + '</td>' +
-                '<td style="font-weight:600;">' + nombre + '</td>' +
+                '<td style="font-weight:500;">' + nombre + '</td>' +
                 '<td><span style="background:' + (esFacial ? '#1b5e20' : '#003366') +
-                ';color:#fff;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600;">' +
+                ';color:#fff;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:500;">' +
                 '<i class="fas ' + (esFacial ? 'fa-camera' : 'fa-keyboard') + '" style="margin-right:4px;"></i>' +
                 metodo + '</span></td>' +
-                '<td style="font-size:13px;color:#3a4a5c;">' + cursoTexto + '</td>';
+                '<td style="font-size:13px;color:var(--color-text-secondary);">' + cursoTexto + '</td>';
             tbody.insertBefore(tr, tbody.firstChild);
         }
 
