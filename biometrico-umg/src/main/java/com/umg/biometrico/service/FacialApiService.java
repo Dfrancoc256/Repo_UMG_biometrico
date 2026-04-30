@@ -19,34 +19,15 @@ public class FacialApiService {
     private Process proceso;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final String FACIAL_URL = "http://localhost:8000";
+    private static final String FACIAL_URL = "http://127.0.0.1:5001";
 
     @PostConstruct
     public void iniciar() {
-        new Thread(() -> {
-            try {
-                if (estaDisponible()) {
-                    log.info("✅ Servicio facial ya estaba corriendo.");
-                    return;
-                }
-                log.info("🚀 Iniciando microservicio facial...");
-                ProcessBuilder pb = new ProcessBuilder("C:\\umg-facial\\iniciar.bat");
-                pb.redirectErrorStream(true);
-                pb.inheritIO();
-                proceso = pb.start();
-
-                for (int i = 0; i < 30; i++) {
-                    Thread.sleep(1000);
-                    if (estaDisponible()) {
-                        log.info("✅ Microservicio facial listo en {}", FACIAL_URL);
-                        return;
-                    }
-                }
-                log.warn("⚠️ Microservicio facial no respondió en 30 segundos.");
-            } catch (Exception e) {
-                log.error("❌ Error al iniciar microservicio facial: {}", e.getMessage());
-            }
-        }).start();
+        if (estaDisponible()) {
+            log.info(" Servicio facial disponible en {}", FACIAL_URL);
+        } else {
+            log.warn(" Servicio facial NO disponible en {}. Verifica PM2.", FACIAL_URL);
+        }
     }
 
     @PreDestroy
