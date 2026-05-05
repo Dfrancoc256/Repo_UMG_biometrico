@@ -226,7 +226,10 @@ public class PdfService {
 
         // QR con URL de verificación + código de validación
         String codigoValidacion = generarCodigoValidacion(persona.getNumeroCarnet());
-        String contenidoQR = "https://um1.duckdns.org/verificar/" + valor(persona.getNumeroCarnet()) + "?cod=" + codigoValidacion;
+        // QR con URL pública del carnet
+        String contenidoQR = "https://umg1.duckdns.org/personas/"
+                + persona.getId()
+                + "/carnet-publico";
 
         // Recuadro visual del QR
         float qrBoxX = 248;
