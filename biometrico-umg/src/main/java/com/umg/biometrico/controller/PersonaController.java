@@ -5,6 +5,7 @@ import com.umg.biometrico.service.EmailService;
 import com.umg.biometrico.service.PdfService;
 import com.umg.biometrico.service.PersonaService;
 import com.umg.biometrico.service.WhatsAppService;
+import com.umg.biometrico.repository.RolRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ public class PersonaController {
     private final PdfService pdfService;
     private final EmailService emailService;
     private final WhatsAppService whatsAppService;
+    private final RolRepository rolRepository;
 
     @Value("${app.base-url}")
     private String appBaseUrl;
@@ -60,6 +62,7 @@ public class PersonaController {
     public String nuevo(Model model) {
         model.addAttribute("persona", new Persona());
         model.addAttribute("activeMenu", "personas");
+        model.addAttribute("roles", rolRepository.findAll());
         return "personas/formulario";
     }
 
@@ -110,6 +113,7 @@ public class PersonaController {
     public String editar(@PathVariable Long id, Model model) {
         personaService.buscarPorId(id).ifPresent(p -> model.addAttribute("persona", p));
         model.addAttribute("activeMenu", "personas");
+        model.addAttribute("roles", rolRepository.findAll());
         return "personas/formulario";
     }
 

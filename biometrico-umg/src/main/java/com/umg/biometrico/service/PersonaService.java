@@ -67,56 +67,67 @@ public class PersonaService {
     }
 
     public Persona guardar(Persona persona, MultipartFile foto, String fotoBase64) throws IOException {
-        if (persona.getNumeroCarnet() == null || persona.getNumeroCarnet().isBlank()) {
-            persona.setNumeroCarnet(generarNumeroCarnetUnico());
+
+        Persona entidad;
+
+        // 🔥 SI ES EDICIÓN
+        if (persona.getId() != null) {
+            entidad = personaRepository.findById(persona.getId())
+                    .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+            // 🔥 SOLO ACTUALIZAMOS CAMPOS
+            entidad.setNombre(persona.getNombre());
+            entidad.setApellido(persona.getApellido());
+            entidad.setTelefono(persona.getTelefono());
+            entidad.setCorreo(persona.getCorreo());
+            entidad.setTipoPersona(persona.getTipoPersona());
+            entidad.setCarrera(persona.getCarrera());
+            entidad.setSeccion(persona.getSeccion());
+            entidad.setNumeroCarnet(persona.getNumeroCarnet());
+
+            // 🔥 IMPORTANTE: ROL
+            if (persona.getRol() != null && persona.getRol().getId() != null) {
+                entidad.setRol(persona.getRol());
+            }
+
         } else {
-            // Validar que el carnet no esté asignado a otra persona
-            personaRepository.findByNumeroCarnet(persona.getNumeroCarnet().trim())
-                    .ifPresent(existente -> {
-                        boolean esMismaPersona = existente.getId() != null
-                                && existente.getId().equals(persona.getId());
-                        if (!esMismaPersona) {
-                            throw new IllegalArgumentException(
-                                    "El número de carnet '" + persona.getNumeroCarnet() +
-                                            "' ya está asignado a " + existente.getNombreCompleto() +
-                                            ". Deje el campo vacío para generar uno automáticamente.");
-                        }
-                    });
-            persona.setNumeroCarnet(persona.getNumeroCarnet().trim());
+            // NUEVO
+            entidad = persona;
         }
 
-        if (persona.getActivo() == null) {
-            persona.setActivo(true);
-        }
-
-        if (persona.getRestringido() == null) {
-            persona.setRestringido(false);
-        }
-
+        // ─── FOTO ─────────────────────────────────────────────
         if (foto != null && !foto.isEmpty()) {
-            persona.setFotoRuta(guardarFoto(foto));
+            entidad.setFotoRuta(guardarFoto(foto));
         } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
-            persona.setFotoRuta(guardarFotoBase64(fotoBase64));
+            entidad.setFotoRuta(guardarFotoBase64(fotoBase64));
         }
+        // 🔥 SI NO VIENE FOTO → SE MANTIENE LA ANTERIOR
 
-        // Contraseña: codificar si es texto plano, preservar si está en blanco (modo edición)
+        // ─── CONTRASEÑA ──────────────────────────────────────
         if (persona.getContrasena() != null && !persona.getContrasena().isBlank()) {
             boolean yaEsBcrypt = persona.getContrasena().startsWith("$2a$")
                     || persona.getContrasena().startsWith("$2b$")
                     || persona.getContrasena().startsWith("$2y$");
+
             if (!yaEsBcrypt) {
-                persona.setContrasena(passwordEncoder.encode(persona.getContrasena()));
+                entidad.setContrasena(passwordEncoder.encode(persona.getContrasena()));
+            } else {
+                entidad.setContrasena(persona.getContrasena());
             }
+
         } else if (persona.getId() != null) {
-            // Editando: no cambiar la contraseña si se dejó en blanco
-            personaRepository.findById(persona.getId())
-                    .ifPresent(existente -> persona.setContrasena(existente.getContrasena()));
-        } else {
-            persona.setContrasena(null);
+            // 🔥 MANTENER LA CONTRASEÑA EXISTENTE
+            entidad.setContrasena(entidad.getContrasena());
         }
 
-        return personaRepository.save(persona);
+        // ─── DEFAULTS ────────────────────────────────────────
+        if (entidad.getActivo() == null) entidad.setActivo(true);
+        if (entidad.getRestringido() == null) entidad.setRestringido(false);
+
+        return personaRepository.save(entidad);
     }
+
+
 
     public Persona actualizar(Persona persona) {
         return personaRepository.save(persona);

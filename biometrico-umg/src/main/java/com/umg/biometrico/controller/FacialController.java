@@ -24,25 +24,36 @@ public class FacialController {
     private final PersonaService personaService;
     private final ObjectMapper objectMapper;
 
-    // ─── Enrolar rostro de una persona existente ──────────────────────────────
     @PostMapping("/enrolar/{id}")
     public ResponseEntity<Map<String, Object>> enrolar(
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
 
         Map<String, Object> resp = new HashMap<>();
+
         try {
             Persona persona = personaService.buscarPorId(id)
                     .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
 
             String imagenBase64 = body.get("imagen");
+
+            log.info("📸 Imagen recibida en enrolar controller: {}",
+                    imagenBase64 != null ? imagenBase64.length() : "null");
+
             if (imagenBase64 == null || imagenBase64.isBlank()) {
                 resp.put("ok", false);
                 resp.put("mensaje", "No se recibió imagen");
                 return ResponseEntity.badRequest().body(resp);
             }
 
+            if (!imagenBase64.startsWith("data:image")) {
+                resp.put("ok", false);
+                resp.put("mensaje", "Formato de imagen inválido");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
             List<Double> descriptor = facialApiService.enrolar(id, imagenBase64);
+
             if (descriptor == null) {
                 resp.put("ok", false);
                 resp.put("mensaje", "No se detectó rostro en la imagen. Intenta de nuevo.");
@@ -53,39 +64,52 @@ public class FacialController {
             personaService.actualizar(persona);
 
             resp.put("ok", true);
-            resp.put("mensaje", "✅ Rostro enrolado correctamente para " + persona.getNombreCompleto());
+            resp.put("mensaje", "Rostro enrolado correctamente para " + persona.getNombreCompleto());
             return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
-            log.error("Error al enrolar: {}", e.getMessage());
+            log.error("❌ Error al enrolar: {}", e.getMessage());
+
             resp.put("ok", false);
             resp.put("mensaje", "Error: " + e.getMessage());
+
             return ResponseEntity.internalServerError().body(resp);
         }
     }
 
-    // ─── Verificar rostro contra todos los enrolados ──────────────────────────
     @PostMapping("/verificar")
     public ResponseEntity<Map<String, Object>> verificar(
             @RequestBody Map<String, String> body) {
 
         Map<String, Object> resp = new HashMap<>();
+
         try {
             String imagenBase64 = body.get("imagen");
+
+            log.info("📸 Imagen recibida en verificar controller: {}",
+                    imagenBase64 != null ? imagenBase64.length() : "null");
+
             if (imagenBase64 == null || imagenBase64.isBlank()) {
                 resp.put("ok", false);
                 resp.put("mensaje", "No se recibió imagen");
                 return ResponseEntity.badRequest().body(resp);
             }
 
-            // Cargar todos los descriptores de la BD
+            if (!imagenBase64.startsWith("data:image")) {
+                log.error("❌ Imagen no tiene formato base64 válido");
+                resp.put("ok", false);
+                resp.put("mensaje", "Formato de imagen inválido");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
             List<Persona> personas = personaService.listarActivas();
             List<Map<String, Object>> descriptores = new ArrayList<>();
 
             for (Persona p : personas) {
-                if (p.getEncodingFacial() != null) {
+                if (p.getEncodingFacial() != null && !p.getEncodingFacial().isBlank()) {
                     List<Double> descriptor = facialApiService.descriptorDesdeJson(p.getEncodingFacial());
-                    if (descriptor != null) {
+
+                    if (descriptor != null && !descriptor.isEmpty()) {
                         Map<String, Object> item = new HashMap<>();
                         item.put("persona_id", p.getId());
                         item.put("descriptor", descriptor);
@@ -94,6 +118,8 @@ public class FacialController {
                 }
             }
 
+            log.info("🧠 Descriptores cargados: {}", descriptores.size());
+
             if (descriptores.isEmpty()) {
                 resp.put("ok", false);
                 resp.put("mensaje", "No hay personas enroladas en el sistema");
@@ -101,16 +127,22 @@ public class FacialController {
             }
 
             Map<String, Object> resultado = facialApiService.verificar(imagenBase64, descriptores);
+
             if (resultado == null) {
+                log.error("❌ Python devolvió NULL");
                 resp.put("ok", false);
-                resp.put("mensaje", "Error al procesar la imagen");
+                resp.put("mensaje", "Error al procesar la imagen en Python");
                 return ResponseEntity.ok(resp);
             }
 
+            log.info("🧠 Resultado Python: {}", resultado);
+
             boolean reconocido = Boolean.TRUE.equals(resultado.get("reconocido"));
+
             if (reconocido) {
                 Long personaId = Long.valueOf(resultado.get("persona_id").toString());
                 Persona persona = personaService.buscarPorId(personaId).orElse(null);
+
                 if (persona != null) {
                     resp.put("ok", true);
                     resp.put("reconocido", true);
@@ -119,6 +151,7 @@ public class FacialController {
                     resp.put("carnet", persona.getNumeroCarnet());
                     resp.put("tipo", persona.getTipoPersona());
                     resp.put("confianza", resultado.get("confianza"));
+
                     return ResponseEntity.ok(resp);
                 }
             }
@@ -126,21 +159,24 @@ public class FacialController {
             resp.put("ok", true);
             resp.put("reconocido", false);
             resp.put("mensaje", "Rostro no reconocido");
+
             return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
-            log.error("Error al verificar: {}", e.getMessage());
+            log.error("❌ Error al verificar: {}", e.getMessage());
+
             resp.put("ok", false);
             resp.put("mensaje", "Error: " + e.getMessage());
+
             return ResponseEntity.internalServerError().body(resp);
         }
     }
 
-    // ─── Estado del servicio facial ───────────────────────────────────────────
     @GetMapping("/estado")
     public ResponseEntity<Map<String, Object>> estado() {
         Map<String, Object> resp = new HashMap<>();
         resp.put("disponible", facialApiService.estaDisponible());
+        resp.put("url", facialApiService.getBaseUrl());
         return ResponseEntity.ok(resp);
     }
 }
