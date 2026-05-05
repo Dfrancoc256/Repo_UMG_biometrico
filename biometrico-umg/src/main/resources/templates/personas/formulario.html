@@ -214,10 +214,25 @@
     <script>
         // ── Tipo persona ──────────────────────────────────────────────────────────
         function actualizarTipo(tipo) {
-          const grupoSeccion = document.getElementById('grupoSeccion');
-          const ocultar = (tipo === 'catedratico' || tipo === 'admin');
-          grupoSeccion.style.display = ocultar ? 'none' : '';
-          if (ocultar) grupoSeccion.querySelector('select').value = '';
+            const grupoSeccion = document.getElementById('grupoSeccion');
+            const ocultar = (tipo === 'catedratico' || tipo === 'admin');
+
+            grupoSeccion.style.display = ocultar ? 'none' : '';
+            if (ocultar) grupoSeccion.querySelector('select').value = '';
+
+            // 🔥 NUEVO: sincronizar rol automáticamente
+            const rolSelect = document.querySelector('select[name="rol.id"]');
+
+            if (!rolSelect) return;
+
+            for (let option of rolSelect.options) {
+                const texto = option.text.toLowerCase();
+
+                if (texto.includes(tipo)) {
+                    rolSelect.value = option.value;
+                    break;
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
