@@ -257,8 +257,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-          const sel = document.querySelector('select[name="tipoPersona"]');
-          if (sel) actualizarTipo(sel.value);
+            const sel = document.querySelector('select[name="tipoPersona"]');
+
+            if (sel) {
+                sincronizarRol(sel.value);
+                actualizarTipo(sel.value);
+            }
         });
 
         // ── Toggle contraseña ─────────────────────────────────────────────────────
