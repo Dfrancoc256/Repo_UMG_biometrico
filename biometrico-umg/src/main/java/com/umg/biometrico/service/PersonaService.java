@@ -70,12 +70,12 @@ public class PersonaService {
 
         Persona entidad;
 
-        // 🔥 SI ES EDICIÓN
+        // ─── SI ES EDICIÓN ───────────────────────────────────
         if (persona.getId() != null) {
             entidad = personaRepository.findById(persona.getId())
                     .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
 
-            // 🔥 SOLO ACTUALIZAMOS CAMPOS
+            // Actualizamos campos normales
             entidad.setNombre(persona.getNombre());
             entidad.setApellido(persona.getApellido());
             entidad.setTelefono(persona.getTelefono());
@@ -83,16 +83,40 @@ public class PersonaService {
             entidad.setTipoPersona(persona.getTipoPersona());
             entidad.setCarrera(persona.getCarrera());
             entidad.setSeccion(persona.getSeccion());
-            entidad.setNumeroCarnet(persona.getNumeroCarnet());
 
-            // 🔥 IMPORTANTE: ROL
+            /*
+             * IMPORTANTE:
+             * No asignamos directamente persona.getNumeroCarnet()
+             * porque si el formulario manda vacío o UMG-XXXXXXX,
+             * puede borrar el carnet real.
+             */
+            if (persona.getNumeroCarnet() != null
+                    && !persona.getNumeroCarnet().isBlank()
+                    && !persona.getNumeroCarnet().equals("UMG-XXXXXXX")) {
+
+                entidad.setNumeroCarnet(persona.getNumeroCarnet());
+            }
+
+            // Rol
             if (persona.getRol() != null && persona.getRol().getId() != null) {
                 entidad.setRol(persona.getRol());
             }
 
         } else {
-            // NUEVO
+            // ─── SI ES NUEVA PERSONA ──────────────────────────
             entidad = persona;
+        }
+
+        // ─── CARNET AUTOMÁTICO ───────────────────────────────
+        /*
+         * Si la persona viene sin carnet, vacío o con el texto visual
+         * UMG-XXXXXXX, entonces generamos uno real y único.
+         */
+        if (entidad.getNumeroCarnet() == null
+                || entidad.getNumeroCarnet().isBlank()
+                || entidad.getNumeroCarnet().equals("UMG-XXXXXXX")) {
+
+            entidad.setNumeroCarnet(generarNumeroCarnetUnico());
         }
 
         // ─── FOTO ─────────────────────────────────────────────
@@ -101,7 +125,7 @@ public class PersonaService {
         } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
             entidad.setFotoRuta(guardarFotoBase64(fotoBase64));
         }
-        // 🔥 SI NO VIENE FOTO → SE MANTIENE LA ANTERIOR
+        // Si no viene foto, se mantiene la anterior en edición
 
         // ─── CONTRASEÑA ──────────────────────────────────────
         if (persona.getContrasena() != null && !persona.getContrasena().isBlank()) {
@@ -116,18 +140,21 @@ public class PersonaService {
             }
 
         } else if (persona.getId() != null) {
-            // 🔥 MANTENER LA CONTRASEÑA EXISTENTE
+            // Mantener contraseña existente en edición
             entidad.setContrasena(entidad.getContrasena());
         }
 
         // ─── DEFAULTS ────────────────────────────────────────
-        if (entidad.getActivo() == null) entidad.setActivo(true);
-        if (entidad.getRestringido() == null) entidad.setRestringido(false);
+        if (entidad.getActivo() == null) {
+            entidad.setActivo(true);
+        }
+
+        if (entidad.getRestringido() == null) {
+            entidad.setRestringido(false);
+        }
 
         return personaRepository.save(entidad);
     }
-
-
 
     public Persona actualizar(Persona persona) {
         return personaRepository.save(persona);
@@ -158,12 +185,16 @@ public class PersonaService {
 
     private String generarNumeroCarnetUnico() {
         String carnet;
+
         do {
-            // Combina timestamp + random para garantizar unicidad
+            // Combina timestamp + random para garantizar mayor unicidad
             long suffix = System.currentTimeMillis() % 10_000_000L
                     + ThreadLocalRandom.current().nextInt(1000);
+
             carnet = String.format("UMG-%07d", suffix % 10_000_000L);
+
         } while (personaRepository.findByNumeroCarnet(carnet).isPresent());
+
         return carnet;
     }
 
@@ -172,12 +203,14 @@ public class PersonaService {
         byte[] imageBytes = Base64.getDecoder().decode(datos);
 
         Path dirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+
         if (!Files.exists(dirPath)) {
             Files.createDirectories(dirPath);
         }
 
         String nombreArchivo = UUID.randomUUID() + "_webcam.jpg";
         Files.write(dirPath.resolve(nombreArchivo), imageBytes);
+
         return "uploads/fotos/" + nombreArchivo;
     }
 
