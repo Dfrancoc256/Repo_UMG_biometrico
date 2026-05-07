@@ -52,11 +52,13 @@
                 th:text="${persona.tipoPersona}">tipo</span>
           <!-- QR de validación -->
           <div th:if="${persona.numeroCarnet != null}" style="margin-top:18px;">
-            <img th:src="@{/personas/{id}/qr(id=${persona.id})}"
-                 alt="QR de validación"
-                 style="width:120px;height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:4px;background:#fff;"/>
+            <a th:href="@{/personas/{id}/carnet-publico(id=${persona.id})}" target="_blank">
+              <img th:src="@{/personas/{id}/qr(id=${persona.id})}"
+                   alt="QR del carné"
+                   style="width:120px;height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:4px;background:#fff;"/>
+            </a>
             <div style="font-size:10px;color:#7a8898;margin-top:4px;">
-              Escanear para verificar carné
+              Escanear o tocar para abrir carné PDF
             </div>
           </div>
           <br/><br/>

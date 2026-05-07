@@ -195,9 +195,13 @@
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label class="form-label">No. Carnet (se genera automáticamente si está vacío)</label>
-                            <input type="text" class="form-control" name="numeroCarnet" th:value="${persona.numeroCarnet}"
-                                   placeholder="UMG-XXXXXXX"/>
+                            <label class="form-label">No. Carnet</label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   th:value="${persona.numeroCarnet != null && !persona.numeroCarnet.isBlank() ? persona.numeroCarnet : 'Se generará automáticamente'}"
+                                   readonly
+                                   style="background:#eef3f8;cursor:not-allowed;"/>
                         </div>
                     </div>
                 </div>
