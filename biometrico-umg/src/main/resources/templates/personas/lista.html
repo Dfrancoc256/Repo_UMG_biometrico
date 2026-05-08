@@ -110,13 +110,14 @@
                    sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
                   <i class="fas fa-envelope"></i>
                 </a>
-                <form th:action="@{/personas/{id}/eliminar(id=${p.id})}" method="post" style="display:inline;"
-                      sec:authorize="hasRole('ADMIN')">
-                  <button type="submit" class="btn btn-danger btn-xs"
-                          data-confirm="¿Desactivar esta persona?" title="Desactivar">
-                    <i class="fas fa-ban"></i>
-                  </button>
-                </form>
+                <button type="button"
+                        class="btn btn-danger btn-xs"
+                        title="Restringir persona"
+                        th:attr="data-id=${p.id}, data-nombre=${p.nombreCompleto}"
+                        onclick="abrirModalRestriccion(this)"
+                        sec:authorize="hasRole('ADMIN')">
+                  <i class="fas fa-ban"></i>
+                </button>
               </td>
             </tr>
             <tr th:if="${personas == null or #lists.isEmpty(personas)}">
@@ -131,6 +132,68 @@
     </div>
   </div>
 
+  <!-- MODAL RESTRINGIR PERSONA -->
+  <div id="modalRestriccion" class="modal-restriccion">
+    <div class="modal-contenido">
+
+      <div class="modal-header">
+        <h3>
+          <i class="fas fa-user-slash"></i>
+          Restringir Persona
+        </h3>
+        <button type="button" class="btn-cerrar-modal" onclick="cerrarModalRestriccion()">
+          &times;
+        </button>
+      </div>
+
+      <form id="formRestriccion" method="post">
+        <div class="modal-body">
+          <p>
+            Está a punto de restringir a:
+            <strong id="nombrePersonaRestriccion"></strong>
+          </p>
+
+          <label for="motivoRestriccion">Motivo de restricción:</label>
+          <textarea id="motivoRestriccion"
+                    name="motivo"
+                    rows="4"
+                    required
+                    placeholder="Ingrese el motivo por el cual se restringe a esta persona..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancelar" onclick="cerrarModalRestriccion()">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn-confirmar">
+            <i class="fas fa-ban"></i>
+            Confirmar Restricción
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    function abrirModalRestriccion(boton) {
+      const idPersona = boton.getAttribute("data-id");
+      const nombrePersona = boton.getAttribute("data-nombre");
+
+      document.getElementById("nombrePersonaRestriccion").textContent = nombrePersona;
+      document.getElementById("formRestriccion").action = "/personas/" + idPersona + "/restringir";
+      document.getElementById("motivoRestriccion").value = "";
+
+      document.getElementById("modalRestriccion").style.display = "flex";
+    }
+
+    function cerrarModalRestriccion() {
+      document.getElementById("modalRestriccion").style.display = "none";
+    }
+  </script>
+
 </th:block>
+
 </body>
 </html>
