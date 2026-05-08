@@ -15,9 +15,9 @@ public class DashboardService {
 
     public DashboardDTO obtenerEstadisticas() {
         DashboardDTO dto = new DashboardDTO();
-        dto.setTotalEstudiantes(personaService.contarPorTipo("estudiante"));
-        dto.setTotalCatedraticos(personaService.contarPorTipo("catedratico"));
-        dto.setTotalPersonal(personaService.contarPorTipo("mantenimiento"));
+        dto.setTotalEstudiantes(personaService.contarPorTipo("ESTUDIANTE"));
+        dto.setTotalCatedraticos(personaService.contarPorTipo("CATEDRATICO"));
+        dto.setTotalPersonal(personaService.contarPorTipo("MANTENIMIENTO"));
         dto.setTotalCursos(cursoService.contarActivos());
         dto.setIngresosHoy(registroIngresoService.contarIngresosHoy());
         dto.setAsistenciasHoy(asistenciaService.contarAsistenciasHoy());
