@@ -242,18 +242,6 @@
 
             grupoSeccion.style.display = ocultar ? 'none' : '';
             if (ocultar) grupoSeccion.querySelector('select').value = '';
-
-
-            if (!rolSelect) return;
-
-            for (let option of rolSelect.options) {
-                const texto = option.text.toLowerCase();
-
-                if (texto.includes(tipo)) {
-                    rolSelect.value = option.value;
-                    break;
-                }
-            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -294,7 +282,6 @@
           })
           .catch(() => {
             video.style.display = 'none';
-            document.getElementById('btnCapturar').style.display = 'none';
           });
 
         // ── Cambiar fuente de cámara ──────────────────────────────────────────────

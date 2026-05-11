@@ -84,15 +84,15 @@ public class CamaraProxyController {
                     conn.disconnect();
                     conectado = false;
                     ultimoEstado = false;
-                    log.warn("⚠️ DroidCam desconectado");
+                    log.warn("DroidCam stream terminó");
 
                 } catch (Exception e) {
-                    if (ultimoEstado || conectado) {
-                        log.debug("DroidCam no disponible: {}", e.getMessage());
-                        ultimoEstado = false;
-                        conectado = false;
-                    }
+                if (conectado) {
+                    log.warn("DroidCam desconectado: {}", e.getMessage());
+                    conectado = false;
                 }
+                ultimoEstado = false;
+            }
                 try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
             }
         });

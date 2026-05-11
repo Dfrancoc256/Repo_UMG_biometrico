@@ -3,6 +3,7 @@ package com.umg.biometrico.service;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +28,7 @@ public class PersonaService {
 
     private final PersonaRepository personaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FacialApiService facialApiService;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -70,12 +73,10 @@ public class PersonaService {
 
         Persona entidad;
 
-        // 🔥 SI ES EDICIÓN
         if (persona.getId() != null) {
             entidad = personaRepository.findById(persona.getId())
                     .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
 
-            // 🔥 SOLO ACTUALIZAMOS CAMPOS
             entidad.setNombre(persona.getNombre());
             entidad.setApellido(persona.getApellido());
             entidad.setTelefono(persona.getTelefono());
@@ -85,13 +86,10 @@ public class PersonaService {
             entidad.setSeccion(persona.getSeccion());
             entidad.setNumeroCarnet(persona.getNumeroCarnet());
 
-            // 🔥 IMPORTANTE: ROL
             if (persona.getRol() != null && persona.getRol().getId() != null) {
                 entidad.setRol(persona.getRol());
             }
-
         } else {
-            // NUEVO
             entidad = persona;
         }
 
@@ -101,22 +99,18 @@ public class PersonaService {
         } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
             entidad.setFotoRuta(guardarFotoBase64(fotoBase64));
         }
-        // 🔥 SI NO VIENE FOTO → SE MANTIENE LA ANTERIOR
 
         // ─── CONTRASEÑA ──────────────────────────────────────
         if (persona.getContrasena() != null && !persona.getContrasena().isBlank()) {
             boolean yaEsBcrypt = persona.getContrasena().startsWith("$2a$")
                     || persona.getContrasena().startsWith("$2b$")
                     || persona.getContrasena().startsWith("$2y$");
-
             if (!yaEsBcrypt) {
                 entidad.setContrasena(passwordEncoder.encode(persona.getContrasena()));
             } else {
                 entidad.setContrasena(persona.getContrasena());
             }
-
         } else if (persona.getId() != null) {
-            // 🔥 MANTENER LA CONTRASEÑA EXISTENTE
             entidad.setContrasena(entidad.getContrasena());
         }
 
@@ -124,10 +118,45 @@ public class PersonaService {
         if (entidad.getActivo() == null) entidad.setActivo(true);
         if (entidad.getRestringido() == null) entidad.setRestringido(false);
 
-        return personaRepository.save(entidad);
+        // ─── CARNET AUTO ──────────────────────────────────────
+        if (entidad.getNumeroCarnet() == null || entidad.getNumeroCarnet().isBlank()) {
+            entidad.setNumeroCarnet(generarNumeroCarnetUnico());
+        }
+
+        // ─── GUARDAR PRIMERO ──────────────────────────────────
+        Persona guardada = personaRepository.save(entidad);
+
+        // ─── ENROLAMIENTO FACIAL ──────────────────────────────
+        if (guardada.getFotoRuta() != null && guardada.getEncodingFacial() == null) {
+            try {
+                Path rutaFoto = Paths.get(guardada.getFotoRuta()).isAbsolute()
+                        ? Paths.get(guardada.getFotoRuta())
+                        : Paths.get("").toAbsolutePath().resolve(guardada.getFotoRuta());
+
+                log.info("Intentando enrolar foto: {}", rutaFoto);
+                log.info("Existe el archivo: {}", Files.exists(rutaFoto));
+
+                if (Files.exists(rutaFoto)) {
+                    byte[] fotoBytes = Files.readAllBytes(rutaFoto);
+                    String base64 = java.util.Base64.getEncoder().encodeToString(fotoBytes);
+                    log.info("Base64 generado, longitud: {}", base64.length());
+
+                    List<Double> descriptor = facialApiService.enrolar(guardada.getId(), base64);
+                    log.info("Descriptor recibido: {}", descriptor != null ? descriptor.size() : "NULL");
+
+                    if (descriptor != null) {
+                        guardada.setEncodingFacial(facialApiService.descriptorAJson(descriptor));
+                        personaRepository.save(guardada);
+                        log.info("Descriptor facial guardado para {}", guardada.getNombreCompleto());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("No se pudo enrolar facialmente: {}", e.getMessage(), e);
+            }
+        }
+
+        return guardada;
     }
-
-
 
     public Persona actualizar(Persona persona) {
         return personaRepository.save(persona);
@@ -159,7 +188,6 @@ public class PersonaService {
     private String generarNumeroCarnetUnico() {
         String carnet;
         do {
-            // Combina timestamp + random para garantizar unicidad
             long suffix = System.currentTimeMillis() % 10_000_000L
                     + ThreadLocalRandom.current().nextInt(1000);
             carnet = String.format("UMG-%07d", suffix % 10_000_000L);
@@ -183,16 +211,12 @@ public class PersonaService {
 
     private String guardarFoto(MultipartFile foto) throws IOException {
         Path dirPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-
         if (!Files.exists(dirPath)) {
             Files.createDirectories(dirPath);
         }
-
         String nombreArchivo = UUID.randomUUID() + "_" + foto.getOriginalFilename();
         Path rutaCompleta = dirPath.resolve(nombreArchivo);
-
         foto.transferTo(rutaCompleta.toFile());
-
         return "uploads/fotos/" + nombreArchivo;
     }
 

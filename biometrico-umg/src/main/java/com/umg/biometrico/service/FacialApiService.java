@@ -20,20 +20,43 @@ public class FacialApiService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 🔥 URL CORRECTA DEL SERVICIO PYTHON
-    private static final String FACIAL_URL = "http://127.0.0.1:5001";
+    private static final String FACIAL_URL = "http://127.0.0.1:8000";
+
+    private Process proceso;
 
     @PostConstruct
     public void iniciar() {
         if (estaDisponible()) {
-            log.info("✅ Servicio facial disponible en {}", FACIAL_URL);
-        } else {
-            log.warn("⚠️ Servicio facial NO disponible en {}. Verifica PM2.", FACIAL_URL);
+            log.info("✅ Servicio facial ya estaba corriendo.");
+            return;
         }
+        new Thread(() -> {
+            try {
+                log.info("🚀 Iniciando microservicio facial...");
+                ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", "C:\\umg-facial\\iniciar.bat");
+                pb.redirectErrorStream(true);
+                pb.inheritIO();
+                proceso = pb.start();
+                for (int i = 0; i < 30; i++) {
+                    Thread.sleep(1000);
+                    if (estaDisponible()) {
+                        log.info("✅ Microservicio facial listo en {}", FACIAL_URL);
+                        return;
+                    }
+                }
+                log.warn("⚠️ Microservicio facial no respondió en 30 segundos.");
+            } catch (Exception e) {
+                log.error("❌ Error al iniciar microservicio facial: {}", e.getMessage());
+            }
+        }).start();
     }
 
     @PreDestroy
     public void detener() {
-        log.info("🛑 Servicio facial (PM2) se maneja externamente, no se detiene desde Java.");
+        if (proceso != null && proceso.isAlive()) {
+            proceso.destroyForcibly();
+            log.info("🛑 Microservicio facial detenido.");
+        }
     }
 
     public boolean estaDisponible() {
@@ -82,6 +105,31 @@ public class FacialApiService {
             log.error("❌ Error al enrolar: {}", e.getMessage());
         }
 
+        return null;
+
+
+    }
+
+    public Map<String, Object> verificar1a1(String imagenActualBase64, String imagenGuardadaBase64) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("imagen_actual_base64",   limpiarBase64(imagenActualBase64));
+            body.put("imagen_guardada_base64", limpiarBase64(imagenGuardadaBase64));
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    FACIAL_URL + "/verificar-1a1", request, Map.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            }
+        } catch (Exception e) {
+            log.error("Error en verificar1a1: {}", e.getMessage());
+        }
         return null;
     }
 
