@@ -35,7 +35,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/**", "/css/**", "/js/**", "/img/**",
                                 "/webjars/**", "/uploads/**", "/fotos_personas/**",
-                                "/personas/*/carnet-publico", "/acceso-denegado", "/verificar/**"
+                                "/personas/*/carnet-publico",
+                                "/acceso-denegado",
+                                "/verificar/**",
+
+                                // Kiosko público para cámaras fijas
+                                "/kiosko/**"
                         ).permitAll()
 
                         // ── Solo ADMIN ───────────────────────────────────────────

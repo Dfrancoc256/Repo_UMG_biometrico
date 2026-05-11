@@ -1,13 +1,17 @@
 package com.umg.biometrico.service;
 
+import com.umg.biometrico.model.Camara;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.model.Puerta;
 import com.umg.biometrico.model.RegistroIngreso;
+import com.umg.biometrico.model.SesionAsistencia;
+import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.repository.CursoRepository;
 import com.umg.biometrico.repository.PersonaRepository;
 import com.umg.biometrico.repository.PuertaRepository;
 import com.umg.biometrico.repository.RegistroIngresoRepository;
+import com.umg.biometrico.repository.SesionAsistenciaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,26 +32,19 @@ public class RegistroIngresoService {
     private final PersonaRepository personaRepository;
     private final PuertaRepository puertaRepository;
     private final CursoRepository cursoRepository;
+    private final CamaraRepository camaraRepository;
+    private final SesionAsistenciaRepository sesionAsistenciaRepository;
     private final AsistenciaService asistenciaService;
 
-    // ─── Original: sin curso ──────────────────────────────────────────────────
     public RegistroIngreso registrarIngreso(Long personaId, Long puertaId, String metodo) {
         return registrarIngreso(personaId, puertaId, metodo, null);
     }
 
-    // ─── Con curso opcional ───────────────────────────────────────────────────
     public RegistroIngreso registrarIngreso(Long personaId, Long puertaId, String metodo, Long cursoId) {
         Persona persona = personaRepository.findById(personaId)
                 .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
 
-        // ─── Verificar restricción ────────────────────────────────────────────
-        if (Boolean.TRUE.equals(persona.getRestringido())) {
-            String motivo = persona.getMotivoRestriccion() != null
-                    ? persona.getMotivoRestriccion()
-                    : "Sin motivo especificado";
-            throw new RuntimeException("ACCESO DENEGADO: " + persona.getNombreCompleto() +
-                    " tiene acceso restringido. Motivo: " + motivo);
-        }
+        validarPersonaRestringida(persona);
 
         Puerta puerta = puertaRepository.findById(puertaId)
                 .orElseThrow(() -> new RuntimeException("Puerta no encontrada"));
@@ -65,13 +62,78 @@ public class RegistroIngresoService {
         return registroIngresoRepository.save(registro);
     }
 
+    public RegistroIngreso registrarIngresoAsistenciaKiosko(
+            Long personaId,
+            Long puertaId,
+            Long cursoId,
+            Long camaraId,
+            Long sesionId,
+            Double similitud
+    ) {
+        Persona persona = personaRepository.findById(personaId)
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        validarPersonaRestringida(persona);
+
+        Puerta puerta = puertaRepository.findById(puertaId)
+                .orElseThrow(() -> new RuntimeException("Puerta no encontrada"));
+
+        Curso curso = cursoRepository.findById(cursoId)
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+
+        Camara camara = camaraRepository.findById(camaraId)
+                .orElseThrow(() -> new RuntimeException("Cámara no encontrada"));
+
+        SesionAsistencia sesion = sesionAsistenciaRepository.findById(sesionId)
+                .orElseThrow(() -> new RuntimeException("Sesión de asistencia no encontrada"));
+
+        if (!Boolean.TRUE.equals(sesion.getActiva())) {
+            throw new RuntimeException("La sesión de asistencia ya no está activa.");
+        }
+
+        RegistroIngreso registro = new RegistroIngreso();
+        registro.setPersona(persona);
+        registro.setPuerta(puerta);
+        registro.setCurso(curso);
+        registro.setCamara(camara);
+        registro.setSesionAsistencia(sesion);
+        registro.setFechaHora(LocalDateTime.now());
+
+        registro.setMetodo("FACIAL");
+        registro.setMetodoIngreso("KIOSKO");
+        registro.setAccesoPermitido(true);
+        registro.setSimilitudFacial(similitud);
+        registro.setObservaciones("Ingreso registrado desde kiosko facial.");
+
+        RegistroIngreso guardado = registroIngresoRepository.save(registro);
+
+        asistenciaService.registrarAsistenciaIngreso(personaId, cursoId);
+
+        return guardado;
+    }
+
+    private void validarPersonaRestringida(Persona persona) {
+        if (Boolean.TRUE.equals(persona.getRestringido())) {
+            String motivo = persona.getMotivoRestriccion() != null
+                    ? persona.getMotivoRestriccion()
+                    : "Sin motivo especificado";
+
+            throw new RuntimeException(
+                    "ACCESO DENEGADO: " + persona.getNombreCompleto()
+                            + " tiene acceso restringido. Motivo: " + motivo
+            );
+        }
+    }
+
     public List<RegistroIngreso> obtenerIngresosPorPuertaYFecha(Long puertaId, LocalDate fecha, String orden) {
         LocalDateTime inicio = fecha.atStartOfDay();
         LocalDateTime fin = fecha.atTime(LocalTime.MAX);
+
         if ("asc".equalsIgnoreCase(orden)) {
             return registroIngresoRepository
                     .findByPuerta_IdAndFechaHoraBetweenOrderByFechaHoraAsc(puertaId, inicio, fin);
         }
+
         return registroIngresoRepository
                 .findByPuerta_IdAndFechaHoraBetweenOrderByFechaHoraDesc(puertaId, inicio, fin);
     }

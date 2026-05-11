@@ -1,0 +1,256 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0f172a;
+    color: #ffffff;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.kiosko-page {
+    width: 100%;
+    height: 100vh;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kiosko-header {
+    position: absolute;
+    top: 24px;
+    left: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.kiosko-logo {
+    width: 74px;
+    height: 74px;
+    object-fit: contain;
+}
+
+.kiosko-header h1 {
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.kiosko-header p {
+    font-size: 14px;
+    color: #cbd5e1;
+    margin-top: 4px;
+}
+
+.kiosko-card {
+    width: 740px;
+    max-width: 96%;
+    background: #111827;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-box {
+    width: 100%;
+    height: 430px;
+    background: #000000;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 4px solid #22c55e;
+    position: relative;
+}
+
+.video-box video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-box canvas {
+    display: none;
+}
+
+.camera-status {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(34, 197, 94, 0.95);
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 5;
+}
+
+.camera-status span {
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.info-curso {
+    margin-top: 18px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    color: #cbd5e1;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.info-curso strong {
+    color: #ffffff;
+}
+
+.form-area {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+}
+
+.form-area input {
+    flex: 1;
+    height: 56px;
+    border: none;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-size: 18px;
+    outline: none;
+    color: #1f2937;
+}
+
+.form-area button {
+    width: 180px;
+    border: none;
+    border-radius: 12px;
+    background: #003366;
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.form-area button:hover {
+    background: #004a8d;
+}
+
+.form-area button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.resultado {
+    margin-top: 18px;
+    min-height: 120px;
+    border-radius: 16px;
+    padding: 18px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 4px;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.resultado small {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: inherit;
+    opacity: 0.9;
+}
+
+.resultado.success {
+    background: #14532d;
+    border: 2px solid #22c55e;
+    color: #dcfce7;
+}
+
+.resultado.error {
+    background: #7f1d1d;
+    border: 2px solid #ef4444;
+    color: #fee2e2;
+}
+
+.resultado.loading {
+    background: #1e3a8a;
+    border: 2px solid #60a5fa;
+    color: #dbeafe;
+}
+
+.result-icon {
+    font-size: 34px;
+    margin-bottom: 4px;
+}
+
+.kiosko-footer {
+    position: absolute;
+    bottom: 18px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow-y: auto;
+    }
+
+    .kiosko-page {
+        height: auto;
+        min-height: 100vh;
+        justify-content: flex-start;
+        padding-top: 120px;
+    }
+
+    .kiosko-header {
+        top: 16px;
+        left: 16px;
+        right: 16px;
+    }
+
+    .kiosko-logo {
+        width: 58px;
+        height: 58px;
+    }
+
+    .kiosko-header h1 {
+        font-size: 22px;
+    }
+
+    .kiosko-header p {
+        font-size: 12px;
+    }
+
+    .video-box {
+        height: 300px;
+    }
+
+    .form-area {
+        flex-direction: column;
+    }
+
+    .form-area button {
+        width: 100%;
+        height: 52px;
+    }
+
+    .kiosko-footer {
+        position: static;
+        margin-top: 18px;
+    }
+}
