@@ -15,6 +15,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.umg.biometrico.model.Persona;
+import com.umg.biometrico.service.PersonaService;
+import org.springframework.security.core.Authentication;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -29,10 +32,26 @@ public class AsistenciaController {
     private final CursoService cursoService;
     private final PdfService pdfService;
     private final EmailService emailService;
+    private final PersonaService personaService;
 
     @GetMapping
-    public String listarCursos(Model model) {
-        model.addAttribute("cursos", cursoService.listarActivos());
+    public String listarCursos(Model model, Authentication authentication) {
+
+        String correo = authentication.getName();
+
+        Persona persona = personaService.buscarPorCorreo(correo).orElse(null);
+
+        if (persona != null
+                && persona.getRol() != null
+                && persona.getRol().getNombre().equalsIgnoreCase("CATEDRATICO")) {
+
+            model.addAttribute("cursos", cursoService.listarPorCatedratico(persona.getId()));
+
+        } else {
+
+            model.addAttribute("cursos", cursoService.listarActivos());
+        }
+
         model.addAttribute("activeMenu", "asistencia");
         return "asistencia/cursos";
     }
