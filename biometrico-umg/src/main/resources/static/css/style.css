@@ -1978,3 +1978,9 @@ select.form-control {
     width: 100%;
   }
 }
+
+.logout-pill{
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}

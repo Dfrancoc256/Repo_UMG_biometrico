@@ -1,9 +1,11 @@
 package com.umg.biometrico.controller;
 
 import com.umg.biometrico.model.Curso;
+import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +20,23 @@ public class CursoController {
     private final PersonaService personaService;
 
     @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("cursos", cursoService.listarActivos());
+    public String listar(Model model, Authentication authentication) {
+
+        String correo = authentication.getName();
+
+        Persona persona = personaService.buscarPorCorreo(correo).orElse(null);
+
+        if (persona != null
+                && persona.getRol() != null
+                && persona.getRol().getNombre().equalsIgnoreCase("CATEDRATICO")) {
+
+            model.addAttribute("cursos", cursoService.listarPorCatedratico(persona.getId()));
+
+        } else {
+
+            model.addAttribute("cursos", cursoService.listarActivos());
+        }
+
         model.addAttribute("activeMenu", "cursos");
         return "cursos/lista";
     }
