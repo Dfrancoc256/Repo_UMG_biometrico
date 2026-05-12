@@ -78,8 +78,8 @@
                 <small style="color:#7a8898;" th:text="${p.telefono}">Tel</small>
               </td>
               <td>
-                <span class="badge"
-                      th:classappend="${p.tipoPersona == 'estudiante'} ? 'badge-info' : (${p.tipoPersona == 'catedratico'} ? 'badge-warning' : (${p.tipoPersona == 'admin'} ? 'badge-danger' : 'badge-secondary'))"
+                     <span class="badge"
+                      th:classappend="${p.tipoPersona == 'ESTUDIANTE'} ? 'badge-info' : (${p.tipoPersona == 'CATEDRATICO'} ? 'badge-warning' : (${p.tipoPersona == 'ADMIN'} ? 'badge-danger' : 'badge-secondary'))"
                       th:text="${p.tipoPersona != null ? p.tipoPersona : '—'}">tipo</span>
               </td>
               <td><code th:text="${p.numeroCarnet}">carnet</code></td>

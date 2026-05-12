@@ -76,13 +76,6 @@
       </div>
     </div>
 
-    <div class="stat-card gold">
-      <div class="stat-icon"><i class="fas fa-hard-hat" style="color:#9e6c00;"></i></div>
-      <div class="stat-info">
-        <div class="stat-value" th:text="${stats.totalPersonal}">0</div>
-        <div class="stat-label">Personal / Mantenimiento</div>
-      </div>
-    </div>
 
   </div>
 
@@ -146,9 +139,9 @@
             </td>
             <td><strong th:text="${p.nombreCompleto}">Nombre</strong></td>
             <td>
-                            <span class="badge"
-                                  th:classappend="${p.tipoPersona == 'estudiante'} ? 'badge-info' : (${p.tipoPersona == 'catedratico'} ? 'badge-warning' : 'badge-secondary')"
-                                  th:text="${p.tipoPersona}">tipo</span>
+                    <span class="badge"
+                    th:classappend="${p.tipoPersona == 'ESTUDIANTE'} ? 'badge-info' : (${p.tipoPersona == 'CATEDRATICO'} ? 'badge-warning' : (${p.tipoPersona == 'ADMIN'} ? 'badge-danger' : 'badge-secondary'))"
+                    th:text="${p.tipoPersona != null ? p.tipoPersona : '—'}">tipo</span>
             </td>
             <td th:text="${p.numeroCarnet}">carnet</td>
             <td th:text="${p.correo}">correo</td>
