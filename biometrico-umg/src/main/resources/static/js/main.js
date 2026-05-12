@@ -8,11 +8,29 @@ document.addEventListener('DOMContentLoaded', () => {
      Sidebar toggle (botón hamburguesa)
      ────────────────────────────────────── */
   const sidebarToggle = document.getElementById('sidebarToggle');
-  const sidebar = document.querySelector('.sidebar');
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.querySelector('.main-content');
+  const topbar = document.querySelector('.topbar');
 
   if (sidebarToggle && sidebar) {
     sidebarToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
+      const esMovil = window.innerWidth <= 768;
+
+      if (esMovil) {
+        sidebar.classList.remove('sidebar-hidden');
+        sidebar.classList.toggle('open');
+      } else {
+        sidebar.classList.remove('open');
+        sidebar.classList.toggle('sidebar-hidden');
+
+        if (mainContent) {
+          mainContent.classList.toggle('main-expanded');
+        }
+
+        if (topbar) {
+          topbar.classList.toggle('topbar-expanded');
+        }
+      }
     });
   }
 
@@ -69,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const contexto = canvasEl.getContext('2d');
       if (!contexto) return;
 
-      contexto.drawImage(videoEl, 0, 0);
+      contexto.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
 
       const dataUrl = canvasEl.toDataURL('image/jpeg', 0.85);
 
@@ -209,4 +227,5 @@ document.addEventListener('DOMContentLoaded', () => {
       sidebar.classList.remove('open');
     }
   });
+
 });

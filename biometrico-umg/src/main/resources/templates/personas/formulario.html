@@ -19,7 +19,7 @@
     <form th:action="@{/personas/guardar}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="id" th:value="${persona.id}"/>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="enrolar-persona-grid">
 
             <!-- Columna datos biográficos -->
             <div>
@@ -51,18 +51,18 @@
                         <div class="form-group">
                             <label class="form-label">Teléfono</label>
                             <input type="tel" class="form-control" name="telefono" th:value="${persona.telefono}"
-                                   placeholder="+502 1234-5678"/>
+                                   placeholder="1234-5678"/>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Tipo de Persona *</label>
 
                             <select class="form-control" id="tipoPersonaSelect" name="tipoPersona"
-                                    required onchange="sincronizarRol(this.value)">
+                                    required onchange="sincronizarRol(this.value); actualizarTipo(this.value);">
                                 <option value="">-- Seleccione --</option>
-                                <option value="estudiante" th:selected="${persona.tipoPersona == 'estudiante'}">Estudiante</option>
-                                <option value="catedratico" th:selected="${persona.tipoPersona == 'catedratico'}">Catedrático</option>
-                                <option value="admin" th:selected="${persona.tipoPersona == 'admin'}">Administrador</option>
+                                <option value="ESTUDIANTE" th:selected="${persona.tipoPersona == 'ESTUDIANTE'}">Estudiante</option>
+                                <option value="CATEDRATICO" th:selected="${persona.tipoPersona == 'CATEDRATICO'}">Catedrático</option>
+                                <option value="ADMIN" th:selected="${persona.tipoPersona == 'ADMIN'}">Administrador</option>
                             </select>
 
                             <!-- 🔥 ESTE ES EL CLAVE -->
@@ -209,7 +209,7 @@
             </div>
         </div>
 
-        <div style="display:flex;gap:14px;margin-top:10px;">
+        <div class="form-actions-responsive">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save"></i>
                 <span th:text="${persona.id != null} ? 'Actualizar Persona' : 'Registrar Persona'">Guardar</span>
@@ -228,11 +228,11 @@
         function sincronizarRol(tipo) {
             const rolHidden = document.getElementById('rolIdHidden');
 
-            if (tipo === 'admin') {
+            if (tipo === 'ADMIN') {
                 rolHidden.value = '1';
-            } else if (tipo === 'estudiante') {
+            } else if (tipo === 'CATEDRATICO') {
                 rolHidden.value = '2';
-            } else if (tipo === 'catedratico') {
+            } else if (tipo === 'ESTUDIANTE') {
                 rolHidden.value = '3';
             } else {
                 rolHidden.value = '';
@@ -242,21 +242,12 @@
         // ── Tipo persona ──────────────────────────────────────────────────────────
         function actualizarTipo(tipo) {
             const grupoSeccion = document.getElementById('grupoSeccion');
-            const ocultar = (tipo === 'catedratico' || tipo === 'admin');
+            const ocultar = (tipo === 'CATEDRATICO' || tipo === 'ADMIN');
 
             grupoSeccion.style.display = ocultar ? 'none' : '';
-            if (ocultar) grupoSeccion.querySelector('select').value = '';
 
-
-            if (!rolSelect) return;
-
-            for (let option of rolSelect.options) {
-                const texto = option.text.toLowerCase();
-
-                if (texto.includes(tipo)) {
-                    rolSelect.value = option.value;
-                    break;
-                }
+            if (ocultar) {
+                grupoSeccion.querySelector('select').value = '';
             }
         }
 
