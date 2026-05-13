@@ -229,3 +229,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+  const loginMenuToggle = document.getElementById('loginMenuToggle');
+  const loginArt = document.getElementById('loginArt');
+
+  if (loginMenuToggle && loginArt) {
+    loginMenuToggle.addEventListener('click', function () {
+      loginArt.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function (e) {
+      const clicDentroPanel = loginArt.contains(e.target);
+      const clicEnBoton = loginMenuToggle.contains(e.target);
+
+      if (!clicDentroPanel && !clicEnBoton && window.innerWidth <= 900) {
+        loginArt.classList.remove('open');
+      }
+    });
+  }
+});
