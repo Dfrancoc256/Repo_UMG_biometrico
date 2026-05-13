@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/auth/**", "/css/**", "/js/**", "/img/**",
                                 "/webjars/**", "/uploads/**", "/fotos_personas/**",
                                 "/personas/*/carnet-publico", "/acceso-denegado",
-                                "/enrolamiento", "/enrolamiento/**"
+                                "/enrolamiento", "/enrolamiento/**",
+                                "/kiosko-web/**", "/kiosko/**"
                         ).permitAll()
 
                         // ── Solo ADMIN ───────────────────────────────────────────
