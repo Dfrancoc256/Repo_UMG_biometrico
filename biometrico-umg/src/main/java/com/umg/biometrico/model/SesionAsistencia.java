@@ -46,4 +46,7 @@ public class SesionAsistencia {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "camara_id")
     private Camara camara;
+
+    @Column(name = "expira_en")
+    private LocalDateTime expiraEn;
 }
