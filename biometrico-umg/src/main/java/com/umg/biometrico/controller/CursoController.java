@@ -4,7 +4,6 @@ package com.umg.biometrico.controller;
 import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
-import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;

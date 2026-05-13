@@ -4,14 +4,14 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Kiosko Asistencia UMG</title>
-    <link rel="stylesheet" href="./css/kiosko.css"/>
+    <link rel="stylesheet" href="css/kiosko.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
 
 <div id="modalConfig" class="modal-overlay">
     <div class="modal-box">
-        <img src="./assets/logo-umg.png" alt="UMG" style="max-width:80px;margin-bottom:12px;"/>
+        <img src="assets/logo-umg.png" alt="UMG" style="max-width:80px;margin-bottom:12px;"/>
         <h2>Configurar Kiosko</h2>
         <p>Primera vez en este equipo. Selecciona la puerta/acceso que representa esta laptop.</p>
         <select id="selectPuerta" class="modal-select">
@@ -26,7 +26,7 @@
 <div class="kiosko-page">
 
     <header class="kiosko-header">
-        <img src="./assets/logo-umg.png" alt="Logo UMG" class="kiosko-logo"/>
+        <img src="assets/logo-umg.png" alt="Logo UMG" class="kiosko-logo"/>
         <div>
             <h1>Asistencia UMG</h1>
             <p id="lblPuerta">Cargando...</p>
@@ -79,7 +79,7 @@
                 <i class="fas fa-eye"></i> Mira directo a la cámara...
             </div>
 
-            <button id="btnCapturar" type="button" onclick="capturarYVerificar()">
+            <button id="btnCapturar" type="button" onclick="capturarYVerificar()" style="display:none;">
                 <i class="fas fa-camera"></i> Capturar y Verificar
             </button>
 
@@ -100,6 +100,6 @@
 
 </div>
 
-<script src="./js/kiosko.js"></script>
+<script src="js/kiosko.js"></script>
 </body>
 </html>
