@@ -35,4 +35,24 @@ public class RegistroIngreso {
 
     @Column(length = 20)
     private String metodo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "camara_id")
+    private Camara camara;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sesion_asistencia_id")
+    private SesionAsistencia sesionAsistencia;
+
+    @Column(name = "similitud_facial")
+    private Double similitudFacial;
+
+    @Column(name = "acceso_permitido")
+    private Boolean accesoPermitido = true;
+
+    @Column(name = "metodo_ingreso", length = 20)
+    private String metodoIngreso;
+
+    @Column(columnDefinition = "text")
+    private String observaciones;
 }

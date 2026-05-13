@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Kiosko Asistencia UMG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="./css/kiosko.css">
+</head>
+<body>
+
+<div class="kiosko-page">
+
+    <header class="kiosko-header">
+        <img src="./assets/logo-umg.png" alt="Logo UMG" class="kiosko-logo">
+
+        <div>
+            <h1>Asistencia UMG</h1>
+            <p>Validación por carnet y reconocimiento facial</p>
+        </div>
+    </header>
+
+    <main class="kiosko-card">
+
+        <section class="video-box">
+            <div class="camera-status">
+                <span></span> Cámara activa
+            </div>
+
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </section>
+
+        <section id="infoCurso" class="info-curso">
+            Cargando sesión activa...
+        </section>
+
+        <section class="form-area">
+            <input type="text"
+                   id="carnet"
+                   placeholder="Ingrese o escanee carnet"
+                   autocomplete="off">
+
+            <button id="btnValidar" type="button">
+                Validar
+            </button>
+        </section>
+
+        <section id="resultado" class="resultado"></section>
+
+    </main>
+
+    <footer class="kiosko-footer">
+        Universidad Mariano Gálvez · Sistema Biométrico
+    </footer>
+
+</div>
+
+<script src="./js/kiosko.js"></script>
+</body>
+</html>

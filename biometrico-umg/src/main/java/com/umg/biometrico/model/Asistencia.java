@@ -36,4 +36,14 @@ public class Asistencia {
 
     @Column(name = "hora_registro")
     private LocalDateTime horaRegistro;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sesion_asistencia_id")
+    private SesionAsistencia sesionAsistencia;
+
+    @Column(name = "metodo_registro", length = 30)
+    private String metodoRegistro;
+
+    @Column(name = "similitud_facial")
+    private Double similitudFacial;
 }
