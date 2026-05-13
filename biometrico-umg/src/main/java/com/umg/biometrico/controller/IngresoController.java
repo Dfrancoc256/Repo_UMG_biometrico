@@ -16,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors; // ← este faltaba
 
 @Controller
 @RequestMapping("/ingreso")
@@ -35,7 +36,22 @@ public class IngresoController {
         return "ingreso/formulario";
     }
 
-    /** API: puertas de una instalación (evita lazy-loading en Thymeleaf) */
+    @GetMapping("/api/recientes")
+    @ResponseBody
+    public List<Map<String, Object>> recientes(
+            @RequestParam(defaultValue = "100") int limit,
+            @RequestParam(required = false) Long puertaId) {
+        return registroIngresoService.obtenerRecientes(limit, puertaId);
+    }
+
+    @GetMapping("/api/puertas-todas")
+    @ResponseBody
+    public List<Map<String, Object>> puertas() {
+        return puertaRepository.findAll().stream()
+                .map(p -> Map.<String, Object>of("id", p.getId(), "nombre", p.getNombre()))
+                .collect(Collectors.toList()); // ← ahora funciona
+    }
+
     @GetMapping("/api/puertas")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> puertasPorInstalacion(
@@ -50,8 +66,6 @@ public class IngresoController {
                 }).toList();
         return ResponseEntity.ok(result);
     }
-
-
 
     @PostMapping("/registrar")
     public String registrar(@RequestParam Long personaId,
@@ -78,7 +92,7 @@ public class IngresoController {
                     personaId, puertaId, metodo, cursoId
             );
             return ResponseEntity.ok(Map.of(
-                    "success", true,
+                    "success",   true,
                     "registroId", registro.getId(),
                     "fechaHora", registro.getFechaHora().toString()
             ));

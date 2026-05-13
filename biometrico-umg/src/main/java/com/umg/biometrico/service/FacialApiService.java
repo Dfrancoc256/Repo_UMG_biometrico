@@ -1,9 +1,8 @@
 package com.umg.biometrico.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,49 +18,13 @@ public class FacialApiService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 🔥 URL CORRECTA DEL SERVICIO PYTHON
-    private static final String FACIAL_URL = "http://127.0.0.1:8000";
-
-    private Process proceso;
-
-    @PostConstruct
-    public void iniciar() {
-        if (estaDisponible()) {
-            log.info("✅ Servicio facial ya estaba corriendo.");
-            return;
-        }
-        new Thread(() -> {
-            try {
-                log.info("🚀 Iniciando microservicio facial...");
-                ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", "C:\\umg-facial\\iniciar.bat");
-                pb.redirectErrorStream(true);
-                pb.inheritIO();
-                proceso = pb.start();
-                for (int i = 0; i < 30; i++) {
-                    Thread.sleep(1000);
-                    if (estaDisponible()) {
-                        log.info("✅ Microservicio facial listo en {}", FACIAL_URL);
-                        return;
-                    }
-                }
-                log.warn("⚠️ Microservicio facial no respondió en 30 segundos.");
-            } catch (Exception e) {
-                log.error("❌ Error al iniciar microservicio facial: {}", e.getMessage());
-            }
-        }).start();
-    }
-
-    @PreDestroy
-    public void detener() {
-        if (proceso != null && proceso.isAlive()) {
-            proceso.destroyForcibly();
-            log.info("🛑 Microservicio facial detenido.");
-        }
-    }
+    // ✅ Lee desde application.properties
+    @Value("${facial.api.url}")
+    private String facialUrl;
 
     public boolean estaDisponible() {
         try {
-            restTemplate.getForObject(FACIAL_URL + "/estado", String.class);
+            restTemplate.getForObject(facialUrl + "/estado", String.class);
             return true;
         } catch (Exception e) {
             return false;
@@ -71,30 +34,21 @@ public class FacialApiService {
     // ─── ENROLAR ─────────────────────────────────────────────────────────────
     public List<Double> enrolar(Long personaId, String imagenBase64) {
         try {
-            log.info("📸 Imagen recibida en enrolar: {}",
-                    imagenBase64 != null ? imagenBase64.length() : "null");
-
             if (imagenBase64 == null || imagenBase64.trim().isEmpty()) {
                 log.error("❌ Imagen base64 vacía en enrolar()");
                 return null;
             }
 
-            String imagenLimpia = limpiarBase64(imagenBase64);
-
-            log.info("📸 Imagen limpia (enrolar): {}",
-                    imagenLimpia != null ? imagenLimpia.length() : "null");
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("persona_id", personaId);
-            body.put("imagen_base64", imagenLimpia);
+            body.put("persona_id",     personaId);
+            body.put("imagen_base64",  limpiarBase64(imagenBase64));
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                    FACIAL_URL + "/enrolar", request, Map.class
+                    facialUrl + "/enrolar", request, Map.class
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
@@ -104,12 +58,10 @@ public class FacialApiService {
         } catch (Exception e) {
             log.error("❌ Error al enrolar: {}", e.getMessage());
         }
-
         return null;
-
-
     }
 
+    // ─── VERIFICAR 1:1 ───────────────────────────────────────────────────────
     public Map<String, Object> verificar1a1(String imagenActualBase64, String imagenGuardadaBase64) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -121,45 +73,36 @@ public class FacialApiService {
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                    FACIAL_URL + "/verificar-1a1", request, Map.class
+                    facialUrl + "/verificar-1a1", request, Map.class
             );
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
             }
         } catch (Exception e) {
-            log.error("Error en verificar1a1: {}", e.getMessage());
+            log.error("❌ Error en verificar1a1: {}", e.getMessage());
         }
         return null;
     }
 
-    // ─── VERIFICAR ───────────────────────────────────────────────────────────
+    // ─── VERIFICAR 1:N ───────────────────────────────────────────────────────
     public Map<String, Object> verificar(String imagenBase64, List<Map<String, Object>> descriptores) {
         try {
-            log.info("📸 Imagen recibida en verificar: {}",
-                    imagenBase64 != null ? imagenBase64.length() : "null");
-
             if (imagenBase64 == null || imagenBase64.trim().isEmpty()) {
-                log.error("❌ La imagen base64 llegó vacía a verificar()");
+                log.error("❌ Imagen base64 vacía en verificar()");
                 return null;
             }
-
-            String imagenLimpia = limpiarBase64(imagenBase64);
-
-            log.info("📸 Imagen limpia enviada a Python: {}",
-                    imagenLimpia != null ? imagenLimpia.length() : "null");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             Map<String, Object> body = new HashMap<>();
-            body.put("imagen_base64", imagenLimpia);
-            body.put("descriptores", descriptores);
+            body.put("imagen_base64", limpiarBase64(imagenBase64));
+            body.put("descriptores",  descriptores);
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                    FACIAL_URL + "/verificar", request, Map.class
+                    facialUrl + "/verificar", request, Map.class
             );
 
             if (response.getStatusCode().is2xxSuccessful()) {
@@ -169,11 +112,10 @@ public class FacialApiService {
         } catch (Exception e) {
             log.error("❌ Error al verificar: {}", e.getMessage());
         }
-
         return null;
     }
 
-    // ─── JSON UTILIDADES ─────────────────────────────────────────────────────
+    // ─── UTILIDADES ──────────────────────────────────────────────────────────
     public List<Double> descriptorDesdeJson(String json) {
         try {
             return objectMapper.readValue(json, List.class);
@@ -192,7 +134,6 @@ public class FacialApiService {
         }
     }
 
-    // ─── LIMPIAR BASE64 ──────────────────────────────────────────────────────
     private String limpiarBase64(String base64) {
         if (base64 != null && base64.contains(",")) {
             return base64.split(",")[1];
@@ -201,6 +142,29 @@ public class FacialApiService {
     }
 
     public String getBaseUrl() {
-        return FACIAL_URL;
+        return facialUrl;
+    }
+
+    public Map<String, Object> verificarPersona(String imagenBase64, List<Double> descriptorGuardado) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("imagen_base64", limpiarBase64(imagenBase64));
+            body.put("descriptor",    descriptorGuardado);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    facialUrl + "/verificar-persona", request, Map.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            }
+        } catch (Exception e) {
+            log.error("❌ Error en verificarPersona: {}", e.getMessage());
+        }
+        return null;
     }
 }
