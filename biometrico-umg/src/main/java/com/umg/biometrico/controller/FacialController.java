@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -178,5 +181,74 @@ public class FacialController {
         resp.put("disponible", facialApiService.estaDisponible());
         resp.put("url", facialApiService.getBaseUrl());
         return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/verificar-1a1")
+    public ResponseEntity<Map<String, Object>> verificar1a1(
+            @RequestBody Map<String, String> body) {
+
+        Map<String, Object> resp = new HashMap<>();
+        try {
+            String carnet = body.get("carnet");
+            String imagen = body.get("imagen");
+
+            if (carnet == null || imagen == null) {
+                resp.put("ok", false);
+                resp.put("mensaje", "Faltan datos");
+                return ResponseEntity.badRequest().body(resp);
+            }
+
+            Persona persona = personaService.buscarPorCarnet(carnet).orElse(null);
+            if (persona == null) {
+                resp.put("ok", false);
+                resp.put("mensaje", "No se encontró persona con ese carnet");
+                return ResponseEntity.ok(resp);
+            }
+
+            if (persona.getFotoRuta() == null) {
+                resp.put("ok", false);
+                resp.put("mensaje", "La persona no tiene foto registrada");
+                return ResponseEntity.ok(resp);
+            }
+
+            // Leer foto guardada y convertir a base64
+            Path rutaFoto = Paths.get(persona.getFotoRuta()).isAbsolute()
+                    ? Paths.get(persona.getFotoRuta())
+                    : Paths.get("").toAbsolutePath().resolve(persona.getFotoRuta());
+
+            if (!Files.exists(rutaFoto)) {
+                resp.put("ok", false);
+                resp.put("mensaje", "No se encontró la foto en el servidor");
+                return ResponseEntity.ok(resp);
+            }
+
+            byte[] fotoBytes = Files.readAllBytes(rutaFoto);
+            String fotoBase64 = java.util.Base64.getEncoder().encodeToString(fotoBytes);
+
+            Map<String, Object> resultado = facialApiService.verificar1a1(imagen, fotoBase64);
+            if (resultado == null) {
+                resp.put("ok", false);
+                resp.put("mensaje", "Error al procesar la imagen");
+                return ResponseEntity.ok(resp);
+            }
+
+            boolean coincide = Boolean.TRUE.equals(resultado.get("coincide"));
+            resp.put("ok", true);
+            resp.put("coincide", coincide);
+            resp.put("confianza", resultado.get("confianza"));
+            resp.put("persona_id", persona.getId());
+            resp.put("nombre", persona.getNombreCompleto());
+            resp.put("carnet", persona.getNumeroCarnet());
+            resp.put("tipo", persona.getTipoPersona());
+            resp.put("fotoUrl", "/" + persona.getFotoRuta());
+
+            return ResponseEntity.ok(resp);
+
+        } catch (Exception e) {
+            log.error("Error en verificar1a1: {}", e.getMessage());
+            resp.put("ok", false);
+            resp.put("mensaje", "Error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(resp);
+        }
     }
 }

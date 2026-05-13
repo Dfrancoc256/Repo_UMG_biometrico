@@ -277,4 +277,21 @@ public class PersonaController {
                 })
                 .orElseGet(() -> ResponseEntity.ok(Map.of("encontrado", false)));
     }
+
+    @GetMapping("/buscar-carnet")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> buscarPorCarnet(@RequestParam String carnet) {
+        return personaService.buscarPorCarnet(carnet)
+                .map(p -> {
+                    Map<String, Object> resp = new HashMap<>();
+                    resp.put("encontrado", true);
+                    resp.put("id",      p.getId());
+                    resp.put("nombre",  p.getNombreCompleto());
+                    resp.put("carnet",  p.getNumeroCarnet());
+                    resp.put("tipo",    p.getTipoPersona());
+                    resp.put("fotoUrl", p.getFotoRuta() != null ? "/" + p.getFotoRuta() : null);
+                    return ResponseEntity.ok(resp);
+                })
+                .orElseGet(() -> ResponseEntity.ok(Map.of("encontrado", false)));
+    }
 }
