@@ -151,7 +151,7 @@ public class PersonaController {
     public String levantarRestriccion(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         personaService.levantarRestriccion(id);
         redirectAttributes.addFlashAttribute("success", "Restricción levantada.");
-        return "redirect:/personas/restringidos";
+        return "redirect:/personas";
     }
 
     @GetMapping("/{id}/carnet")
