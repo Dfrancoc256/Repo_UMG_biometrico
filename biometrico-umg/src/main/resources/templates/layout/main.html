@@ -187,13 +187,13 @@
 <!-- ── TOPBAR ────────────────────────────────────────────── -->
 <header class="topbar">
   <div class="topbar-left">
-    <button class="btn-topbar" id="sidebarToggle" title="Menú">
+    <button type="button" class="btn-topbar" id="sidebarToggle" title="Menú">
       <i class="fas fa-bars"></i>
     </button>
     <span class="topbar-title" th:text="${pageTitle != null} ? ${pageTitle} : 'Dashboard'">Dashboard</span>
   </div>
   <div class="topbar-right">
-    <div class="user-pill">
+    <a th:href="@{/auth/logout}" class="user-pill logout-pill">
       <div class="user-avatar">
         <img th:if="${currentUser != null and currentUser.fotoRuta != null}"
              th:src="@{'/' + ${currentUser.fotoRuta}}"
@@ -215,11 +215,9 @@
             style="font-size:10px;background:rgba(0,51,102,0.12);color:var(--umg-azul);
                    padding:2px 7px;border-radius:10px;margin-left:2px;">
       </span>
-
-      <a th:href="@{/auth/logout}" style="margin-left:8px;color:#7a8898;" title="Cerrar sesión">
         <i class="fas fa-sign-out-alt"></i>
       </a>
-    </div>
+    </a>
   </div>
 </header>
 

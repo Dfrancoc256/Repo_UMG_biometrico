@@ -11,18 +11,21 @@
       <h2><i class="fas fa-user-circle" style="margin-right:10px;color:var(--umg-azul);"></i>Detalle de Persona</h2>
       <p class="breadcrumb"><a th:href="@{/personas}">Personas</a> &rsaquo; Detalle</p>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div class="detalle-acciones">
       <a th:href="@{/personas/{id}/editar(id=${persona.id})}" class="btn btn-warning"
          sec:authorize="hasRole('ADMIN')">
         <i class="fas fa-edit"></i> Editar
       </a>
+
       <a th:href="@{/personas/{id}/carnet(id=${persona.id})}" class="btn btn-primary">
         <i class="fas fa-id-card"></i> Descargar Carnet PDF
       </a>
+
       <a th:href="@{/personas/{id}/enviar-carnet(id=${persona.id})}" class="btn btn-success"
          sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <i class="fas fa-envelope"></i> Enviar por Correo
       </a>
+
       <a th:href="@{/personas/{id}/enviar-whatsapp(id=${persona.id})}" class="btn btn-success"
          sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
         <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
@@ -30,12 +33,12 @@
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;" th:if="${persona != null}">
+  <div class="detalle-persona-grid" th:if="${persona != null}">
 
     <!-- Columna izquierda: foto y estado -->
     <div>
-      <div class="card">
-        <div class="card-body" style="text-align:center;padding:30px;">
+      <div class="card detalle-perfil-card">
+        <div class="card-body detalle-perfil-body">
           <img th:if="${persona.fotoRuta != null}"
                th:src="@{'/' + ${persona.fotoRuta}}"
                class="avatar-lg"
@@ -52,11 +55,13 @@
                 th:text="${persona.tipoPersona}">tipo</span>
           <!-- QR de validación -->
           <div th:if="${persona.numeroCarnet != null}" style="margin-top:18px;">
-            <img th:src="@{/personas/{id}/qr(id=${persona.id})}"
-                 alt="QR de validación"
-                 style="width:120px;height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:4px;background:#fff;"/>
+            <a th:href="@{/personas/{id}/carnet-publico(id=${persona.id})}" target="_blank">
+              <img th:src="@{/personas/{id}/qr(id=${persona.id})}"
+                   alt="QR del carné"
+                   style="width:120px;height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:4px;background:#fff;"/>
+            </a>
             <div style="font-size:10px;color:#7a8898;margin-top:4px;">
-              Escanear para verificar carné
+              Escanear o tocar para abrir carné PDF
             </div>
           </div>
           <br/><br/>

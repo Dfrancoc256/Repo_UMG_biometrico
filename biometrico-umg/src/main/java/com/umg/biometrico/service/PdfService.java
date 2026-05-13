@@ -226,14 +226,14 @@ public class PdfService {
 
         // QR con URL de verificación + código de validación
         String codigoValidacion = generarCodigoValidacion(persona.getNumeroCarnet());
-        // QR con URL pública del carnet
+        // QR con URL pública del carnet PDF
         String contenidoQR = "https://umg1.duckdns.org/personas/"
                 + persona.getId()
                 + "/carnet-publico";
 
         // Recuadro visual del QR
         float qrBoxX = 248;
-        float qrBoxY = 48;
+        float qrBoxY = 58;
         float qrBoxW = 62;
         float qrBoxH = 62;
 
@@ -260,8 +260,7 @@ public class PdfService {
 
                 Font qrFont = new Font(Font.FontFamily.HELVETICA, 6, Font.BOLD, UMG_AZUL);
                 ColumnText.showTextAligned(cb, Element.ALIGN_CENTER,
-                        new Phrase("COD: " + codigoValidacion, qrFont), qrBoxX + (qrBoxW / 2), 44, 0);
-
+                        new Phrase("COD: " + codigoValidacion, qrFont), qrBoxX + (qrBoxW / 2), 49, 0);
             } catch (Exception e) {
                 log.error("Error al insertar la imagen QR en el PDF: {}", e.getMessage(), e);
             }

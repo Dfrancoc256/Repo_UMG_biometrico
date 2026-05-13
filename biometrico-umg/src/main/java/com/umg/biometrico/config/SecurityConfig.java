@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/**", "/css/**", "/js/**", "/img/**",
                                 "/webjars/**", "/uploads/**", "/fotos_personas/**",
-                                "/personas/*/carnet-publico", "/acceso-denegado"
+                                "/personas/*/carnet-publico", "/acceso-denegado", "/verificar/**"
                         ).permitAll()
 
                         // ── Solo ADMIN ───────────────────────────────────────────
