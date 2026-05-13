@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -156,5 +157,33 @@ public class RegistroIngresoService {
 
     public List<RegistroIngreso> obtenerIngresosASalones(Long instalacionId) {
         return registroIngresoRepository.findIngresosASalonesByInstalacion(instalacionId);
+    }
+
+    public List<Map<String, Object>> obtenerRecientes(int limit, Long puertaId) {
+        List<RegistroIngreso> registros;
+
+        if (puertaId != null) {
+            registros = registroIngresoRepository
+                    .findTop100ByPuerta_IdOrderByFechaHoraDesc(puertaId);
+        } else {
+            registros = registroIngresoRepository
+                    .findTop100ByOrderByFechaHoraDesc();
+        }
+
+        return registros.stream()
+                .limit(limit)
+                .map(r -> {
+                    Map<String, Object> m = new java.util.HashMap<>();
+                    m.put("nombre",    r.getPersona() != null ? r.getPersona().getNombreCompleto() : "—");
+                    m.put("carnet",    r.getPersona() != null ? r.getPersona().getNumeroCarnet()   : "—");
+                    m.put("puerta",    r.getPuerta()  != null ? r.getPuerta().getNombre()          : "—");
+                    m.put("curso",     r.getCurso()   != null ? r.getCurso().getNombre()           : null);
+                    m.put("confianza", r.getSimilitudFacial() != null
+                            ? Math.round(r.getSimilitudFacial() * 100.0) / 100.0 : null);
+                    m.put("fechaHora", r.getFechaHora() != null ? r.getFechaHora().toString() : null);
+                    m.put("metodo",    r.getMetodo());
+                    return m;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 }

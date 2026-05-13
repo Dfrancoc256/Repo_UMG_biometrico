@@ -19,6 +19,10 @@ public interface RegistroIngresoRepository extends JpaRepository<RegistroIngreso
     List<RegistroIngreso> findByPuerta_IdAndFechaHoraBetweenOrderByFechaHoraDesc(
             Long puertaId, LocalDateTime inicio, LocalDateTime fin);
 
+    List<RegistroIngreso> findTop100ByOrderByFechaHoraDesc();
+
+    List<RegistroIngreso> findTop100ByPuerta_IdOrderByFechaHoraDesc(Long puertaId);
+
     @Query("SELECT DISTINCT CAST(r.fechaHora AS date) FROM RegistroIngreso r WHERE r.puerta.id = :puertaId ORDER BY CAST(r.fechaHora AS date) DESC")
     List<LocalDate> findFechasDistintasByPuerta(@Param("puertaId") Long puertaId);
 
