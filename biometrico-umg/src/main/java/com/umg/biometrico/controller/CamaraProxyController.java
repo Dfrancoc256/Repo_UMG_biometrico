@@ -33,7 +33,6 @@ public class CamaraProxyController {
                 try {
 
                     if (!ultimoEstado) {
-                        log.info("📷 Conectando a DroidCam...");
                     }
 
                     URL url = new URL(DROIDCAM_URL);
