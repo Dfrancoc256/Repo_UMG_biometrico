@@ -21,10 +21,14 @@ public class SesionAsistenciaService {
     private final PuertaRepository puertaRepository;
     private final CamaraRepository camaraRepository;
 
+    private static final int HORAS_EXPIRACION = 3;
+
     public SesionAsistencia habilitarSesion(Long cursoId,
                                             Long catedraticoId,
                                             Long puertaId,
                                             Long camaraId) {
+
+        cerrarSesionesExpiradas();
 
         Curso curso = cursoRepository.findById(cursoId)
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
@@ -51,13 +55,17 @@ public class SesionAsistenciaService {
             throw new RuntimeException("Este curso no pertenece al catedrático seleccionado.");
         }
 
+        LocalDateTime ahora = LocalDateTime.now();
+
         SesionAsistencia sesion = new SesionAsistencia();
         sesion.setCurso(curso);
         sesion.setCatedratico(catedratico);
         sesion.setPuerta(puerta);
         sesion.setCamara(camara);
         sesion.setFecha(LocalDate.now());
-        sesion.setHoraInicio(LocalDateTime.now());
+        sesion.setHoraInicio(ahora);
+        sesion.setHoraFin(null);
+        sesion.setExpiraEn(ahora.plusHours(HORAS_EXPIRACION));
         sesion.setActiva(true);
 
         return sesionRepository.save(sesion);
@@ -74,15 +82,33 @@ public class SesionAsistenciaService {
     }
 
     public SesionAsistencia obtenerSesionActivaPorCamara(Long camaraId) {
+        cerrarSesionesExpiradas();
+
         return sesionRepository.findByCamara_IdAndActivaTrue(camaraId)
                 .orElseThrow(() -> new RuntimeException("No hay sesión activa para esta cámara."));
     }
 
     public List<SesionAsistencia> listarSesionesActivasPorCatedratico(Long catedraticoId) {
+        cerrarSesionesExpiradas();
         return sesionRepository.findByCatedratico_IdAndActivaTrue(catedraticoId);
     }
 
     public List<SesionAsistencia> listarSesionesActivasHoy() {
+        cerrarSesionesExpiradas();
         return sesionRepository.findByFechaAndActivaTrue(LocalDate.now());
+    }
+
+    public void cerrarSesionesExpiradas() {
+        List<SesionAsistencia> sesionesActivas = sesionRepository.findByActivaTrue();
+
+        LocalDateTime ahora = LocalDateTime.now();
+
+        for (SesionAsistencia sesion : sesionesActivas) {
+            if (sesion.getExpiraEn() != null && sesion.getExpiraEn().isBefore(ahora)) {
+                sesion.setActiva(false);
+                sesion.setHoraFin(ahora);
+                sesionRepository.save(sesion);
+            }
+        }
     }
 }
