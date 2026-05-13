@@ -3,6 +3,7 @@ package com.umg.biometrico.service;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +28,7 @@ public class PersonaService {
 
     private final PersonaRepository personaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FacialApiService facialApiService;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -70,12 +73,10 @@ public class PersonaService {
 
         Persona entidad;
 
-        // ─── SI ES EDICIÓN ───────────────────────────────────
         if (persona.getId() != null) {
             entidad = personaRepository.findById(persona.getId())
                     .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
 
-            // Actualizamos campos normales
             entidad.setNombre(persona.getNombre());
             entidad.setApellido(persona.getApellido());
             entidad.setTelefono(persona.getTelefono());
@@ -84,50 +85,34 @@ public class PersonaService {
             entidad.setCarrera(persona.getCarrera());
             entidad.setSeccion(persona.getSeccion());
 
-            /*
-             * IMPORTANTE:
-             * No asignamos directamente persona.getNumeroCarnet()
-             * porque si el formulario manda vacío o UMG-XXXXXXX,
-             * puede borrar el carnet real.
-             */
             if (persona.getNumeroCarnet() != null
                     && !persona.getNumeroCarnet().isBlank()
                     && !persona.getNumeroCarnet().equals("UMG-XXXXXXX")) {
-
                 entidad.setNumeroCarnet(persona.getNumeroCarnet());
             }
 
-            // Rol
             if (persona.getRol() != null && persona.getRol().getId() != null) {
                 entidad.setRol(persona.getRol());
             }
 
         } else {
-            // ─── SI ES NUEVA PERSONA ──────────────────────────
             entidad = persona;
         }
 
-        // ─── CARNET AUTOMÁTICO ───────────────────────────────
-        /*
-         * Si la persona viene sin carnet, vacío o con el texto visual
-         * UMG-XXXXXXX, entonces generamos uno real y único.
-         */
         if (entidad.getNumeroCarnet() == null
                 || entidad.getNumeroCarnet().isBlank()
                 || entidad.getNumeroCarnet().equals("UMG-XXXXXXX")) {
-
             entidad.setNumeroCarnet(generarNumeroCarnetUnico());
         }
 
-        // ─── FOTO ─────────────────────────────────────────────
         if (foto != null && !foto.isEmpty()) {
             entidad.setFotoRuta(guardarFoto(foto));
+            entidad.setEncodingFacial(null);
         } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
             entidad.setFotoRuta(guardarFotoBase64(fotoBase64));
+            entidad.setEncodingFacial(null);
         }
-        // Si no viene foto, se mantiene la anterior en edición
 
-        // ─── CONTRASEÑA ──────────────────────────────────────
         if (persona.getContrasena() != null && !persona.getContrasena().isBlank()) {
             boolean yaEsBcrypt = persona.getContrasena().startsWith("$2a$")
                     || persona.getContrasena().startsWith("$2b$")
@@ -138,13 +123,8 @@ public class PersonaService {
             } else {
                 entidad.setContrasena(persona.getContrasena());
             }
-
-        } else if (persona.getId() != null) {
-            // Mantener contraseña existente en edición
-            entidad.setContrasena(entidad.getContrasena());
         }
 
-        // ─── DEFAULTS ────────────────────────────────────────
         if (entidad.getActivo() == null) {
             entidad.setActivo(true);
         }
@@ -153,7 +133,44 @@ public class PersonaService {
             entidad.setRestringido(false);
         }
 
-        return personaRepository.save(entidad);
+        Persona guardada = personaRepository.save(entidad);
+
+        enrolarFacialmenteSiCorresponde(guardada);
+
+        return guardada;
+    }
+
+    private void enrolarFacialmenteSiCorresponde(Persona guardada) {
+        if (guardada.getFotoRuta() == null || guardada.getEncodingFacial() != null) {
+            return;
+        }
+
+        try {
+            Path rutaFoto = Paths.get(guardada.getFotoRuta()).isAbsolute()
+                    ? Paths.get(guardada.getFotoRuta())
+                    : Paths.get("").toAbsolutePath().resolve(guardada.getFotoRuta());
+
+            log.info("Intentando enrolar foto: {}", rutaFoto);
+            log.info("Existe el archivo: {}", Files.exists(rutaFoto));
+
+            if (!Files.exists(rutaFoto)) {
+                return;
+            }
+
+            byte[] fotoBytes = Files.readAllBytes(rutaFoto);
+            String base64 = java.util.Base64.getEncoder().encodeToString(fotoBytes);
+
+            List<Double> descriptor = facialApiService.enrolar(guardada.getId(), base64);
+
+            if (descriptor != null) {
+                guardada.setEncodingFacial(facialApiService.descriptorAJson(descriptor));
+                personaRepository.save(guardada);
+                log.info("Descriptor facial guardado para {}", guardada.getNombreCompleto());
+            }
+
+        } catch (Exception e) {
+            log.warn("No se pudo enrolar facialmente: {}", e.getMessage(), e);
+        }
     }
 
     public Persona actualizar(Persona persona) {
@@ -187,7 +204,6 @@ public class PersonaService {
         String carnet;
 
         do {
-            // Combina timestamp + random para garantizar mayor unicidad
             long suffix = System.currentTimeMillis() % 10_000_000L
                     + ThreadLocalRandom.current().nextInt(1000);
 

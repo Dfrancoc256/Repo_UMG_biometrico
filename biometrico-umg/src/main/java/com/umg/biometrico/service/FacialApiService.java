@@ -33,7 +33,7 @@ public class FacialApiService {
 
     @PreDestroy
     public void detener() {
-        log.info("🛑 Servicio facial (PM2) se maneja externamente, no se detiene desde Java.");
+        log.info("🛑 Servicio facial se maneja externamente con PM2, no se detiene desde Java.");
     }
 
     public boolean estaDisponible() {
@@ -53,6 +53,9 @@ public class FacialApiService {
             }
 
             String imagenLimpia = limpiarBase64(imagenBase64);
+
+            log.info("📸 Enrolando personaId: {}", personaId);
+            log.info("📸 Longitud imagen limpia: {}", imagenLimpia.length());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -79,7 +82,7 @@ public class FacialApiService {
             }
 
         } catch (Exception e) {
-            log.error("❌ Error al enrolar: {}", e.getMessage());
+            log.error("❌ Error al enrolar: {}", e.getMessage(), e);
         }
 
         return null;
@@ -93,6 +96,10 @@ public class FacialApiService {
             }
 
             String imagenLimpia = limpiarBase64(imagenBase64);
+
+            log.info("📸 Verificando contra lista de descriptores");
+            log.info("📸 Total descriptores enviados: {}", descriptores != null ? descriptores.size() : 0);
+            log.info("📸 Longitud imagen limpia: {}", imagenLimpia.length());
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -114,7 +121,7 @@ public class FacialApiService {
             }
 
         } catch (Exception e) {
-            log.error("❌ Error al verificar: {}", e.getMessage());
+            log.error("❌ Error al verificar: {}", e.getMessage(), e);
         }
 
         return null;
@@ -154,7 +161,45 @@ public class FacialApiService {
             }
 
         } catch (Exception e) {
-            log.error("❌ Error al verificar persona: {}", e.getMessage());
+            log.error("❌ Error al verificar persona: {}", e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    public Map<String, Object> verificar1a1(String imagenActualBase64, String imagenGuardadaBase64) {
+        try {
+            if (imagenActualBase64 == null || imagenActualBase64.trim().isEmpty()) {
+                log.error("❌ Imagen actual vacía en verificar1a1()");
+                return null;
+            }
+
+            if (imagenGuardadaBase64 == null || imagenGuardadaBase64.trim().isEmpty()) {
+                log.error("❌ Imagen guardada vacía en verificar1a1()");
+                return null;
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("imagen_actual_base64", limpiarBase64(imagenActualBase64));
+            body.put("imagen_guardada_base64", limpiarBase64(imagenGuardadaBase64));
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    FACIAL_URL + "/verificar-1a1",
+                    request,
+                    Map.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Error en verificar1a1: {}", e.getMessage(), e);
         }
 
         return null;
@@ -167,7 +212,7 @@ public class FacialApiService {
                     new TypeReference<List<Double>>() {}
             );
         } catch (Exception e) {
-            log.error("❌ Error al convertir JSON a descriptor: {}", e.getMessage());
+            log.error("❌ Error al convertir JSON a descriptor: {}", e.getMessage(), e);
             return null;
         }
     }
@@ -176,14 +221,14 @@ public class FacialApiService {
         try {
             return objectMapper.writeValueAsString(descriptor);
         } catch (Exception e) {
-            log.error("❌ Error al convertir descriptor a JSON: {}", e.getMessage());
+            log.error("❌ Error al convertir descriptor a JSON: {}", e.getMessage(), e);
             return null;
         }
     }
 
     private String limpiarBase64(String base64) {
         if (base64 != null && base64.contains(",")) {
-            return base64.split(",")[1];
+            return base64.split(",", 2)[1];
         }
         return base64;
     }

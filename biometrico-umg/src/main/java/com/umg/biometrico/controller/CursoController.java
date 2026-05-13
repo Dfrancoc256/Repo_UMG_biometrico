@@ -1,7 +1,10 @@
 package com.umg.biometrico.controller;
 
+
+import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
+import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +21,13 @@ public class CursoController {
 
     private final CursoService cursoService;
     private final PersonaService personaService;
+    private final CamaraRepository camaraRepository;
+
 
     @GetMapping
     public String listar(Model model, Authentication authentication) {
 
         String correo = authentication.getName();
-
         Persona persona = personaService.buscarPorCorreo(correo).orElse(null);
 
         if (persona != null
@@ -33,7 +37,6 @@ public class CursoController {
             model.addAttribute("cursos", cursoService.listarPorCatedratico(persona.getId()));
 
         } else {
-
             model.addAttribute("cursos", cursoService.listarActivos());
         }
 
@@ -64,6 +67,7 @@ public class CursoController {
         if (catedraticoId != null) {
             personaService.buscarPorId(catedraticoId).ifPresent(curso::setCatedratico);
         }
+
         Curso guardado = cursoService.guardar(curso);
         redirectAttributes.addFlashAttribute("success", "Curso guardado correctamente.");
         return "redirect:/cursos/" + guardado.getId();
@@ -75,7 +79,11 @@ public class CursoController {
             model.addAttribute("curso", c);
             model.addAttribute("estudiantes", cursoService.listarEstudiantesDeCurso(id));
             model.addAttribute("todosEstudiantes", personaService.listarEstudiantes());
+
+            // Cámaras disponibles para habilitar asistencia biométrica
+            model.addAttribute("camaras", camaraRepository.findByActivaTrue());
         });
+
         model.addAttribute("activeMenu", "cursos");
         return "cursos/detalle";
     }
