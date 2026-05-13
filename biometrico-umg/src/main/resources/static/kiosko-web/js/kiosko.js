@@ -140,7 +140,7 @@ function mostrarPaso2(data) {
     document.getElementById('paso2').style.display = 'block';
     document.getElementById('resultado').innerHTML  = '';
 
-    document.getElementById('fotoEstudiante').src         = API_BASE + '/' + data.fotoRuta;
+    document.getElementById('fotoEstudiante').src = API_BASE + data.fotoUrl;
     document.getElementById('nombreEstudiante').textContent = data.nombre;
     document.getElementById('carnetEstudiante').textContent = data.carnet;
     document.getElementById('tipoEstudiante').textContent   = data.tipo || '';
