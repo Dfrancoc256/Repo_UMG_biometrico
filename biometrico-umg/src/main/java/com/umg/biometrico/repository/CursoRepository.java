@@ -13,6 +13,8 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
 
     List<Curso> findByCatedratico_IdAndActivoTrue(Long catedraticoId);
 
+    long countByCatedratico_IdAndActivoTrue(Long catedraticoId);
+
     List<Curso> findByActivoTrue();
 
     @Query("SELECT c FROM Curso c JOIN c.estudiantes ce WHERE ce.estudiante.id = :estudianteId AND c.activo = true")

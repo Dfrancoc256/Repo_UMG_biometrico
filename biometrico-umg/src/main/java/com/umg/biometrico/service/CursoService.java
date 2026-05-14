@@ -40,10 +40,22 @@ public class CursoService {
     }
 
     public Curso guardar(Curso curso) {
+        if (curso.getId() == null && curso.getCatedratico() != null) {
+            long count = cursoRepository.countByCatedratico_IdAndActivoTrue(curso.getCatedratico().getId());
+            if (count >= 5) {
+                throw new IllegalArgumentException(
+                        "El catedrático ya tiene 5 cursos asignados (límite máximo). " +
+                        "Debe quitar un curso antes de asignar uno nuevo.");
+            }
+        }
         if (curso.getCodigo() == null || curso.getCodigo().isBlank()) {
             curso.setCodigo(generarCodigoCurso());
         }
         return cursoRepository.save(curso);
+    }
+
+    public long contarCursosPorCatedratico(Long catedraticoId) {
+        return cursoRepository.countByCatedratico_IdAndActivoTrue(catedraticoId);
     }
 
     private String generarCodigoCurso() {

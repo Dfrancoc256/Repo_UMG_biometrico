@@ -38,7 +38,7 @@
   </ul>
 
   <!-- REGISTRO BIOMÉTRICO -->
-  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')">
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO','ESTUDIANTE')">
     <button class="menu-toggle" type="button" data-menu="registro">
       <i class="fas fa-id-card section-icon"></i>
       <span class="sidebar-section">Registro Biométrico</span>
@@ -53,8 +53,8 @@
         </a>
       </li>
 
-      <!-- SOLO ESTUDIANTE -->
-      <li sec:authorize="hasRole('ESTUDIANTE')">
+      <!-- CATEDRÁTICO + ESTUDIANTE -->
+      <li sec:authorize="hasAnyRole('CATEDRATICO','ESTUDIANTE')">
         <a th:href="@{/personas/{id}/ver(id=${currentUser != null ? currentUser.id : 0})}"
            th:classappend="${activeMenu == 'mi-perfil'} ? 'active' : ''">
           <i class="fas fa-user-circle nav-icon"></i>

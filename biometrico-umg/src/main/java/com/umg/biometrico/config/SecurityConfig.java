@@ -52,6 +52,8 @@ public class SecurityConfig {
                                 "/personas/restringidos",
                                 "/instalaciones/nueva", "/instalaciones/guardar",
                                 "/instalaciones/*/puerta/nueva", "/instalaciones/*/puerta/guardar",
+                                "/instalaciones/*/puerta/*/editar", "/instalaciones/*/puerta/*/guardar",
+                                "/instalaciones/*/puerta/*/eliminar",
                                 "/cursos/nuevo", "/cursos/guardar", "/cursos/*/editar",
                                 "/reportes/**"
                         ).hasRole("ADMIN")
@@ -66,10 +68,10 @@ public class SecurityConfig {
                                 "/cursos/*/asignar-seccion", "/cursos/*/quitar-seccion"
                         ).hasAnyRole("ADMIN", "CATEDRATICO")
 
-                        // ── ADMIN + ESTUDIANTE ───────────────────────────────────
+                        // ── ADMIN + CATEDRÁTICO + ESTUDIANTE ────────────────────
                         .requestMatchers(
                                 "/personas/*/ver"
-                        ).hasAnyRole("ADMIN", "ESTUDIANTE")
+                        ).hasAnyRole("ADMIN", "CATEDRATICO", "ESTUDIANTE")
 
                         // ── ESTUDIANTE ────────────────────────────────────────────
                         .requestMatchers(

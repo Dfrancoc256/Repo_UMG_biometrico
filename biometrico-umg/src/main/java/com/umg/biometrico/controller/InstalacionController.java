@@ -68,4 +68,31 @@ public class InstalacionController {
         ra.addFlashAttribute("success", "Acceso/Salón registrado.");
         return "redirect:/instalaciones/" + id;
     }
+
+    @GetMapping("/{id}/puerta/{puertaId}/editar")
+    public String editarPuerta(@PathVariable Long id, @PathVariable Long puertaId, Model model) {
+        instalacionRepository.findById(id).ifPresent(inst -> model.addAttribute("instalacion", inst));
+        puertaRepository.findById(puertaId).ifPresent(p -> model.addAttribute("puerta", p));
+        model.addAttribute("activeMenu", "instalaciones");
+        return "instalaciones/puerta-formulario";
+    }
+
+    @PostMapping("/{id}/puerta/{puertaId}/guardar")
+    public String actualizarPuerta(@PathVariable Long id, @PathVariable Long puertaId,
+                                    @ModelAttribute Puerta puerta, RedirectAttributes ra) {
+        instalacionRepository.findById(id).ifPresent(inst -> {
+            puerta.setId(puertaId);
+            puerta.setInstalacion(inst);
+            puertaRepository.save(puerta);
+        });
+        ra.addFlashAttribute("success", "Salón actualizado correctamente.");
+        return "redirect:/instalaciones/" + id;
+    }
+
+    @PostMapping("/{id}/puerta/{puertaId}/eliminar")
+    public String eliminarPuerta(@PathVariable Long id, @PathVariable Long puertaId, RedirectAttributes ra) {
+        puertaRepository.deleteById(puertaId);
+        ra.addFlashAttribute("success", "Salón eliminado correctamente.");
+        return "redirect:/instalaciones/" + id;
+    }
 }
