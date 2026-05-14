@@ -114,9 +114,16 @@ function mostrarPasoRostro(data) {
     document.getElementById("carnetEstudiante").textContent = data.carnet;
     document.getElementById("tipoEstudiante").textContent = data.tipo || "";
 
+    setEscaneando(false);
+
     encenderCamara().then(() => {
-        setTimeout(capturarYVerificar, 1200);
+        setTimeout(capturarYVerificar, 1400);
     });
+}
+
+function setEscaneando(activo) {
+    const wrap = document.getElementById("fotoWrap");
+    if (wrap) wrap.classList.toggle("escaneando", activo);
 }
 
 function encenderCamara() {
@@ -134,16 +141,23 @@ function encenderCamara() {
 function capturarYVerificar() {
     if (!personaActual) return;
 
+    const video = document.getElementById("video");
+
+    // Esperar a que el video tenga dimensiones antes de capturar
+    if (!video.videoWidth || video.videoWidth < 10) {
+        setTimeout(capturarYVerificar, 400);
+        return;
+    }
+
     intentosRostro++;
+    setEscaneando(true);
 
     const estado = document.getElementById("estadoVerificacion");
     estado.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Verificando rostro... intento ${intentosRostro}/${MAX_INTENTOS}`;
 
-    const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
-
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
 
     const imagen = canvas.toDataURL("image/jpeg", 0.9);
@@ -160,6 +174,7 @@ function capturarYVerificar() {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
+                setEscaneando(false);
                 mostrarResultado(`
                     <div class="resultado-ok">
                         <i class="fas fa-check-circle"></i>
@@ -178,14 +193,17 @@ function capturarYVerificar() {
             }
 
             if (intentosRostro < MAX_INTENTOS) {
+                setEscaneando(false);
                 estado.innerHTML = `<i class="fas fa-eye"></i> Coloque mejor su rostro. Intento ${intentosRostro + 1}/${MAX_INTENTOS}`;
                 setTimeout(capturarYVerificar, 1800);
             } else {
+                setEscaneando(false);
                 mostrarResultado("No se pudo verificar el rostro. Intente nuevamente desde el inicio.", "error");
                 setTimeout(reiniciar, 3000);
             }
         })
         .catch(() => {
+            setEscaneando(false);
             mostrarResultado("Error de conexión al verificar rostro.", "error");
             reiniciarPronto();
         });
@@ -193,6 +211,7 @@ function capturarYVerificar() {
 
 function reiniciar() {
     apagarCamara();
+    setEscaneando(false);
 
     personaActual = null;
     intentosRostro = 0;
