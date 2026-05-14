@@ -13,6 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/cursos")
@@ -31,17 +35,30 @@ public class CursoController {
         String correo = authentication.getName();
         Persona persona = personaService.buscarPorCorreo(correo).orElse(null);
 
+        List<Curso> cursos;
+
         if (persona != null
                 && persona.getRol() != null
                 && persona.getRol().getNombre().equalsIgnoreCase("CATEDRATICO")) {
 
-            model.addAttribute("cursos", cursoService.listarPorCatedratico(persona.getId()));
+            cursos = cursoService.listarPorCatedratico(persona.getId());
 
         } else {
-            model.addAttribute("cursos", cursoService.listarActivos());
+            cursos = cursoService.listarActivos();
         }
 
-        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
+        Map<String, List<Curso>> cursosPorCarrera = cursos.stream()
+                .filter(c -> c.getCarrera() != null)
+                .collect(Collectors.groupingBy(
+                        c -> c.getCarrera().getNombre(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        model.addAttribute("cursos", cursos);
+        model.addAttribute("cursosPorCarrera", cursosPorCarrera);
+        model.addAttribute("activeMenu", "cursos");
+
         return "cursos/arbol";
     }
 
