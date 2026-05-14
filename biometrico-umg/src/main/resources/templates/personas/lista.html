@@ -110,7 +110,9 @@
                    sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
                   <i class="fas fa-envelope"></i>
                 </a>
-                <button type="button"
+                <!-- Si NO está restringido: mostrar botón rojo -->
+                <button th:if="${!p.restringido}"
+                        type="button"
                         class="btn btn-danger btn-xs"
                         title="Restringir persona"
                         th:attr="data-id=${p.id}, data-nombre=${p.nombreCompleto}"
@@ -118,6 +120,19 @@
                         sec:authorize="hasRole('ADMIN')">
                   <i class="fas fa-ban"></i>
                 </button>
+
+                <!-- Si SÍ está restringido: mostrar botón verde -->
+                <form th:if="${p.restringido}"
+                      th:action="@{/personas/{id}/levantar-restriccion(id=${p.id})}"
+                      method="post"
+                      style="display:inline;"
+                      sec:authorize="hasRole('ADMIN')">
+                  <button type="submit"
+                          class="btn btn-success btn-xs"
+                          title="Levantar restricción">
+                    <i class="fas fa-check"></i>
+                  </button>
+                </form>
               </td>
             </tr>
             <tr th:if="${personas == null or #lists.isEmpty(personas)}">
