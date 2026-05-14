@@ -1,108 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
     <title>Kiosko Asistencia UMG</title>
-    <link rel="stylesheet" href="css/kiosko.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="./css/kiosko.css">
 </head>
 <body>
-
-<div id="modalConfig" class="modal-overlay">
-    <div class="modal-box">
-        <img src="assets/logo-umg.png" alt="UMG" style="max-width:80px;margin-bottom:12px;"/>
-        <h2>Configurar Kiosko</h2>
-        <p>Primera vez en este equipo. Selecciona la puerta/acceso que representa esta laptop.</p>
-        <select id="selectPuerta" class="modal-select">
-            <option value="">Cargando puertas...</option>
-        </select>
-        <button id="btnGuardarConfig" class="modal-btn" onclick="guardarConfiguracion()">
-            <i class="fas fa-save"></i> Guardar y continuar
-        </button>
-    </div>
-</div>
 
 <div class="kiosko-page">
 
     <header class="kiosko-header">
-        <img src="assets/logo-umg.png" alt="Logo UMG" class="kiosko-logo"/>
+        <img src="./assets/logo-umg.png" alt="Logo UMG" class="kiosko-logo">
+
         <div>
             <h1>Asistencia UMG</h1>
-            <p id="lblPuerta">Cargando...</p>
+            <p>Validación por carnet y reconocimiento facial</p>
         </div>
-        <div id="sesionBadge" class="sesion-badge">Sin sesión activa</div>
     </header>
 
     <main class="kiosko-card">
 
-        <!-- Info sesión activa -->
+        <section class="video-box">
+            <div class="camera-status">
+                <span></span> Cámara activa
+            </div>
+
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+            <div id="scanLine" class="scan-line"></div>
+        </section>
+
         <section id="infoCurso" class="info-curso">
-            <i class="fas fa-spinner fa-spin"></i> Buscando sesión activa...
+            Cargando sesión activa...
         </section>
 
-        <!-- PASO 1: Carnet -->
-        <section id="paso1" class="form-area">
-            <div class="carnet-input-wrap">
-                <span class="carnet-prefix">UMG-</span>
-                <input type="text" id="carnet" placeholder="0000000"
-                       maxlength="7" autocomplete="off"
-                       onkeydown="if(event.key==='Enter') validarCarnet()"/>
-            </div>
-            <button id="btnValidar" type="button" onclick="validarCarnet()">
-                <i class="fas fa-search"></i> Buscar
+        <section class="form-area">
+            <input type="text"
+                   id="carnet"
+                   placeholder="Ingrese o escanee carnet"
+                   autocomplete="off">
+
+            <button id="btnValidar" type="button">
+                Validar
             </button>
         </section>
 
-        <!-- PASO 2: Datos del estudiante + cámara -->
-        <section id="paso2" style="display:none;">
-
-            <div class="estudiante-card">
-                <div class="foto-scan-wrap" id="fotoWrap">
-                    <img id="fotoEstudiante" src="" alt="Foto" class="foto-est"/>
-                    <div class="foto-scan-line"></div>
-                </div>
-                <div>
-                    <p id="nombreEstudiante" class="est-nombre"></p>
-                    <p id="carnetEstudiante" class="est-carnet"></p>
-                    <p id="tipoEstudiante"   class="est-tipo"></p>
-                </div>
-            </div>
-
-            <div class="video-box">
-                <div class="camera-status">
-                    <span class="dot-verde"></span> Cámara activa — centra tu rostro
-                </div>
-                <video id="video" autoplay playsinline></video>
-                <canvas id="canvas" style="display:none;"></canvas>
-                <div id="scanLine" class="scan-line"></div>
-            </div>
-
-            <div id="estadoVerificacion" class="estado-verificacion">
-                <i class="fas fa-eye"></i> Mira directo a la cámara...
-            </div>
-
-            <button id="btnCapturar" type="button" onclick="capturarYVerificar()" style="display:none;">
-                <i class="fas fa-camera"></i> Capturar y Verificar
-            </button>
-
-            <button type="button" class="btn-secundario" onclick="reiniciar()">
-                <i class="fas fa-redo"></i> Cancelar
-            </button>
-        </section>
-
-        <!-- Resultado -->
         <section id="resultado" class="resultado"></section>
 
     </main>
 
     <footer class="kiosko-footer">
-        Universidad Mariano Gálvez · Sistema Biométrico ·
-        <span id="reloj"></span>
+        Universidad Mariano Gálvez · Sistema Biométrico
     </footer>
 
 </div>
 
-<script src="js/kiosko.js"></script>
+<script src="./js/kiosko.js"></script>
 </body>
 </html>
