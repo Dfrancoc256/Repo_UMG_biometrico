@@ -42,12 +42,27 @@ public class SesionAsistenciaService {
         Camara camara = camaraRepository.findById(camaraId)
                 .orElseThrow(() -> new RuntimeException("Cámara no encontrada"));
 
-        if (sesionRepository.existsByCamara_IdAndActivaTrue(camaraId)) {
-            throw new RuntimeException("Esta cámara ya tiene una sesión activa.");
+        var sesionCursoActiva = sesionRepository.findByCurso_IdAndActivaTrue(cursoId);
+
+        if (sesionCursoActiva.isPresent()) {
+            SesionAsistencia existente = sesionCursoActiva.get();
+
+            if (existente.getCamara() != null && existente.getCamara().getId().equals(camaraId)) {
+                return existente;
+            }
+
+            existente.setActiva(false);
+            existente.setHoraFin(LocalDateTime.now());
+            sesionRepository.save(existente);
         }
 
-        if (sesionRepository.existsByCurso_IdAndActivaTrue(cursoId)) {
-            throw new RuntimeException("Este curso ya tiene una sesión activa.");
+        var sesionCamaraActiva = sesionRepository.findByCamara_IdAndActivaTrue(camaraId);
+
+        if (sesionCamaraActiva.isPresent()) {
+            SesionAsistencia existente = sesionCamaraActiva.get();
+            existente.setActiva(false);
+            existente.setHoraFin(LocalDateTime.now());
+            sesionRepository.save(existente);
         }
 
         if (curso.getCatedratico() == null ||

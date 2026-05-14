@@ -349,7 +349,7 @@ public class PdfService {
         Font headerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
 
         try {
-            ClassPathResource logoResource = new ClassPathResource("static/img/logo-umg1.png");
+            ClassPathResource logoResource = new ClassPathResource("static/img/logo-umg.png");
             try (InputStream is = logoResource.getInputStream()) {
                 byte[] logoBytes = is.readAllBytes();
                 Image logo = Image.getInstance(logoBytes);

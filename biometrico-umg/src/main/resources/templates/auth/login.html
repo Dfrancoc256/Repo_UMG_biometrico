@@ -163,10 +163,104 @@
       margin-bottom: 10px;
       letter-spacing: .3px;
     }
+    /* LOGIN RESPONSIVE CON HAMBURGUESA */
+    .login-menu-toggle {
+      display: none;
+    }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      .login-page {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        background: #f4f7fb;
+        position: relative;
+      }
+
+      .login-menu-toggle {
+        display: flex;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 6000;
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 10px;
+        background: var(--umg-azul, #003366);
+        color: #ffffff;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+      }
+
       .login-art {
-        display: none;
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 82%;
+        max-width: 370px;
+        height: 100vh;
+        z-index: 5500;
+
+        transform: translateX(-100%);
+        transition: transform .28s ease;
+
+        padding: 82px 28px 32px 28px;
+        overflow-y: auto;
+        justify-content: flex-start;
+
+        background: linear-gradient(135deg, #003366 0%, #064780 55%, #001f3f 100%) !important;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, .28);
+      }
+
+      .login-art.open {
+        transform: translateX(0);
+      }
+
+      .login-form-panel {
+        width: 100%;
+        min-height: 100vh;
+        padding: 82px 24px 36px 24px;
+      }
+
+      .login-form-inner {
+        max-width: 430px;
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .login-menu-toggle {
+        top: 12px;
+        left: 12px;
+        width: 40px;
+        height: 40px;
+      }
+
+      .login-art {
+        width: 86%;
+        padding: 76px 22px 28px 22px;
+      }
+
+      .login-art img {
+        max-width: 90px !important;
+      }
+
+      .login-art h1 {
+        font-size: 22px;
+      }
+
+      .login-art p {
+        font-size: 13px;
+      }
+
+      .login-form-panel {
+        padding: 76px 18px 30px 18px;
       }
     }
   </style>
@@ -174,8 +268,12 @@
 <body>
 <div class="login-page">
 
+  <button type="button" class="login-menu-toggle" id="loginMenuToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+
   <!-- PANEL IZQUIERDO: SOLO AQUÍ HAY CAMBIOS -->
-  <div class="login-art">
+  <div class="login-art" id="loginArt">
     <div class="login-art-inner">
       <div style="display:flex;justify-content:center;margin-bottom:16px;">
         <img th:src="@{/img/logo-umg.png}"
@@ -314,15 +412,12 @@
   function actualizarBotonesLaterales(tab) {
     const btnManual = document.getElementById('btn-side-manual');
 
-
-    if (!btnManual || !btnFacial) return;
+    if (!btnManual) return;
 
     btnManual.classList.remove('active-side');
 
     if (tab === 'manual') {
       btnManual.classList.add('active-side');
-    } else {
-
     }
   }
 

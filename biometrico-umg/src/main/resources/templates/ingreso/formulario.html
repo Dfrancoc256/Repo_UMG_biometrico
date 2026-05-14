@@ -6,91 +6,111 @@
 
     <div class="page-header">
         <div>
-            <h2><i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>Registro de Ingreso</h2>
-            <p class="breadcrumb">Verificación biométrica 1:1 por carnet</p>
+            <h2>
+                <i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>
+                Registro de Ingreso
+            </h2>
+            <p class="breadcrumb">Bitácora y monitoreo de accesos biométricos</p>
         </div>
     </div>
 
     <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;">
 
-        <!-- ══ COLUMNA IZQUIERDA ══ -->
+        <!-- COLUMNA IZQUIERDA -->
         <div style="display:flex;flex-direction:column;gap:12px;">
 
-            <!-- Separador -->
             <div style="border-top:0.5px solid var(--color-border-tertiary);margin:2px 0;"></div>
 
-            <!-- Botón Kiosko Web -->
-            <a href="/kiosko-web/index.html" target="_blank"
-               style="background:linear-gradient(135deg,#003366,#004a99);
-                      border:0.5px solid #003366;border-radius:12px;padding:18px 16px;
-                      cursor:pointer;display:flex;align-items:center;gap:12px;
-                      text-decoration:none;box-shadow:0 4px 12px rgba(0,51,102,0.25);">
-                <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);
-                            display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fas fa-tv" style="font-size:16px;color:white;"></i>
-                </div>
-                <div style="flex:1;">
-                    <p style="font-size:13px;font-weight:600;color:white;margin:0;">Kiosko Biométrico</p>
-                    <p style="font-size:11px;color:rgba(255,255,255,0.65);margin:2px 0 0;">
-                        Abrir pantalla de acceso
-                    </p>
-                </div>
-                <i class="fas fa-external-link-alt" style="font-size:11px;color:rgba(255,255,255,0.5);"></i>
-            </a>
+            <div style="background:linear-gradient(135deg,#003366,#004a99);
+                        border:0.5px solid #003366;
+                        border-radius:12px;
+                        padding:18px 16px;
+                        box-shadow:0 4px 12px rgba(0,51,102,0.25);">
 
-            <!-- Info kiosko -->
-            <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
-                        border-radius:10px;padding:12px 14px;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:42px;height:42px;border-radius:10px;
+                                background:rgba(255,255,255,0.15);
+                                display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-camera" style="font-size:17px;color:white;"></i>
+                    </div>
+
+                    <div>
+                        <p style="font-size:13px;font-weight:600;color:white;margin:0;">
+                            Asistencia Biométrica
+                        </p>
+                        <p style="font-size:11px;color:rgba(255,255,255,0.65);margin:2px 0 0;">
+                            Registro automático por kiosko fijo
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:var(--color-background-primary);
+                        border:0.5px solid var(--color-border-tertiary);
+                        border-radius:10px;
+                        padding:12px 14px;">
+
                 <p style="font-size:10px;font-weight:500;color:var(--color-text-secondary);
                           margin:0 0 8px;text-transform:uppercase;letter-spacing:0.06em;">
-                    Accesos activos
+                    Estado del sistema
                 </p>
+
                 <div id="estadoKioskos" style="display:flex;flex-direction:column;gap:6px;">
                     <p style="font-size:11px;color:var(--color-text-secondary);margin:0;">
-                        <i class="fas fa-spinner fa-spin" style="margin-right:4px;"></i>Cargando...
+                        <i class="fas fa-check-circle" style="margin-right:4px;color:#1b5e20;"></i>
+                        Kiosko fijo activo por cámara.
+                    </p>
+                    <p style="font-size:11px;color:var(--color-text-secondary);margin:0;">
+                        El docente habilita la sesión desde el curso.
                     </p>
                 </div>
             </div>
 
         </div>
 
-        <!-- ══ COLUMNA DERECHA — BITÁCORA ══ -->
-        <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
-                    border-radius:12px;overflow:hidden;">
+        <!-- COLUMNA DERECHA — BITÁCORA -->
+        <div style="background:var(--color-background-primary);
+                    border:0.5px solid var(--color-border-tertiary);
+                    border-radius:12px;
+                    overflow:hidden;">
 
-            <!-- Header bitácora -->
             <div style="padding:14px 18px;background:#003366;
                         display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                 <div>
                     <p style="font-size:13px;font-weight:600;color:white;margin:0;">
-                        <i class="fas fa-list-alt" style="margin-right:8px;"></i>Bitácora de Accesos
+                        <i class="fas fa-list-alt" style="margin-right:8px;"></i>
+                        Bitácora de Accesos
                     </p>
                     <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:2px 0 0;">
                         Historial completo de ingresos registrados
                     </p>
                 </div>
+
                 <div style="display:flex;align-items:center;gap:6px;">
                     <span id="totalBadge"
                           style="background:rgba(255,255,255,0.15);color:white;
                                  font-size:11px;padding:3px 10px;border-radius:20px;">
                         0 registros
                     </span>
-                    <button onclick="cargarBitacora()"
-                            style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
-                                   color:white;border-radius:8px;padding:5px 10px;font-size:11px;cursor:pointer;">
+
+                    <button type="button" onclick="cargarBitacora()"
+                            style="background:rgba(255,255,255,0.12);
+                                   border:1px solid rgba(255,255,255,0.2);
+                                   color:white;border-radius:8px;
+                                   padding:5px 10px;font-size:11px;cursor:pointer;">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Filtros -->
             <div style="padding:12px 18px;border-bottom:0.5px solid var(--color-border-tertiary);
                         background:var(--color-background-secondary);
                         display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
 
-                <!-- Filtro puerta -->
                 <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px;">
-                    <i class="fas fa-door-open" style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;"></i>
+                    <i class="fas fa-door-open"
+                       style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;"></i>
+
                     <select id="filtroPuerta" onchange="cargarBitacora()"
                             style="flex:1;font-size:12px;padding:6px 10px;border-radius:7px;
                                    border:0.5px solid var(--color-border-tertiary);
@@ -100,11 +120,11 @@
                     </select>
                 </div>
 
-                <!-- Búsqueda -->
                 <div style="position:relative;flex:1;min-width:200px;">
                     <i class="fas fa-search"
                        style="position:absolute;left:9px;top:50%;transform:translateY(-50%);
                               font-size:11px;color:var(--color-text-secondary);pointer-events:none;"></i>
+
                     <input type="text" id="filtroBusqueda"
                            placeholder="Buscar por nombre o carnet..."
                            oninput="filtrarBitacora()"
@@ -114,10 +134,11 @@
                                   color:var(--color-text-primary);outline:none;box-sizing:border-box;"/>
                 </div>
 
-                <!-- Filtro fecha -->
                 <div style="display:flex;align-items:center;gap:6px;">
-                    <i class="fas fa-calendar" style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;"></i>
-                    <input type="date" id="filtroFecha" onchange="cargarBitacora()"
+                    <i class="fas fa-calendar"
+                       style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;"></i>
+
+                    <input type="date" id="filtroFecha" onchange="filtrarBitacora()"
                            style="font-size:12px;padding:6px 10px;border-radius:7px;
                                   border:0.5px solid var(--color-border-tertiary);
                                   background:var(--color-background-primary);
@@ -126,47 +147,31 @@
 
             </div>
 
-            <!-- Tabla de registros -->
             <div style="overflow-x:auto;">
                 <table style="width:100%;border-collapse:collapse;">
                     <thead>
                     <tr style="background:var(--color-background-secondary);">
-                        <th style="padding:9px 14px;font-size:10px;font-weight:600;
-                                       color:var(--color-text-secondary);text-align:left;
-                                       text-transform:uppercase;letter-spacing:0.05em;
-                                       border-bottom:0.5px solid var(--color-border-tertiary);">
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
                             Persona
                         </th>
-                        <th style="padding:9px 14px;font-size:10px;font-weight:600;
-                                       color:var(--color-text-secondary);text-align:left;
-                                       text-transform:uppercase;letter-spacing:0.05em;
-                                       border-bottom:0.5px solid var(--color-border-tertiary);">
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
                             Acceso
                         </th>
-                        <th style="padding:9px 14px;font-size:10px;font-weight:600;
-                                       color:var(--color-text-secondary);text-align:left;
-                                       text-transform:uppercase;letter-spacing:0.05em;
-                                       border-bottom:0.5px solid var(--color-border-tertiary);">
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
                             Curso
                         </th>
-                        <th style="padding:9px 14px;font-size:10px;font-weight:600;
-                                       color:var(--color-text-secondary);text-align:left;
-                                       text-transform:uppercase;letter-spacing:0.05em;
-                                       border-bottom:0.5px solid var(--color-border-tertiary);">
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
                             Hora
                         </th>
-                        <th style="padding:9px 14px;font-size:10px;font-weight:600;
-                                       color:var(--color-text-secondary);text-align:center;
-                                       text-transform:uppercase;letter-spacing:0.05em;
-                                       border-bottom:0.5px solid var(--color-border-tertiary);">
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:center;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
                             Confianza
                         </th>
                     </tr>
                     </thead>
+
                     <tbody id="tablaIngresos">
-                    <tr id="emptyState">
-                        <td colspan="5" style="text-align:center;padding:40px 14px;
-                                                   color:var(--color-text-secondary);">
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:40px 14px;color:var(--color-text-secondary);">
                             <i class="fas fa-clipboard-list"
                                style="font-size:24px;opacity:0.3;display:block;margin-bottom:10px;"></i>
                             <p style="font-size:12px;margin:0;">Sin registros aún</p>
@@ -179,396 +184,16 @@
         </div>
     </div>
 
-    <!-- ══ PANEL VERIFICACIÓN (ocupa ancho completo al activarse) ══ -->
-    <div id="panelVerificacion" style="display:none;margin-top:16px;">
-        <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);
-                    border-radius:12px;padding:1.25rem;">
-
-            <!-- PASO 1: Carnet -->
-            <div id="paso1">
-                <p style="font-size:10px;font-weight:500;color:var(--color-text-secondary);
-                          margin:0 0 12px;text-transform:uppercase;letter-spacing:0.06em;">
-                    Paso 1 — Identificar persona
-                </p>
-
-                <!-- Entrada manual -->
-                <div id="panelManual">
-                    <div style="display:flex;gap:0;align-items:center;max-width:400px;">
-                        <span style="font-size:13px;font-weight:500;color:var(--color-text-secondary);
-                                     white-space:nowrap;padding:8px 10px;
-                                     background:var(--color-background-secondary);
-                                     border:0.5px solid var(--color-border-tertiary);
-                                     border-radius:8px 0 0 8px;border-right:none;">UMG-</span>
-                        <input type="text" id="inputCarnet" class="form-control"
-                               placeholder="0000000"
-                               style="flex:1;font-size:13px;border-radius:0 8px 8px 0;"
-                               onkeydown="if(event.key==='Enter') buscarPorCarnet()"
-                               maxlength="7"/>
-                        <button type="button" onclick="buscarPorCarnet()"
-                                style="padding:0 16px;font-size:13px;background:#003366;color:white;
-                                       border:none;border-radius:8px;cursor:pointer;
-                                       white-space:nowrap;margin-left:8px;height:38px;">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                    <p style="font-size:11px;color:var(--color-text-secondary);margin:6px 0 0;">
-                        Solo ingresa los números del carnet, el prefijo UMG- se agrega automáticamente
-                    </p>
-                </div>
-
-                <!-- Lector QR -->
-                <div id="panelQR" style="display:none;text-align:center;">
-                    <div style="display:inline-block;border-radius:10px;overflow:hidden;">
-                        <video id="videoQR" autoplay muted playsinline
-                               style="display:block;width:280px;height:280px;object-fit:cover;background:#0d1b2a;">
-                        </video>
-                        <div style="background:rgba(0,51,102,0.85);color:white;padding:6px 12px;font-size:11px;">
-                            <i class="fas fa-circle" style="font-size:7px;color:#4caf50;margin-right:6px;"></i>
-                            <span id="estadoQR">Apunta al código QR del carnet</span>
-                        </div>
-                    </div>
-                    <canvas id="canvasQR" style="display:none;"></canvas>
-                </div>
-
-                <div id="mensajeCarnet" style="margin-top:8px;"></div>
-            </div>
-
-            <!-- PASO 2: Verificación facial -->
-            <div id="paso2" style="display:none;margin-top:16px;
-                 border-top:0.5px solid var(--color-border-tertiary);padding-top:16px;">
-                <p style="font-size:10px;font-weight:500;color:var(--color-text-secondary);
-                          margin:0 0 12px;text-transform:uppercase;letter-spacing:0.06em;">
-                    Paso 2 — Verificación facial
-                </p>
-
-                <div style="display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:start;">
-                    <div style="text-align:center;">
-                        <img id="fotoEstudiante" src="" alt="Foto"
-                             style="width:100px;height:100px;border-radius:10px;object-fit:cover;
-                                    border:2px solid #003366;display:block;margin:0 auto;"/>
-                        <p id="nombreEstudiante" style="font-size:12px;font-weight:500;
-                                                        color:var(--color-text-primary);margin:8px 0 2px;"></p>
-                        <p id="carnetEstudiante" style="font-size:10px;color:var(--color-text-secondary);margin:0;"></p>
-                    </div>
-
-                    <div>
-                        <div style="display:flex;gap:6px;margin-bottom:8px;">
-                            <button type="button" id="btnCelu" onclick="usarCamara('celu')"
-                                    style="flex:1;padding:6px;font-size:11px;background:#003366;color:white;
-                                           border:none;border-radius:6px;cursor:pointer;">
-                                <i class="fas fa-mobile-alt" style="margin-right:3px;"></i>DroidCam
-                            </button>
-                            <button type="button" id="btnWebcam" onclick="usarCamara('webcam')"
-                                    style="flex:1;padding:6px;font-size:11px;
-                                           background:var(--color-background-secondary);
-                                           color:var(--color-text-primary);
-                                           border:0.5px solid var(--color-border-tertiary);
-                                           border-radius:6px;cursor:pointer;">
-                                <i class="fas fa-laptop" style="margin-right:3px;"></i>Webcam
-                            </button>
-                        </div>
-
-                        <div style="display:flex;justify-content:center;">
-                            <div style="position:relative;border-radius:8px;overflow:hidden;
-                                        background:#0d1b2a;width:280px;height:280px;">
-                                <div id="contenedorCelu">
-                                    <img id="streamCamara" src="/camara/stream"
-                                         style="width:280px;height:280px;object-fit:cover;display:block;" alt="Cam"/>
-                                </div>
-                                <div id="contenedorWebcam" style="display:none;">
-                                    <video id="videoWebcam" autoplay muted playsinline
-                                           style="width:280px;height:280px;object-fit:cover;
-                                                  display:block;background:#0a1e35;">
-                                    </video>
-                                </div>
-                                <div style="position:absolute;top:0;left:0;right:0;bottom:0;
-                                            display:flex;align-items:center;justify-content:center;
-                                            pointer-events:none;">
-                                    <div style="width:150px;height:190px;
-                                                border:2px dashed rgba(255,255,255,0.6);
-                                                border-radius:50%;
-                                                box-shadow:0 0 0 9999px rgba(0,0,0,0.35);">
-                                    </div>
-                                </div>
-                                <div style="position:absolute;top:8px;left:0;right:0;
-                                            text-align:center;pointer-events:none;">
-                                    <span style="background:rgba(0,0,0,0.5);color:white;font-size:10px;
-                                                 padding:3px 10px;border-radius:12px;">
-                                        Centra tu rostro en el óvalo
-                                    </span>
-                                </div>
-                                <div id="overlayEscaneando"
-                                     style="position:absolute;bottom:0;left:0;right:0;
-                                            background:rgba(0,51,102,0.75);color:white;
-                                            padding:5px 10px;font-size:10px;">
-                                    <i class="fas fa-circle" style="font-size:6px;color:#4caf50;margin-right:5px;"></i>
-                                    DroidCam activo
-                                </div>
-                            </div>
-                        </div>
-
-                        <canvas id="canvas" style="display:none;"></canvas>
-
-                        <button type="button" onclick="capturarYVerificar()"
-                                style="width:100%;margin-top:8px;padding:9px;font-size:13px;
-                                       background:#1b5e20;color:white;border:none;
-                                       border-radius:8px;cursor:pointer;">
-                            <i class="fas fa-camera" style="margin-right:6px;"></i>Capturar y verificar
-                        </button>
-                    </div>
-                </div>
-
-                <div id="resultadoVerificacion" style="margin-top:12px;"></div>
-
-                <button type="button" onclick="reiniciar()"
-                        style="margin-top:8px;padding:7px 14px;font-size:12px;background:transparent;
-                               color:var(--color-text-secondary);
-                               border:0.5px solid var(--color-border-tertiary);
-                               border-radius:8px;cursor:pointer;">
-                    <i class="fas fa-redo" style="margin-right:4px;"></i>Nueva verificación
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-
     <script th:inline="none">
-        /*<![CDATA[*/
-
-        let modoActual    = 'manual';
-        let personaActual = null;
-        let streamWebcam  = null;
-        let camaraActual  = 'celu';
-        let streamQR      = null;
-        let qrInterval    = null;
         let todosLosIngresos = [];
 
-        // Mostrar panel de verificación al cambiar modo
-        function cambiarModo(modo) {
-            modoActual = modo;
-            const isManual = modo === 'manual';
-
-            document.getElementById('panelVerificacion').style.display = 'block';
-            document.getElementById('panelManual').style.display = isManual ? 'block' : 'none';
-            document.getElementById('panelQR').style.display     = isManual ? 'none'  : 'block';
-
-            const tabM = document.getElementById('tabManual');
-            const tabQ = document.getElementById('tabQR');
-
-            tabM.style.background = isManual ? '#003366' : 'var(--color-background-primary)';
-            tabM.style.border     = isManual ? '0.5px solid #003366' : '0.5px solid var(--color-border-tertiary)';
-            tabM.querySelectorAll('p')[0].style.color = isManual ? 'white' : 'var(--color-text-primary)';
-            tabM.querySelectorAll('p')[1].style.color = isManual ? 'rgba(255,255,255,0.65)' : 'var(--color-text-secondary)';
-            tabM.querySelector('div').style.background = isManual ? 'rgba(255,255,255,0.15)' : 'var(--color-background-secondary)';
-            tabM.querySelector('i').style.color = isManual ? 'white' : 'var(--color-text-secondary)';
-
-            tabQ.style.background = !isManual ? '#003366' : 'var(--color-background-primary)';
-            tabQ.style.border     = !isManual ? '0.5px solid #003366' : '0.5px solid var(--color-border-tertiary)';
-            document.getElementById('tabQRTitle').style.color = !isManual ? 'white' : 'var(--color-text-primary)';
-            document.getElementById('tabQRSub').style.color   = !isManual ? 'rgba(255,255,255,0.65)' : 'var(--color-text-secondary)';
-            document.getElementById('tabQRIcon').style.background = !isManual ? 'rgba(255,255,255,0.15)' : 'var(--color-background-secondary)';
-            tabQ.querySelector('i').style.color = !isManual ? 'white' : 'var(--color-text-secondary)';
-
-            if (!isManual) iniciarLectorQR();
-            else detenerLectorQR();
-        }
-
-        // ── QR ────────────────────────────────────────
-        function iniciarLectorQR() {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(stream => {
-                    streamQR = stream;
-                    const video = document.getElementById('videoQR');
-                    video.srcObject = stream;
-                    video.play();
-                    qrInterval = setInterval(escanearQR, 300);
-                })
-                .catch(() => {
-                    document.getElementById('estadoQR').textContent = 'No se pudo acceder a la cámara';
-                });
-        }
-
-        function detenerLectorQR() {
-            if (streamQR) { streamQR.getTracks().forEach(t => t.stop()); streamQR = null; }
-            if (qrInterval) { clearInterval(qrInterval); qrInterval = null; }
-        }
-
-        function escanearQR() {
-            const video  = document.getElementById('videoQR');
-            const canvas = document.getElementById('canvasQR');
-            if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-            canvas.width  = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
-            if (code && code.data) {
-                let valor = code.data.trim();
-                if (!valor.toUpperCase().startsWith('UMG-')) valor = 'UMG-' + valor.toUpperCase();
-                document.getElementById('estadoQR').textContent = 'QR detectado';
-                detenerLectorQR();
-                buscarPorCarnetDirecto(valor);
-            }
-        }
-
-        // ── Carnet ────────────────────────────────────
-        function buscarPorCarnet() {
-            const numero = document.getElementById('inputCarnet').value.trim();
-            if (!numero) { alert('Ingresa el número de carnet'); return; }
-            buscarPorCarnetDirecto('UMG-' + numero.toUpperCase());
-        }
-
-        function buscarPorCarnetDirecto(carnet) {
-            document.getElementById('mensajeCarnet').innerHTML =
-                '<p style="font-size:12px;color:var(--color-text-secondary);margin:6px 0 0;">Buscando...</p>';
-            fetch('/personas/buscar-carnet?carnet=' + encodeURIComponent(carnet))
-                .then(r => r.json())
-                .then(data => {
-                    if (data.encontrado) {
-                        personaActual = data;
-                        mostrarPaso2(data);
-                        document.getElementById('mensajeCarnet').innerHTML = '';
-                    } else {
-                        document.getElementById('mensajeCarnet').innerHTML =
-                            '<p style="font-size:12px;color:#dc3545;margin:6px 0 0;">No se encontró persona con ese carnet.</p>';
-                        if (modoActual === 'qr') iniciarLectorQR();
-                    }
-                })
-                .catch(() => {
-                    document.getElementById('mensajeCarnet').innerHTML =
-                        '<p style="font-size:12px;color:#dc3545;margin:6px 0 0;">Error de conexión.</p>';
-                });
-        }
-
-        function mostrarPaso2(data) {
-            document.getElementById('fotoEstudiante').src = data.fotoUrl || '';
-            document.getElementById('nombreEstudiante').textContent = data.nombre;
-            document.getElementById('carnetEstudiante').textContent = data.carnet + ' · ' + data.tipo;
-            document.getElementById('paso2').style.display = 'block';
-            document.getElementById('resultadoVerificacion').innerHTML = '';
-        }
-
-        // ── Cámara ────────────────────────────────────
-        function usarCamara(tipo) {
-            camaraActual = tipo;
-            const btnC  = document.getElementById('btnCelu');
-            const btnW  = document.getElementById('btnWebcam');
-            const contC = document.getElementById('contenedorCelu');
-            const contW = document.getElementById('contenedorWebcam');
-            const overlay = document.getElementById('overlayEscaneando');
-
-            if (tipo === 'celu') {
-                if (streamWebcam) { streamWebcam.getTracks().forEach(t => t.stop()); streamWebcam = null; document.getElementById('videoWebcam').srcObject = null; }
-                contC.style.display = 'block'; contW.style.display = 'none';
-                overlay.innerHTML = '<i class="fas fa-circle" style="font-size:6px;color:#4caf50;margin-right:5px;"></i>DroidCam activo';
-                btnC.style.background = '#003366'; btnC.style.color = 'white'; btnC.style.border = 'none';
-                btnW.style.background = 'var(--color-background-secondary)'; btnW.style.color = 'var(--color-text-primary)'; btnW.style.border = '0.5px solid var(--color-border-tertiary)';
-            } else {
-                contC.style.display = 'none'; contW.style.display = 'block';
-                overlay.innerHTML = '<i class="fas fa-circle" style="font-size:6px;color:#4caf50;margin-right:5px;"></i>Webcam activa';
-                btnW.style.background = '#003366'; btnW.style.color = 'white'; btnW.style.border = 'none';
-                btnC.style.background = 'var(--color-background-secondary)'; btnC.style.color = 'var(--color-text-primary)'; btnC.style.border = '0.5px solid var(--color-border-tertiary)';
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(stream => { streamWebcam = stream; document.getElementById('videoWebcam').srcObject = stream; })
-                    .catch(err => { alert('No se pudo acceder a la webcam: ' + err.message); usarCamara('celu'); });
-            }
-        }
-
-        // ── Verificación ──────────────────────────────
-        function capturarYVerificar() {
-            if (!personaActual) return;
-            document.getElementById('resultadoVerificacion').innerHTML =
-                '<p style="font-size:12px;color:var(--color-text-secondary);margin:0;">Capturando y verificando...</p>';
-
-            const capturar = () => {
-                if (camaraActual === 'celu') {
-                    return fetch('/camara/foto')
-                        .then(r => { if (!r.ok) throw new Error('DroidCam no disponible'); return r.blob(); })
-                        .then(blob => new Promise(res => {
-                            const reader = new FileReader();
-                            reader.onloadend = () => res(reader.result);
-                            reader.readAsDataURL(blob);
-                        }));
-                } else {
-                    const video  = document.getElementById('videoWebcam');
-                    const canvas = document.getElementById('canvas');
-                    canvas.width  = video.videoWidth  || 640;
-                    canvas.height = video.videoHeight || 480;
-                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-                    return Promise.resolve(canvas.toDataURL('image/jpeg', 0.85));
-                }
-            };
-
-            capturar()
-                .then(imagen => fetch('/facial/verificar-1a1', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ carnet: personaActual.carnet, imagen: imagen })
-                }))
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.ok) {
-                        document.getElementById('resultadoVerificacion').innerHTML =
-                            '<p style="font-size:12px;color:#dc3545;margin:0;">' + data.mensaje + '</p>';
-                        return;
-                    }
-                    if (data.coincide) {
-                        document.getElementById('resultadoVerificacion').innerHTML =
-                            '<div style="border:1.5px solid #28a745;border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">' +
-                            '<div style="width:32px;height:32px;border-radius:50%;background:#28a745;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
-                            '<i class="fas fa-check" style="color:white;font-size:13px;"></i></div>' +
-                            '<div><p style="font-size:13px;font-weight:500;color:#28a745;margin:0;">Identidad verificada</p>' +
-                            '<p style="font-size:11px;color:var(--color-text-secondary);margin:0;">Confianza: ' + data.confianza + '%</p></div></div>';
-                        registrarIngreso(data);
-                    } else {
-                        document.getElementById('resultadoVerificacion').innerHTML =
-                            '<div style="border:1.5px solid #dc3545;border-radius:8px;padding:10px;display:flex;align-items:center;gap:10px;">' +
-                            '<div style="width:32px;height:32px;border-radius:50%;background:#dc3545;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
-                            '<i class="fas fa-times" style="color:white;font-size:13px;"></i></div>' +
-                            '<div><p style="font-size:13px;font-weight:500;color:#dc3545;margin:0;">No coincide</p>' +
-                            '<p style="font-size:11px;color:var(--color-text-secondary);margin:0;">Confianza: ' + data.confianza + '% — intenta de nuevo</p></div></div>';
-                    }
-                })
-                .catch(err => {
-                    document.getElementById('resultadoVerificacion').innerHTML =
-                        '<p style="font-size:12px;color:#dc3545;margin:0;">Error: ' + err.message + '</p>';
-                });
-        }
-
-        function registrarIngreso(data) {
-            fetch('/ingreso/api/registrar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    personaId: data.persona_id,
-                    puertaId:  data.puerta_id || null,
-                    cursoId:   null,
-                    metodo:    'facial-1a1'
-                })
-            })
-                .then(r => r.json())
-                .then(result => {
-                    if (result.success) cargarBitacora();
-                });
-        }
-
-        function reiniciar() {
-            personaActual = null;
-            document.getElementById('paso2').style.display = 'none';
-            document.getElementById('inputCarnet').value = '';
-            document.getElementById('mensajeCarnet').innerHTML = '';
-            document.getElementById('resultadoVerificacion').innerHTML = '';
-            if (modoActual === 'qr') iniciarLectorQR();
-        }
-
-        // ── Bitácora ──────────────────────────────────
         function cargarPuertasFiltro() {
             fetch('/ingreso/api/puertas-todas')
                 .then(r => r.json())
                 .then(puertas => {
                     const sel = document.getElementById('filtroPuerta');
+                    sel.innerHTML = '<option value="">— Todos los accesos —</option>';
+
                     puertas.forEach(p => {
                         const opt = document.createElement('option');
                         opt.value = p.id;
@@ -581,27 +206,45 @@
 
         function cargarBitacora() {
             const puertaId = document.getElementById('filtroPuerta').value;
-            const fecha    = document.getElementById('filtroFecha').value;
             let url = '/ingreso/api/recientes?limit=200';
-            if (puertaId) url += '&puertaId=' + puertaId;
-            if (fecha)    url += '&fecha=' + fecha;
+
+            if (puertaId) {
+                url += '&puertaId=' + puertaId;
+            }
 
             fetch(url)
                 .then(r => r.json())
                 .then(ingresos => {
-                    todosLosIngresos = ingresos;
+                    todosLosIngresos = ingresos || [];
                     filtrarBitacora();
                 })
-                .catch(() => {});
+                .catch(() => {
+                    todosLosIngresos = [];
+                    renderTabla([]);
+                });
         }
 
         function filtrarBitacora() {
             const q = document.getElementById('filtroBusqueda').value.toLowerCase().trim();
-            const filtrados = q
-                ? todosLosIngresos.filter(i =>
+            const fechaFiltro = document.getElementById('filtroFecha').value;
+
+            let filtrados = todosLosIngresos;
+
+            if (q) {
+                filtrados = filtrados.filter(i =>
                     (i.nombre || '').toLowerCase().includes(q) ||
-                    (i.carnet || '').toLowerCase().includes(q))
-                : todosLosIngresos;
+                    (i.carnet || '').toLowerCase().includes(q)
+                );
+            }
+
+            if (fechaFiltro) {
+                filtrados = filtrados.filter(i => {
+                    if (!i.fechaHora) return false;
+                    const fecha = new Date(i.fechaHora).toISOString().slice(0, 10);
+                    return fecha === fechaFiltro;
+                });
+            }
+
             renderTabla(filtrados);
         }
 
@@ -611,65 +254,79 @@
 
             if (!ingresos.length) {
                 tbody.innerHTML =
-                    '<tr><td colspan="5" style="text-align:center;padding:40px 14px;color:var(--color-text-secondary);">' +
+                    '<tr>' +
+                    '<td colspan="5" style="text-align:center;padding:40px 14px;color:var(--color-text-secondary);">' +
                     '<i class="fas fa-clipboard-list" style="font-size:24px;opacity:0.3;display:block;margin-bottom:10px;"></i>' +
-                    '<p style="font-size:12px;margin:0;">Sin registros</p></td></tr>';
+                    '<p style="font-size:12px;margin:0;">Sin registros</p>' +
+                    '</td>' +
+                    '</tr>';
                 return;
             }
 
             tbody.innerHTML = ingresos.map((i, idx) => {
-                const hora = i.fechaHora
-                    ? new Date(i.fechaHora).toLocaleTimeString('es-GT',
-                        {hour:'2-digit', minute:'2-digit', second:'2-digit'})
+                const fechaObj = i.fechaHora ? new Date(i.fechaHora) : null;
+
+                const hora = fechaObj
+                    ? fechaObj.toLocaleTimeString('es-GT', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    })
                     : '—';
-                const fecha = i.fechaHora
-                    ? new Date(i.fechaHora).toLocaleDateString('es-GT')
+
+                const fecha = fechaObj
+                    ? fechaObj.toLocaleDateString('es-GT')
                     : '—';
+
                 const confianza = i.confianza != null ? i.confianza : '—';
                 const colorConfianza = i.confianza >= 80 ? '#1b5e20' : i.confianza >= 60 ? '#e65100' : '#c62828';
                 const bgAlt = idx % 2 === 0 ? '' : 'background:var(--color-background-secondary);';
 
-                return `<tr style="${bgAlt}">
-                    <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
-                        <p style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin:0;">
-                            ${i.nombre || '—'}
-                        </p>
-                        <p style="font-size:10px;color:var(--color-text-secondary);margin:1px 0 0;">
-                            ${i.carnet || '—'}
-                        </p>
-                    </td>
-                    <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
-                        <p style="font-size:12px;color:var(--color-text-primary);margin:0;">
-                            <i class="fas fa-door-open" style="font-size:10px;margin-right:4px;opacity:0.6;"></i>
-                            ${i.puerta || '—'}
-                        </p>
-                    </td>
-                    <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
-                        <p style="font-size:12px;color:var(--color-text-primary);margin:0;">
-                            ${i.curso || '<span style="opacity:0.4">—</span>'}
-                        </p>
-                    </td>
-                    <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
-                        <p style="font-size:12px;color:var(--color-text-primary);margin:0;">${hora}</p>
-                        <p style="font-size:10px;color:var(--color-text-secondary);margin:1px 0 0;">${fecha}</p>
-                    </td>
-                    <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:center;">
-                        <span style="background:${colorConfianza};color:white;padding:2px 9px;
-                                     border-radius:12px;font-size:10px;font-weight:500;">
-                            ${confianza}%
-                        </span>
-                    </td>
-                </tr>`;
+                return `
+                    <tr style="${bgAlt}">
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin:0;">
+                                ${i.nombre || '—'}
+                            </p>
+                            <p style="font-size:10px;color:var(--color-text-secondary);margin:1px 0 0;">
+                                ${i.carnet || '—'}
+                            </p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;color:var(--color-text-primary);margin:0;">
+                                <i class="fas fa-door-open" style="font-size:10px;margin-right:4px;opacity:0.6;"></i>
+                                ${i.puerta || '—'}
+                            </p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;color:var(--color-text-primary);margin:0;">
+                                ${i.curso || '<span style="opacity:0.4">—</span>'}
+                            </p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;color:var(--color-text-primary);margin:0;">${hora}</p>
+                            <p style="font-size:10px;color:var(--color-text-secondary);margin:1px 0 0;">${fecha}</p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:center;">
+                            <span style="background:${colorConfianza};color:white;padding:2px 9px;
+                                         border-radius:12px;font-size:10px;font-weight:500;">
+                                ${confianza}%
+                            </span>
+                        </td>
+                    </tr>`;
             }).join('');
         }
 
-        // Inicializar
         document.getElementById('filtroFecha').valueAsDate = new Date();
+
         cargarPuertasFiltro();
         cargarBitacora();
-        setInterval(cargarBitacora, 15000);
 
-        /*]]>*/
+        setInterval(cargarBitacora, 15000);
     </script>
 
 </th:block>

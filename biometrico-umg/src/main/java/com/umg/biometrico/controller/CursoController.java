@@ -96,6 +96,9 @@ public class CursoController {
             model.addAttribute("estudiantes", cursoService.listarEstudiantesDeCurso(id));
             model.addAttribute("todosEstudiantes", personaService.listarEstudiantes());
 
+            // Catedráticos disponibles para asignar
+            model.addAttribute("catedraticos", personaService.listarCatedraticos());
+
             // Cámaras disponibles para habilitar asistencia biométrica
             model.addAttribute("camaras", camaraRepository.findByActivaTrue());
         });
@@ -119,6 +122,30 @@ public class CursoController {
                                RedirectAttributes redirectAttributes) {
         cursoService.desinscribirEstudiante(id, estudianteId);
         redirectAttributes.addFlashAttribute("success", "Estudiante removido del curso.");
+        return "redirect:/cursos/" + id;
+    }
+
+    @PostMapping("/{id}/asignar-seccion")
+    public String asignarCatedraticoPorSeccion(@PathVariable Long id,
+                                               @RequestParam String seccion,
+                                               @RequestParam Long catedraticoId,
+                                               RedirectAttributes redirectAttributes) {
+
+        cursoService.buscarPorId(id).ifPresent(curso -> {
+
+            personaService.buscarPorId(catedraticoId).ifPresent(catedratico -> {
+
+                curso.setCatedratico(catedratico);
+
+                curso.setSeccion(seccion);
+
+                cursoService.guardar(curso);
+            });
+        });
+
+        redirectAttributes.addFlashAttribute("success",
+                "Catedrático asignado correctamente.");
+
         return "redirect:/cursos/" + id;
     }
 }
