@@ -72,6 +72,34 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    position: relative;
+    z-index: 1;
+}
+
+.scan-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #00e5ff;
+    box-shadow: 0 0 18px #00e5ff;
+    z-index: 9999;
+    opacity: 0;
+}
+
+.video-box.escaneando .scan-line {
+    opacity: 1;
+    animation: scannerMove 1.5s linear infinite;
+}
+
+@keyframes scannerMove {
+    0% {
+        top: 0;
+    }
+
+    100% {
+        top: calc(100% - 4px);
+    }
 }
 
 .video-box canvas {
