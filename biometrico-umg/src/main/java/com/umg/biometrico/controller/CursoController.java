@@ -4,7 +4,6 @@ package com.umg.biometrico.controller;
 import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
-import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/cursos")
@@ -47,7 +50,9 @@ public class CursoController {
     @GetMapping("/nuevo")
     public String nuevo(Model model) {
         model.addAttribute("curso", new Curso());
-        model.addAttribute("catedraticos", personaService.listarCatedraticos());
+        List<Persona> catedraticos = personaService.listarCatedraticos();
+        model.addAttribute("catedraticos", catedraticos);
+        model.addAttribute("cursosPerCatedratico", buildCursosPerCatedratico(catedraticos));
         model.addAttribute("activeMenu", "cursos");
         return "cursos/formulario";
     }
@@ -55,9 +60,16 @@ public class CursoController {
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model) {
         cursoService.buscarPorId(id).ifPresent(c -> model.addAttribute("curso", c));
-        model.addAttribute("catedraticos", personaService.listarCatedraticos());
+        List<Persona> catedraticos = personaService.listarCatedraticos();
+        model.addAttribute("catedraticos", catedraticos);
+        model.addAttribute("cursosPerCatedratico", buildCursosPerCatedratico(catedraticos));
         model.addAttribute("activeMenu", "cursos");
         return "cursos/formulario";
+    }
+
+    private Map<Long, Long> buildCursosPerCatedratico(List<Persona> catedraticos) {
+        return catedraticos.stream().collect(
+                Collectors.toMap(Persona::getId, c -> cursoService.contarCursosPorCatedratico(c.getId())));
     }
 
     @PostMapping("/guardar")
@@ -67,10 +79,14 @@ public class CursoController {
         if (catedraticoId != null) {
             personaService.buscarPorId(catedraticoId).ifPresent(curso::setCatedratico);
         }
-
-        Curso guardado = cursoService.guardar(curso);
-        redirectAttributes.addFlashAttribute("success", "Curso guardado correctamente.");
-        return "redirect:/cursos/" + guardado.getId();
+        try {
+            Curso guardado = cursoService.guardar(curso);
+            redirectAttributes.addFlashAttribute("success", "Curso guardado correctamente.");
+            return "redirect:/cursos/" + guardado.getId();
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/cursos/nuevo";
+        }
     }
 
     @GetMapping("/{id}")

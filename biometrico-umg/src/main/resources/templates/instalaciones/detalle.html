@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/main :: layout(~{::content}, 'Detalle Instalación', ${activeMenu})}">
 <body>
 <th:block th:fragment="content">
@@ -29,7 +30,9 @@
       <div class="table-wrapper">
         <table class="umg-table">
           <thead>
-            <tr><th>#</th><th>Nombre</th><th>Nivel</th><th>Tipo</th><th>Descripción</th></tr>
+            <tr><th>#</th><th>Nombre</th><th>Nivel</th><th>Tipo</th><th>Descripción</th>
+              <th sec:authorize="hasRole('ADMIN')">Acciones</th>
+            </tr>
           </thead>
           <tbody>
             <tr th:each="p, iter : ${puertas}">
@@ -42,9 +45,25 @@
                       th:text="${p.esSalon} ? 'Salón de Clase' : 'Acceso / Puerta'">Tipo</span>
               </td>
               <td><small th:text="${p.descripcion}">—</small></td>
+              <td sec:authorize="hasRole('ADMIN')">
+                <div th:if="${p.esSalon}" style="display:flex;gap:6px;">
+                  <a th:href="@{/instalaciones/{id}/puerta/{pid}/editar(id=${instalacion.id},pid=${p.id})}"
+                     class="btn btn-outline" style="padding:4px 10px;font-size:0.8rem;">
+                    <i class="fas fa-edit"></i> Editar
+                  </a>
+                  <form th:action="@{/instalaciones/{id}/puerta/{pid}/eliminar(id=${instalacion.id},pid=${p.id})}"
+                        method="post" style="display:inline;"
+                        onsubmit="return confirm('¿Eliminar este salón?');">
+                    <button type="submit" class="btn"
+                            style="padding:4px 10px;font-size:0.8rem;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;">
+                      <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                  </form>
+                </div>
+              </td>
             </tr>
             <tr th:if="${puertas == null or #lists.isEmpty(puertas)}">
-              <td colspan="5" style="text-align:center;color:#7a8898;padding:30px;">
+              <td colspan="6" style="text-align:center;color:#7a8898;padding:30px;">
                 No hay accesos registrados. <a th:href="@{/instalaciones/{id}/puerta/nueva(id=${instalacion.id})}">Agregar uno</a>.
               </td>
             </tr>

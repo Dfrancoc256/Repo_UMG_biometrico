@@ -37,13 +37,20 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Catedrático *</label>
+          <label class="form-label">Catedrático *
+            <small style="color:#7a8898;font-weight:400;">(máximo 5 cursos por catedrático)</small>
+          </label>
           <select class="form-control" name="catedraticoId" required>
             <option value="">-- Seleccione un catedrático --</option>
             <option th:each="cat : ${catedraticos}"
                     th:value="${cat.id}"
-                    th:text="${cat.nombreCompleto}"
-                    th:selected="${curso.catedratico != null and curso.catedratico.id == cat.id}">
+                    th:text="${cat.nombreCompleto} + ' (' + ${cursosPerCatedratico[cat.id] ?: 0} + '/5)'"
+                    th:disabled="${cursosPerCatedratico[cat.id] != null and cursosPerCatedratico[cat.id] >= 5
+                                  and (curso.id == null or curso.catedratico == null or curso.catedratico.id != cat.id)}"
+                    th:selected="${curso.catedratico != null and curso.catedratico.id == cat.id}"
+                    th:style="${cursosPerCatedratico[cat.id] != null and cursosPerCatedratico[cat.id] >= 5
+                                and (curso.id == null or curso.catedratico == null or curso.catedratico.id != cat.id)}
+                               ? 'color:#aaa;' : ''">
               Catedrático
             </option>
           </select>

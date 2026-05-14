@@ -43,12 +43,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        if (esCatedratico) {
-            response.sendRedirect("/cursos");
-            return;
-        }
-
-        if (esEstudiante) {
+        if (esCatedratico || esEstudiante) {
             String correo = authentication.getName();
 
             Persona persona = personaRepository.findByCorreo(correo)
