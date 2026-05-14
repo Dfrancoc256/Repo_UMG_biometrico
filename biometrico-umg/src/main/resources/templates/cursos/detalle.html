@@ -18,16 +18,18 @@
       </p>
     </div>
 
-    <button type="button" class="btn btn-success"
+    <button type="button"
+            class="btn btn-success btn-tomar-asistencia"
             onclick="abrirModalAsistencia()"
             sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
       <i class="fas fa-clipboard-check"></i> Tomar Asistencia
     </button>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;" th:if="${curso != null}">
+  <div class="detalle-curso-grid" th:if="${curso != null}">
 
-    <div>
+    <div class="detalle-curso-columna-izquierda">
+
       <div class="card">
         <div class="card-header">
           <h5>Información del Curso</h5>
@@ -45,6 +47,7 @@
         <div class="card-header">
           <h5><i class="fas fa-chalkboard-teacher"></i> Catedrático por Sección</h5>
         </div>
+
         <div class="card-body">
 
           <div th:if="${asignaciones != null and not #lists.isEmpty(asignaciones)}" style="margin-bottom:14px;">
@@ -56,6 +59,7 @@
                 &rarr;
                 <span th:text="${a.catedratico.nombreCompleto}">Catedrático</span>
               </span>
+
               <form th:action="@{/cursos/{id}/quitar-seccion(id=${curso.id})}" method="post" style="display:inline;">
                 <input type="hidden" name="seccion" th:value="${a.seccion}"/>
                 <button type="submit" class="btn btn-danger btn-xs"
@@ -67,8 +71,9 @@
           </div>
 
           <form th:action="@{/cursos/{id}/asignar-seccion(id=${curso.id})}" method="post">
-            <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;">
-              <div class="form-group" style="margin-bottom:0;">
+            <div class="curso-form-row">
+
+              <div class="form-group">
                 <label class="form-label">Sección</label>
                 <select class="form-control" name="seccion" required>
                   <option value="">--</option>
@@ -79,21 +84,25 @@
                 </select>
               </div>
 
-              <div class="form-group" style="margin-bottom:0;">
+              <div class="form-group">
                 <label class="form-label">Catedrático</label>
                 <select class="form-control" name="catedraticoId" required>
                   <option value="">-- Seleccione --</option>
                   <option th:each="c : ${catedraticos}"
                           th:value="${c.id}"
-                          th:text="${c.nombreCompleto}">Catedrático</option>
+                          th:text="${c.nombreCompleto}">
+                    Catedrático
+                  </option>
                 </select>
               </div>
 
               <button type="submit" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Asignar
               </button>
+
             </div>
           </form>
+
         </div>
       </div>
 
@@ -101,6 +110,7 @@
         <div class="card-header">
           <h5><i class="fas fa-user-plus"></i> Inscribir Estudiante</h5>
         </div>
+
         <div class="card-body">
           <form th:action="@{/cursos/{id}/inscribir(id=${curso.id})}" method="post">
             <div class="form-group">
@@ -109,7 +119,9 @@
                 <option value="">-- Seleccione --</option>
                 <option th:each="e : ${todosEstudiantes}"
                         th:value="${e.id}"
-                        th:text="${e.nombreCompleto + ' (' + e.numeroCarnet + ')'}">Estudiante</option>
+                        th:text="${e.nombreCompleto + ' (' + e.numeroCarnet + ')'}">
+                  Estudiante
+                </option>
               </select>
             </div>
 
@@ -119,9 +131,11 @@
           </form>
         </div>
       </div>
+
     </div>
 
-    <div>
+    <div class="detalle-curso-columna-derecha">
+
       <div class="card">
         <div class="card-header">
           <h5>
@@ -147,23 +161,39 @@
               <tbody>
               <tr th:each="ce, iter : ${estudiantes}">
                 <td th:text="${iter.count}">1</td>
+
                 <td>
                   <img th:if="${ce.estudiante.fotoRuta != null}"
                        th:src="@{'/' + ${ce.estudiante.fotoRuta}}"
                        class="avatar-sm"
                        alt="Foto"/>
-                  <div th:unless="${ce.estudiante.fotoRuta != null}" class="avatar-sm avatar-placeholder">
+
+                  <div th:unless="${ce.estudiante.fotoRuta != null}"
+                       class="avatar-sm avatar-placeholder">
                     <i class="fas fa-user"></i>
                   </div>
                 </td>
-                <td><strong th:text="${ce.estudiante.nombreCompleto}">Nombre</strong></td>
-                <td><code th:text="${ce.estudiante.numeroCarnet}">carnet</code></td>
-                <td><small th:text="${ce.estudiante.correo}">correo</small></td>
+
                 <td>
-                  <form th:action="@{/cursos/{id}/desinscribir(id=${curso.id})}" method="post"
-                        style="display:inline;" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+                  <strong th:text="${ce.estudiante.nombreCompleto}">Nombre</strong>
+                </td>
+
+                <td>
+                  <code th:text="${ce.estudiante.numeroCarnet}">carnet</code>
+                </td>
+
+                <td>
+                  <small th:text="${ce.estudiante.correo}">correo</small>
+                </td>
+
+                <td>
+                  <form th:action="@{/cursos/{id}/desinscribir(id=${curso.id})}"
+                        method="post"
+                        style="display:inline;"
+                        sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
                     <input type="hidden" name="estudianteId" th:value="${ce.estudiante.id}"/>
-                    <button type="submit" class="btn btn-danger btn-xs"
+                    <button type="submit"
+                            class="btn btn-danger btn-xs"
                             data-confirm="¿Quitar a este estudiante del curso?">
                       <i class="fas fa-times"></i>
                     </button>
@@ -181,12 +211,15 @@
           </div>
         </div>
       </div>
+
     </div>
 
   </div>
 
   <!-- MODAL ASISTENCIA -->
-  <div id="modalAsistencia" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+  <div id="modalAsistencia"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+
     <div style="background:#fff;width:520px;max-width:95%;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.25);overflow:hidden;">
 
       <div style="background:var(--umg-azul);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
@@ -194,7 +227,9 @@
           <i class="fas fa-camera" style="margin-right:8px;"></i>
           Habilitar asistencia biométrica
         </h3>
-        <button type="button" onclick="cerrarModalAsistencia()"
+
+        <button type="button"
+                onclick="cerrarModalAsistencia()"
                 style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">
           &times;
         </button>
@@ -220,7 +255,8 @@
           </select>
         </div>
 
-        <div id="resultadoSesion" style="display:none;margin-top:14px;padding:14px;border-radius:10px;background:#eef6ff;border:1px solid #bfd8f0;">
+        <div id="resultadoSesion"
+             style="display:none;margin-top:14px;padding:14px;border-radius:10px;background:#eef6ff;border:1px solid #bfd8f0;">
           <p style="font-size:13px;color:#003366;margin:0 0 8px;font-weight:600;">
             Sesión habilitada correctamente
           </p>
@@ -243,7 +279,11 @@
         <button type="button" class="btn btn-outline" onclick="cerrarModalAsistencia()">
           Cancelar
         </button>
-        <button type="button" class="btn btn-success" id="btnIniciarSesion" onclick="iniciarSesionAsistencia()">
+
+        <button type="button"
+                class="btn btn-success"
+                id="btnIniciarSesion"
+                onclick="iniciarSesionAsistencia()">
           <i class="fas fa-play"></i> Iniciar sesión
         </button>
       </div>

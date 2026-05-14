@@ -4,6 +4,7 @@ package com.umg.biometrico.controller;
 import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
+import com.umg.biometrico.repository.CarreraRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +30,7 @@ public class CursoController {
     private final CursoService cursoService;
     private final PersonaService personaService;
     private final CamaraRepository camaraRepository;
+    private final CarreraRepository carreraRepository;
 
 
     @GetMapping
@@ -33,18 +39,31 @@ public class CursoController {
         String correo = authentication.getName();
         Persona persona = personaService.buscarPorCorreo(correo).orElse(null);
 
+        List<Curso> cursos;
+
         if (persona != null
                 && persona.getRol() != null
                 && persona.getRol().getNombre().equalsIgnoreCase("CATEDRATICO")) {
 
-            model.addAttribute("cursos", cursoService.listarPorCatedratico(persona.getId()));
+            cursos = cursoService.listarPorCatedratico(persona.getId());
 
         } else {
-            model.addAttribute("cursos", cursoService.listarActivos());
+            cursos = cursoService.listarActivos();
         }
 
+        Map<String, List<Curso>> cursosPorCarrera = cursos.stream()
+                .filter(c -> c.getCarrera() != null)
+                .collect(Collectors.groupingBy(
+                        c -> c.getCarrera().getNombre(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        model.addAttribute("cursos", cursos);
+        model.addAttribute("cursosPorCarrera", cursosPorCarrera);
         model.addAttribute("activeMenu", "cursos");
-        return "cursos/lista";
+
+        return "cursos/arbol";
     }
 
     @GetMapping("/nuevo")
@@ -54,6 +73,7 @@ public class CursoController {
         model.addAttribute("catedraticos", catedraticos);
         model.addAttribute("cursosPerCatedratico", buildCursosPerCatedratico(catedraticos));
         model.addAttribute("activeMenu", "cursos");
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
         return "cursos/formulario";
     }
 
@@ -64,6 +84,7 @@ public class CursoController {
         model.addAttribute("catedraticos", catedraticos);
         model.addAttribute("cursosPerCatedratico", buildCursosPerCatedratico(catedraticos));
         model.addAttribute("activeMenu", "cursos");
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
         return "cursos/formulario";
     }
 
@@ -148,4 +169,12 @@ public class CursoController {
 
         return "redirect:/cursos/" + id;
     }
+
+//    @GetMapping("/arbol")
+//    public String arbol(Model model) {
+//        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
+//        model.addAttribute("activeMenu", "cursos");
+//        return "cursos/arbol";
+//    }
+
 }

@@ -87,8 +87,16 @@
                 <small th:text="${p.correo}">correo</small>
               </td>
               <td>
-                <small th:text="${p.carrera}">—</small>
-                <br/><small style="color:#aaa;" th:text="${p.seccion != null ? 'Sec: ' + p.seccion : ''}"></small>
+                <small th:text="${p.carrera != null ? p.carrera.nombre : '—'}">
+                  —
+                </small>
+
+                <br/>
+
+                <small style="color:#aaa;"
+                       th:text="${p.seccion != null and !p.seccion.isBlank() ? 'Sec: ' + p.seccion : 'Sec: —'}">
+                  Sec
+                </small>
               </td>
               <td>
                 <span class="badge" th:classappend="${p.restringido} ? 'badge-danger' : 'badge-success'"
