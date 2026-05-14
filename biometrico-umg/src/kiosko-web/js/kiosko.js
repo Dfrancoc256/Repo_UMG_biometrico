@@ -109,6 +109,8 @@ function iniciarValidacion() {
     procesando = true;
     btnValidar.disabled = true;
 
+    activarScanner(true);
+
     mostrarResultado("Coloque su rostro frente a la cámara...", null);
 
     setTimeout(capturarYVerificar, 900);
