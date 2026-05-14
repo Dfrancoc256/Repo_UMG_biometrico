@@ -41,8 +41,9 @@ public class Persona {
     @JoinColumn(name = "rol_id")
     private Rol rol;
 
-    @Column(length = 200)
-    private String carrera;
+    @ManyToOne
+    @JoinColumn(name = "carrera_id")
+    private Carrera carrera;
 
     @Column(length = 200)
     private String seccion;

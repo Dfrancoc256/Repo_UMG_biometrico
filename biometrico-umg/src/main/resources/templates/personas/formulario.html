@@ -71,14 +71,18 @@
                                    th:value="${persona.rol != null ? persona.rol.id : ''}">
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="grupoCarrera">
                             <label class="form-label">Carrera</label>
-                            <select class="form-control" name="carrera">
+
+                            <select class="form-control" name="carrera.id" id="selectCarrera">
                                 <option value="">-- Seleccione --</option>
-                                <option value="Ingeniería en Sistemas" th:selected="${persona.carrera == 'Ingeniería en Sistemas'}">Ingeniería en Sistemas</option>
-                                <option value="Psicología" th:selected="${persona.carrera == 'Psicología'}">Psicología</option>
-                                <option value="Derecho" th:selected="${persona.carrera == 'Derecho'}">Derecho</option>
-                                <option value="Arquitectura" th:selected="${persona.carrera == 'Arquitectura'}">Arquitectura</option>
+
+                                <option th:each="c : ${carreras}"
+                                        th:value="${c.id}"
+                                        th:text="${c.nombre}"
+                                        th:selected="${persona.carrera != null and persona.carrera.id == c.id}">
+                                    Carrera
+                                </option>
                             </select>
                         </div>
 
@@ -244,14 +248,26 @@
 
         function actualizarTipo(tipo) {
             const grupoSeccion = document.getElementById('grupoSeccion');
-            if (!grupoSeccion) return;
+            const grupoCarrera = document.getElementById('grupoCarrera');
 
-            const ocultar = (tipo === 'CATEDRATICO' || tipo === 'ADMIN');
-            grupoSeccion.style.display = ocultar ? 'none' : '';
+            if (grupoSeccion) {
+                const ocultarSeccion = (tipo === 'CATEDRATICO' || tipo === 'ADMIN');
+                grupoSeccion.style.display = ocultarSeccion ? 'none' : '';
 
-            if (ocultar) {
-                const selectSeccion = grupoSeccion.querySelector('select');
-                if (selectSeccion) selectSeccion.value = '';
+                if (ocultarSeccion) {
+                    const selectSeccion = grupoSeccion.querySelector('select');
+                    if (selectSeccion) selectSeccion.value = '';
+                }
+            }
+
+            if (grupoCarrera) {
+                const ocultarCarrera = (tipo === 'CATEDRATICO' || tipo === 'ADMIN');
+                grupoCarrera.style.display = ocultarCarrera ? 'none' : '';
+
+                if (ocultarCarrera) {
+                    const selectCarrera = document.getElementById('selectCarrera');
+                    if (selectCarrera) selectCarrera.value = '';
+                }
             }
         }
 

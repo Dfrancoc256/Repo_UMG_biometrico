@@ -1,6 +1,7 @@
 package com.umg.biometrico.controller;
 
 import com.umg.biometrico.model.Persona;
+import com.umg.biometrico.repository.CarreraRepository;
 import com.umg.biometrico.service.EmailService;
 import com.umg.biometrico.service.PdfService;
 import com.umg.biometrico.service.PersonaService;
@@ -35,6 +36,7 @@ public class PersonaController {
     private final EmailService emailService;
     private final WhatsAppService whatsAppService;
     private final RolRepository rolRepository;
+    private final CarreraRepository carreraRepository;
 
     @Value("${app.base-url}")
     private String appBaseUrl;
@@ -63,6 +65,7 @@ public class PersonaController {
         model.addAttribute("persona", new Persona());
         model.addAttribute("activeMenu", "personas");
         model.addAttribute("roles", rolRepository.findAll());
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
         return "personas/formulario";
     }
 
@@ -73,6 +76,11 @@ public class PersonaController {
                           RedirectAttributes redirectAttributes) {
         try {
             boolean esNueva = (persona.getId() == null);
+            if ("CATEDRATICO".equalsIgnoreCase(persona.getTipoPersona()) ||
+                    "ADMIN".equalsIgnoreCase(persona.getTipoPersona())) {
+                persona.setCarrera(null);
+                persona.setSeccion(null);
+            }
             Persona guardada = personaService.guardar(persona, foto, fotoBase64);
 
             if (esNueva) {
@@ -114,6 +122,7 @@ public class PersonaController {
         personaService.buscarPorId(id).ifPresent(p -> model.addAttribute("persona", p));
         model.addAttribute("activeMenu", "personas");
         model.addAttribute("roles", rolRepository.findAll());
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
         return "personas/formulario";
     }
 

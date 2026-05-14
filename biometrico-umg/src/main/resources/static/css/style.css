@@ -1984,3 +1984,67 @@ select.form-control {
   color: inherit;
   cursor: pointer;
 }
+
+/* =========================================================
+   DETALLE DE CURSO RESPONSIVE
+   ========================================================= */
+
+.detalle-curso-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.detalle-curso-columna-izquierda,
+.detalle-curso-columna-derecha {
+  min-width: 0;
+  width: 100%;
+}
+
+.curso-form-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.curso-form-row .form-group {
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .detalle-curso-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .detalle-curso-columna-izquierda,
+  .detalle-curso-columna-derecha {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .btn-tomar-asistencia {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .curso-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .curso-form-row .btn {
+    width: 100%;
+  }
+
+  .detalle-curso-grid .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detalle-curso-grid table.umg-table {
+    min-width: 650px;
+  }
+}

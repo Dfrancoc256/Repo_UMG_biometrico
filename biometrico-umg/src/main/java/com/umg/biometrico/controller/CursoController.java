@@ -4,6 +4,7 @@ package com.umg.biometrico.controller;
 import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
+import com.umg.biometrico.repository.CarreraRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class CursoController {
     private final CursoService cursoService;
     private final PersonaService personaService;
     private final CamaraRepository camaraRepository;
+    private final CarreraRepository carreraRepository;
 
 
     @GetMapping
@@ -39,8 +41,8 @@ public class CursoController {
             model.addAttribute("cursos", cursoService.listarActivos());
         }
 
-        model.addAttribute("activeMenu", "cursos");
-        return "cursos/lista";
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
+        return "cursos/arbol";
     }
 
     @GetMapping("/nuevo")
@@ -48,6 +50,7 @@ public class CursoController {
         model.addAttribute("curso", new Curso());
         model.addAttribute("catedraticos", personaService.listarCatedraticos());
         model.addAttribute("activeMenu", "cursos");
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
         return "cursos/formulario";
     }
 
@@ -56,6 +59,7 @@ public class CursoController {
         cursoService.buscarPorId(id).ifPresent(c -> model.addAttribute("curso", c));
         model.addAttribute("catedraticos", personaService.listarCatedraticos());
         model.addAttribute("activeMenu", "cursos");
+        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
         return "cursos/formulario";
     }
 
@@ -131,4 +135,12 @@ public class CursoController {
 
         return "redirect:/cursos/" + id;
     }
+
+//    @GetMapping("/arbol")
+//    public String arbol(Model model) {
+//        model.addAttribute("carreras", carreraRepository.findByActivoTrue());
+//        model.addAttribute("activeMenu", "cursos");
+//        return "cursos/arbol";
+//    }
+
 }

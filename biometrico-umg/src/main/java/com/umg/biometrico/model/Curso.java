@@ -42,6 +42,12 @@ public class Curso {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @ManyToOne
+    @JoinColumn(name = "carrera_id")
+    private Carrera carrera;
+
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CursoEstudiante> estudiantes;
 }
