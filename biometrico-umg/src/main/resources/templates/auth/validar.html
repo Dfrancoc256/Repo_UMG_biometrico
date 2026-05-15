@@ -82,15 +82,136 @@
             text-align: center;
         }
 
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        .auth-mobile-menu {
+            display: none;
+        }
+
+        .auth-mobile-menu {
+            display: none;
+        }
+
         @media (max-width: 768px) {
+            .auth-mobile-menu {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 82%;
+                max-width: 370px;
+                height: 100vh;
+                z-index: 9998;
+                background: linear-gradient(135deg, #0b3c75, #0d2244);
+                color: white;
+                padding: 70px 22px 24px;
+                box-shadow: 12px 0 35px rgba(0,0,0,.35);
+                overflow-y: auto;
+            }
+
+            .auth-mobile-menu.open {
+                display: block;
+            }
+
+            .mobile-login-art-inner {
+                width: 100%;
+                text-align: center;
+            }
+
+            .mobile-login-art-inner h1 {
+                color: white;
+                font-size: 22px;
+                line-height: 1.35;
+                margin: 14px 0 10px;
+            }
+
+            .mobile-login-art-inner p {
+                color: rgba(255,255,255,.82);
+                font-size: 13px;
+                line-height: 1.5;
+                margin: 0;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+                position: fixed;
+                top: 18px;
+                left: 18px;
+                width: 44px;
+                height: 44px;
+                border: none;
+                border-radius: 12px;
+                background: #0b2c63;
+                color: white;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                z-index: 10000;
+                box-shadow: 0 8px 22px rgba(0,0,0,.25);
+                cursor: pointer;
+            }
+
             .login-art {
                 display: none;
+            }
+
+            .login-form-panel {
+                width: 100% !important;
             }
         }
     </style>
 </head>
 
 <body>
+
+    <button class="mobile-menu-btn" onclick="toggleAuthMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div id="authMobileMenu" class="auth-mobile-menu">
+        <div class="mobile-login-art-inner">
+
+            <div style="display:flex;justify-content:center;margin-bottom:16px;">
+                <img th:src="@{/img/logo-umg.png}"
+                     alt="Universidad Mariano Gálvez"
+                     style="max-width:105px;"/>
+            </div>
+
+            <h1>Universidad Mariano Gálvez<br/>de Guatemala</h1>
+
+            <p>Sistema de Registro Biométrico de Ingreso<br/>Sede La Florida · Zona 19 · 2026</p>
+
+            <div style="margin-top:28px;display:flex;gap:22px;opacity:.65;font-size:26px;justify-content:center;">
+                <i class="fas fa-camera"></i>
+                <i class="fas fa-fingerprint"></i>
+                <i class="fas fa-shield-alt"></i>
+                <i class="fas fa-id-card"></i>
+            </div>
+
+            <div class="login-art-divider"></div>
+            <div class="login-art-subtitle">OPCIONES DE ACCESO</div>
+
+            <div class="login-art-actions">
+                <a th:href="@{/auth/login}" class="login-art-btn">
+                    <i class="fas fa-keyboard"></i>
+                    <span>Login Manual</span>
+                </a>
+
+                <a th:href="@{/auth/validar-carnet}" class="login-art-btn active-side">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Validar Carné PDF</span>
+                </a>
+
+                <a th:href="@{/enrolamiento}" class="login-art-btn">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Enrolarse a cursos</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
 <div class="login-page">
 
     <!-- BARRA IZQUIERDA -->
@@ -254,5 +375,27 @@
 </div>
 
 <script th:src="@{/js/main.js}"></script>
+    <script>
+        function toggleAuthMenu() {
+            document.getElementById('authMobileMenu')
+                .classList.toggle('open');
+        }
+    </script>
+    <script>
+        document.addEventListener("click", function(e) {
+
+            const menu = document.getElementById("authMobileMenu");
+            const button = document.querySelector(".mobile-menu-btn");
+
+            if (
+                menu.classList.contains("open") &&
+                !menu.contains(e.target) &&
+                !button.contains(e.target)
+            ) {
+                menu.classList.remove("open");
+            }
+        });
+    </script>
+
 </body>
 </html>
