@@ -5,236 +5,168 @@
 
 <th:block th:fragment="content">
 
-    <div class="page-header">
-        <div>
-            <h2>
-                <i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>
-                <span th:text="${curso.id != null} ? 'Editar Curso' : 'Nuevo Curso'">Nuevo Curso</span>
-            </h2>
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>
+        <span th:text="${curso.id != null} ? 'Editar Curso' : 'Nuevo Curso'">
+          Nuevo Curso
+        </span>
+      </h2>
 
-            <p class="breadcrumb">
-                <a th:href="@{/cursos}">Cursos</a> &rsaquo; Formulario
-            </p>
-        </div>
+      <p class="breadcrumb">
+        <a th:href="@{/cursos}">Cursos</a> &rsaquo; Formulario
+      </p>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:700px;">
+
+    <div class="card-header">
+      <h5>
+        <i class="fas fa-edit" style="margin-right:8px;"></i>
+        Información del Curso
+      </h5>
     </div>
 
-    <div class="card" style="max-width:700px;">
+    <div class="card-body">
 
-        <div class="card-header">
-            <h5>
-                <i class="fas fa-edit" style="margin-right:8px;"></i>
-                Información del Curso
-            </h5>
+      <form th:action="@{/cursos/guardar}" method="post">
+
+        <input type="hidden" name="id" th:value="${curso.id}"/>
+
+        <!-- CODIGO Y NOMBRE -->
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+
+          <div class="form-group">
+            <label class="form-label">
+              Código
+
+              <small style="color:#7a8898;font-weight:400;"
+                     th:if="${curso.id == null}">
+                (auto-generado si se deja vacío)
+              </small>
+            </label>
+
+            <input type="text"
+                   class="form-control"
+                   name="codigo"
+                   th:value="${curso.codigo}"
+                   placeholder="Ej: SIS-301 (opcional)"
+                   th:readonly="${curso.id != null}"/>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nombre del Curso *</label>
+
+            <input type="text"
+                   class="form-control"
+                   name="nombre"
+                   th:value="${curso.nombre}"
+                   placeholder="Ej: Programación III"
+                   required/>
+          </div>
+
         </div>
 
-        <div class="card-body">
+        <!-- CARRERA -->
+        <div class="form-group">
+          <label class="form-label">Carrera *</label>
 
-            <form th:action="@{/cursos/guardar}" method="post">
+          <select class="form-control" name="carrera.id" required>
 
-                <input type="hidden" name="id" th:value="${curso.id}"/>
+            <option value="">-- Seleccione una carrera --</option>
 
-                <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;">
+            <option th:each="c : ${carreras}"
+                    th:value="${c.id}"
+                    th:text="${c.nombre}"
+                    th:selected="${curso.carrera != null and curso.carrera.id == c.id}">
+              Carrera
+            </option>
 
-                    <div class="form-group">
-                        <label class="form-label">
-                            Código
-                            <small style="color:#7a8898;font-weight:400;" th:if="${curso.id == null}">
-                                (auto-generado)
-                            </small>
-                        </label>
+          </select>
+        </div>
 
-                        <div th:if="${curso.id == null}" style="position:relative;">
-                            <input type="text"
-                                   class="form-control"
-                                   name="codigo"
-                                   id="campoCodigo"
-                                   th:placeholder="${codigoPreview}"
-                                   style="padding-right:110px;font-family:monospace;color:#1a3a6b;font-weight:600;"/>
+        <!-- CATEDRATICO -->
+        <div class="form-group">
 
-                            <span id="badgeCodigo"
-                                  style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
-                           background:#eef2ff;color:#3730a3;font-size:11px;font-weight:700;
-                           padding:2px 8px;border-radius:10px;pointer-events:none;"
-                                  th:text="${codigoPreview}">
-                CUR-2026-001
-              </span>
-                        </div>
+          <label class="form-label">Catedrático *</label>
 
-                        <input th:if="${curso.id != null}"
-                               type="text"
-                               class="form-control"
-                               name="codigo"
-                               th:value="${curso.codigo}"
-                               readonly
-                               style="font-family:monospace;color:#1a3a6b;font-weight:600;background:#f5f7fa;"/>
+          <select class="form-control" name="catedraticoId" required>
 
-                        <small th:if="${curso.id == null}" style="color:#7a8898;font-size:11px;margin-top:4px;display:block;">
-                            <i class="fas fa-info-circle"></i>
-                            Deja en blanco para usar el código sugerido.
-                        </small>
-                    </div>
+            <option value="">-- Seleccione un catedrático --</option>
 
-                    <div class="form-group">
-                        <label class="form-label">Nombre del Curso *</label>
+            <option th:each="cat : ${catedraticos}"
+                    th:value="${cat.id}"
+                    th:text="${cat.nombreCompleto}"
+                    th:selected="${curso.catedratico != null and curso.catedratico.id == cat.id}">
+              Catedrático
+            </option>
 
-                        <input type="text"
-                               class="form-control"
-                               name="nombre"
-                               th:value="${curso.nombre}"
-                               placeholder="Ej: Programación III"
-                               required/>
-                    </div>
+          </select>
+        </div>
 
-                </div>
+        <!-- SALON Y HORARIO -->
+        <div class="form-group">
+          <label class="form-label">Horario *</label>
 
-                <div class="form-group">
-                    <label class="form-label">Carrera *</label>
+          <select class="form-control" name="horario" required>
+            <option value="">-- Seleccione un horario --</option>
 
-                    <select class="form-control" name="carrera.id" required>
-                        <option value="">-- Seleccione una carrera --</option>
+            <option value="Lunes y Miércoles 07:00-09:00"
+                    th:selected="${curso.horario == 'Lunes y Miércoles 07:00-09:00'}">
+              Lunes y Miércoles 07:00-09:00
+            </option>
 
-                        <option th:each="c : ${carreras}"
-                                th:value="${c.id}"
-                                th:text="${c.nombre}"
-                                th:selected="${curso.carrera != null and curso.carrera.id == c.id}">
-                            Carrera
-                        </option>
-                    </select>
-                </div>
+            <option value="Lunes y Miércoles 09:00-11:00"
+                    th:selected="${curso.horario == 'Lunes y Miércoles 09:00-11:00'}">
+              Lunes y Miércoles 09:00-11:00
+            </option>
 
-                <div class="form-group">
-                    <label class="form-label">
-                        Catedrático *
-                        <small style="color:#7a8898;font-weight:400;">
-                            (máximo 5 cursos por catedrático)
-                        </small>
-                    </label>
+            <option value="Martes y Jueves 07:00-09:00"
+                    th:selected="${curso.horario == 'Martes y Jueves 07:00-09:00'}">
+              Martes y Jueves 07:00-09:00
+            </option>
 
-                    <select class="form-control" name="catedraticoId" required>
-                        <option value="">-- Seleccione un catedrático --</option>
+            <option value="Martes y Jueves 09:00-11:00"
+                    th:selected="${curso.horario == 'Martes y Jueves 09:00-11:00'}">
+              Martes y Jueves 09:00-11:00
+            </option>
 
-                        <option th:each="cat : ${catedraticos}"
-                                th:value="${cat.id}"
-                                th:text="${cat.nombreCompleto} + ' (' + ${cursosPerCatedratico[cat.id] ?: 0} + '/5)'"
-                                th:disabled="${cursosPerCatedratico[cat.id] != null
-                                  and cursosPerCatedratico[cat.id] >= 5
-                                  and (curso.id == null
-                                       or curso.catedratico == null
-                                       or curso.catedratico.id != cat.id)}"
-                                th:selected="${curso.catedratico != null and curso.catedratico.id == cat.id}"
-                                th:style="${cursosPerCatedratico[cat.id] != null
-                               and cursosPerCatedratico[cat.id] >= 5
-                               and (curso.id == null
-                                    or curso.catedratico == null
-                                    or curso.catedratico.id != cat.id)}
-                              ? 'color:#aaa;' : ''">
-                            Catedrático
-                        </option>
-                    </select>
-                </div>
+            <option value="Sábado 08:00-12:00"
+                    th:selected="${curso.horario == 'Sábado 08:00-12:00'}">
+              Sábado 08:00-12:00
+            </option>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <option value="Domingo 08:00-12:00"
+                    th:selected="${curso.horario == 'Domingo 08:00-12:00'}">
+              Domingo 08:00-12:00
+            </option>
+          </select>
+        </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Salón</label>
+        <!-- BOTONES -->
+        <div style="display:flex;gap:12px;margin-top:8px;">
 
-                        <input type="text"
-                               class="form-control"
-                               name="salon"
-                               th:value="${curso.salon}"
-                               placeholder="Ej: Salón 201"/>
-                    </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i>
 
-                    <div class="form-group">
-                        <label class="form-label">Horario</label>
-
-                        <input type="text"
-                               class="form-control"
-                               name="horario"
-                               th:value="${curso.horario}"
-                               placeholder="Ej: Lunes y Miércoles 18:00-21:00"/>
-                    </div>
-
-                </div>
-
-                <div style="display:flex;gap:12px;margin-top:8px;">
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        <span th:text="${curso.id != null} ? 'Actualizar' : 'Guardar Curso'">
+            <span th:text="${curso.id != null} ? 'Actualizar' : 'Guardar Curso'">
               Guardar
             </span>
-                    </button>
+          </button>
 
-                    <a th:href="@{/cursos}" class="btn btn-outline">
-                        <i class="fas fa-arrow-left"></i>
-                        Cancelar
-                    </a>
-
-                </div>
-
-            </form>
+          <a th:href="@{/cursos}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i>
+            Cancelar
+          </a>
 
         </div>
+
+      </form>
+
     </div>
-
-    <script th:if="${curso.id == null}">
-        const campoCodigo = document.getElementById('campoCodigo');
-        const badgeCodigo = document.getElementById('badgeCodigo');
-
-        campoCodigo.addEventListener('input', () => {
-            badgeCodigo.style.display = campoCodigo.value.trim() ? 'none' : '';
-        });
-
-        fetch('/cursos/preview-codigo')
-            .then(r => r.text())
-            .then(codigo => {
-                campoCodigo.placeholder = codigo;
-                badgeCodigo.textContent = codigo;
-            })
-            .catch(() => {});
-    </script>
-
-</th:block>
-
-</body>
-</html>         <div style="display:flex;gap:12px;margin-top:8px;">
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i>
-                        <span th:text="${curso.id != null} ? 'Actualizar' : 'Guardar Curso'">
-              Guardar
-            </span>
-                    </button>
-
-                    <a th:href="@{/cursos}" class="btn btn-outline">
-                        <i class="fas fa-arrow-left"></i>
-                        Cancelar
-                    </a>
-
-                </div>
-
-            </form>
-
-        </div>
-    </div>
-
-    <script th:if="${curso.id == null}">
-        const campoCodigo = document.getElementById('campoCodigo');
-        const badgeCodigo = document.getElementById('badgeCodigo');
-
-        campoCodigo.addEventListener('input', () => {
-            badgeCodigo.style.display = campoCodigo.value.trim() ? 'none' : '';
-        });
-
-        fetch('/cursos/preview-codigo')
-            .then(r => r.text())
-            .then(codigo => {
-                campoCodigo.placeholder = codigo;
-                badgeCodigo.textContent = codigo;
-            })
-            .catch(() => {});
-    </script>
+  </div>
 
 </th:block>
 
