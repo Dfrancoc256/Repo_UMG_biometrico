@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta charset="UTF-8">
     <title>Kiosko Asistencia UMG</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -37,10 +40,15 @@
         </section>
 
         <section class="form-area">
-            <input type="text"
-                   id="carnet"
-                   placeholder="Ingrese o escanee carnet"
-                   autocomplete="off">
+            <div class="carnet-wrapper">
+                <span class="carnet-prefix">UMG-</span>
+
+                <input type="text"
+                       id="carnet"
+                       placeholder="0000000"
+                       maxlength="7"
+                       autocomplete="off">
+            </div>
 
             <button id="btnValidar" type="button">
                 Validar

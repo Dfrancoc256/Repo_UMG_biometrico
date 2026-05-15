@@ -289,4 +289,32 @@ body {
         position: static;
         margin-top: 18px;
     }
+
+    .carnet-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .carnet-prefix {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 18px;
+        font-weight: 700;
+        z-index: 5;
+    }
+
+    .carnet-wrapper input {
+        width: 100%;
+        height: 56px;
+        border: none;
+        border-radius: 12px;
+        padding-left: 78px;
+        padding-right: 18px;
+        font-size: 18px;
+        outline: none;
+        color: #1f2937;
+    }
 }

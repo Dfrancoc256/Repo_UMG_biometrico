@@ -97,7 +97,11 @@ async function cargarSesion() {
 function iniciarValidacion() {
     if (procesando) return;
 
-    const carnet = carnetInput.value.trim();
+    let carnet = carnetInput.value.trim();
+
+    if (!carnet.startsWith("UMG-")) {
+        carnet = "UMG-" + carnet;
+    }
 
     if (!carnet) {
         mostrarResultado("Ingrese o escanee un carnet.", false);
