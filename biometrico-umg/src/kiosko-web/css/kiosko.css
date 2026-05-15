@@ -72,34 +72,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    position: relative;
-    z-index: 1;
-}
-
-.scan-line {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: #00e5ff;
-    box-shadow: 0 0 18px #00e5ff;
-    z-index: 9999;
-    opacity: 0;
-}
-
-.video-box.escaneando .scan-line {
-    opacity: 1;
-    animation: scannerMove 1.5s linear infinite;
-}
-
-@keyframes scannerMove {
-    0% {
-        top: 0;
-    }
-
-    100% {
-        top: calc(100% - 4px);
-    }
+    display: block;
 }
 
 .video-box canvas {
@@ -116,7 +89,7 @@ body {
     border-radius: 999px;
     font-size: 13px;
     font-weight: 700;
-    z-index: 5;
+    z-index: 20;
 }
 
 .camera-status span {
@@ -126,6 +99,40 @@ body {
     border-radius: 50%;
     display: inline-block;
     margin-right: 6px;
+}
+
+/* Scanner */
+.scan-line {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 5px;
+    opacity: 0;
+    z-index: 50;
+    pointer-events: none;
+    background: #00e5ff;
+    box-shadow: 0 0 18px #00e5ff, 0 0 35px rgba(0, 229, 255, 0.7);
+}
+
+.video-box.escaneando {
+    border-color: #00e5ff;
+    box-shadow: 0 0 18px rgba(0, 229, 255, 0.35),
+    0 0 35px rgba(0, 229, 255, 0.18);
+}
+
+.video-box.escaneando .scan-line {
+    opacity: 1;
+    animation: scannerMove 1.4s linear infinite;
+}
+
+@keyframes scannerMove {
+    from {
+        top: 0;
+    }
+    to {
+        top: calc(100% - 5px);
+    }
 }
 
 .info-curso {
@@ -234,56 +241,7 @@ body {
     font-size: 13px;
 }
 
-/* ───────────────────────────── */
-/* ANIMACIÓN DE ESCANEO FACIAL */
-/* ───────────────────────────── */
-
-.scan-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 4px;
-    opacity: 0;
-    z-index: 6;
-    pointer-events: none;
-
-    background: linear-gradient(
-            90deg,
-            transparent,
-            #00e5ff,
-            transparent
-    );
-
-    box-shadow:
-            0 0 12px rgba(0, 229, 255, 0.95),
-            0 0 28px rgba(0, 229, 255, 0.55);
-}
-
-.video-box.escaneando .scan-line {
-    opacity: 1;
-    animation: scannerMove 1.5s linear infinite;
-}
-
-.video-box.escaneando {
-    border-color: #00e5ff;
-    box-shadow:
-            0 0 18px rgba(0, 229, 255, 0.35),
-            0 0 35px rgba(0, 229, 255, 0.18);
-}
-
-@keyframes scannerMove {
-    0% {
-        top: 0;
-    }
-
-    100% {
-        top: calc(100% - 4px);
-    }
-}
-
 @media (max-width: 768px) {
-
     body {
         overflow-y: auto;
     }
@@ -330,32 +288,5 @@ body {
     .kiosko-footer {
         position: static;
         margin-top: 18px;
-    }
-
-    .scan-line {
-        position: absolute !important;
-        left: 0 !important;
-        right: 0 !important;
-        top: 0 !important;
-        height: 5px !important;
-        opacity: 0 !important;
-        z-index: 999 !important;
-        pointer-events: none !important;
-        background: #00e5ff !important;
-        box-shadow: 0 0 20px #00e5ff !important;
-    }
-
-    .video-box.escaneando .scan-line {
-        opacity: 1 !important;
-        animation: scannerMove 1.4s linear infinite !important;
-    }
-
-    @keyframes scannerMove {
-        from {
-            top: 0;
-        }
-        to {
-            top: calc(100% - 5px);
-        }
     }
 }
