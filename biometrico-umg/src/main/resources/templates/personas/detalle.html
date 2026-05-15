@@ -9,6 +9,11 @@
   <div class="page-header">
     <div>
       <h2><i class="fas fa-user-circle" style="margin-right:10px;color:var(--umg-azul);"></i>Detalle de Persona</h2>
+      <p class="breadcrumb"
+         sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas}">Personas</a>
+        &rsaquo; Detalle
+      </p>
     </div>
     <div class="detalle-acciones">
       <a th:href="@{/personas/{id}/editar(id=${persona.id})}" class="btn btn-warning"
