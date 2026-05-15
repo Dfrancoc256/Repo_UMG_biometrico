@@ -292,29 +292,41 @@ body {
 
     .carnet-wrapper {
         flex: 1;
-        position: relative;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 14px;
+        overflow: hidden;
     }
 
     .carnet-prefix {
-        position: absolute;
-        left: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #64748b;
-        font-size: 18px;
-        font-weight: 700;
-        z-index: 5;
+        height: 100%;
+        min-width: 120px;
+        background: #003366;
+        color: #ffffff;
+        font-size: 22px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: 1px;
     }
 
     .carnet-wrapper input {
-        width: 100%;
-        height: 56px;
+        flex: 1;
+        height: 100%;
         border: none;
-        border-radius: 12px;
-        padding-left: 78px;
-        padding-right: 18px;
-        font-size: 18px;
         outline: none;
+        padding: 0 22px;
+        font-size: 26px;
+        font-weight: 700;
         color: #1f2937;
+        letter-spacing: 2px;
     }
+
+    .carnet-wrapper input::placeholder {
+        color: #9ca3af;
+    }
+
 }

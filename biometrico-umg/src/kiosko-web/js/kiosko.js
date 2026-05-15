@@ -37,7 +37,14 @@ function inicializarEventosKiosko() {
 
     document.addEventListener("click", reiniciarTemporizador);
     document.addEventListener("keydown", reiniciarTemporizador);
+
     document.addEventListener("click", activarPantallaCompleta, { once: true });
+
+    document.addEventListener("click", () => {
+        if (!procesando) {
+            carnetInput.focus();
+        }
+    });
 
     video.addEventListener("error", async () => {
         await iniciarCamara();
@@ -51,7 +58,15 @@ function inicializarEventosKiosko() {
         if (!video.srcObject) await iniciarCamara();
     }, 10000);
 
-    setInterval(() => carnetInput.focus(), 2000);
+    setInterval(() => {
+        if (!procesando) {
+            carnetInput.focus();
+            carnetInput.setSelectionRange(
+                carnetInput.value.length,
+                carnetInput.value.length
+            );
+        }
+    }, 500);
 }
 
 async function iniciarCamara() {
