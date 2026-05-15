@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.umg.biometrico.repository.CamaraRepository;
 
 @Controller
 @RequestMapping("/instalaciones")
@@ -17,6 +18,7 @@ public class InstalacionController {
 
     private final InstalacionRepository instalacionRepository;
     private final PuertaRepository puertaRepository;
+    private final CamaraRepository camaraRepository;
 
     @GetMapping
     public String listar(Model model) {
@@ -44,7 +46,9 @@ public class InstalacionController {
         instalacionRepository.findById(id).ifPresent(inst -> {
             model.addAttribute("instalacion", inst);
             model.addAttribute("puertas", puertaRepository.findByInstalacionId(id));
+            model.addAttribute("camaras", camaraRepository.findByPuerta_Instalacion_Id(id));
         });
+
         model.addAttribute("activeMenu", "instalaciones");
         return "instalaciones/detalle";
     }
