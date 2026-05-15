@@ -102,8 +102,9 @@ public class CursoService {
     public Map<String, List<Curso>> listarActivosAgrupadosPorCarrera() {
         return cursoRepository.findByActivoTrue().stream()
                 .collect(Collectors.groupingBy(
-                        c -> c.getCarrera() != null && !c.getCarrera().isBlank()
-                                ? c.getCarrera() : "Sin facultad asignada",
+                        c -> c.getCarrera() != null && c.getCarrera().getNombre() != null && !c.getCarrera().getNombre().isBlank()
+                                ? c.getCarrera().getNombre()
+                                : "Sin facultad asignada",
                         LinkedHashMap::new,
                         Collectors.toList()
                 ));

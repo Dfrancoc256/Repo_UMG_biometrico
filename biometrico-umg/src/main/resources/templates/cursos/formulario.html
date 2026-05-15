@@ -198,4 +198,45 @@
 </th:block>
 
 </body>
+</html>         <div style="display:flex;gap:12px;margin-top:8px;">
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        <span th:text="${curso.id != null} ? 'Actualizar' : 'Guardar Curso'">
+              Guardar
+            </span>
+                    </button>
+
+                    <a th:href="@{/cursos}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script th:if="${curso.id == null}">
+        const campoCodigo = document.getElementById('campoCodigo');
+        const badgeCodigo = document.getElementById('badgeCodigo');
+
+        campoCodigo.addEventListener('input', () => {
+            badgeCodigo.style.display = campoCodigo.value.trim() ? 'none' : '';
+        });
+
+        fetch('/cursos/preview-codigo')
+            .then(r => r.text())
+            .then(codigo => {
+                campoCodigo.placeholder = codigo;
+                badgeCodigo.textContent = codigo;
+            })
+            .catch(() => {});
+    </script>
+
+</th:block>
+
+</body>
 </html>

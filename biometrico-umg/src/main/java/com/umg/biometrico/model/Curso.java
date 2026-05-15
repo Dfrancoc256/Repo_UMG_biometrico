@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import java.util.List;
 
-
 @Entity
 @Table(name = "cursos")
 @Data
@@ -37,15 +36,12 @@ public class Curso {
     @Column(length = 10)
     private String seccion;
 
-    @Column(length = 200)
-    private String carrera;
-
     @Column(nullable = false)
     private Boolean activo = true;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "carrera_id")
     private Carrera carrera;
 
