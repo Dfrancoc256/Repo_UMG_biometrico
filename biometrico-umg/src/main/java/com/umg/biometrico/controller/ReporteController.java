@@ -92,7 +92,7 @@ public class ReporteController {
 
     @GetMapping("/historico")
     public String historicoArbol(Model model) {
-        model.addAttribute("instalaciones", instalacionRepository.findAll());
+        model.addAttribute("instalaciones", instalacionRepository.findAllWithPuertas());
         model.addAttribute("activeMenu", "reportes");
         return "reportes/historico";
     }

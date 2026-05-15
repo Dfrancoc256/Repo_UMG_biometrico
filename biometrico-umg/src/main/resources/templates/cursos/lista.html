@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:replace="~{layout/main :: layout(~{::content}, 'Cursos', ${activeMenu})}">
 <body>
 <th:block th:fragment="content">
@@ -9,58 +10,246 @@
       <h2><i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>Cursos</h2>
       <p class="breadcrumb">Listado de cursos activos</p>
     </div>
-    <a th:href="@{/cursos/nuevo}" class="btn btn-primary"
-       sec:authorize="hasRole('ADMIN')">
+    <a th:href="@{/cursos/nuevo}" class="btn btn-primary" sec:authorize="hasRole('ADMIN')">
       <i class="fas fa-plus"></i> Nuevo Curso
     </a>
   </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h5><i class="fas fa-list" style="margin-right:8px;"></i>
-        Cursos Activos (<span th:text="${#lists.size(cursos)}">0</span>)
-      </h5>
-    </div>
-    <div class="card-body" style="padding:0;">
-      <div class="table-wrapper">
-        <table class="umg-table">
-          <thead>
-            <tr>
-              <th>#</th><th>Código</th><th>Nombre del Curso</th>
-              <th>Catedrático</th><th>Salón</th><th>Horario</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="c, iter : ${cursos}">
-              <td th:text="${iter.count}">1</td>
-              <td><code th:text="${c.codigo}">cod</code></td>
-              <td><strong th:text="${c.nombre}">Nombre</strong></td>
-              <td th:text="${c.catedratico != null ? c.catedratico.nombreCompleto : '—'}">Cat</td>
-              <td th:text="${c.salon}">Salón</td>
-              <td><small th:text="${c.horario}">Horario</small></td>
-              <td>
-                <a th:href="@{/cursos/{id}(id=${c.id})}" class="btn btn-outline btn-xs" title="Ver estudiantes">
-                  <i class="fas fa-users"></i> Estudiantes
-                </a>
-                <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs" title="Asistencia">
-                  <i class="fas fa-clipboard-check"></i> Asistencia
-                </a>
-                <a th:href="@{/cursos/{id}/editar(id=${c.id})}" class="btn btn-warning btn-xs" title="Editar curso"
-                   sec:authorize="hasRole('ADMIN')">
-                  <i class="fas fa-edit"></i>
-                </a>
-              </td>
-            </tr>
-            <tr th:if="${cursos == null or #lists.isEmpty(cursos)}">
-              <td colspan="7" style="text-align:center;color:#7a8898;padding:40px;">
-                No hay cursos registrados.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <!-- Tabs: solo el ADMIN ve el árbol -->
+  <div sec:authorize="hasRole('ADMIN')" style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #e2e8f0;">
+    <button id="tabLista" onclick="mostrarVista('lista')"
+            style="padding:9px 22px;border:none;background:none;font-size:13.5px;font-weight:600;
+                   cursor:pointer;color:var(--umg-azul);border-bottom:2px solid var(--umg-azul);
+                   margin-bottom:-2px;transition:color .15s;">
+      <i class="fas fa-list" style="margin-right:6px;"></i>Lista
+    </button>
+    <button id="tabArbol" onclick="mostrarVista('arbol')"
+            style="padding:9px 22px;border:none;background:none;font-size:13.5px;font-weight:600;
+                   cursor:pointer;color:#7a8898;border-bottom:2px solid transparent;
+                   margin-bottom:-2px;transition:color .15s;">
+      <i class="fas fa-sitemap" style="margin-right:6px;"></i>Árbol de Cursos
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════ VISTA LISTA ═══════════════════════════ -->
+  <div id="vistaLista">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-list" style="margin-right:8px;"></i>
+          Cursos Activos (<span th:text="${#lists.size(cursos)}">0</span>)
+        </h5>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div class="table-wrapper">
+          <table class="umg-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Código</th><th>Nombre del Curso</th>
+                <th>Facultad</th><th>Catedrático</th><th>Salón</th><th>Horario</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="c, iter : ${cursos}">
+                <td th:text="${iter.count}">1</td>
+                <td><code th:text="${c.codigo}">cod</code></td>
+                <td><strong th:text="${c.nombre}">Nombre</strong></td>
+                <td>
+                  <small th:text="${c.carrera != null ? c.carrera : '—'}"
+                         style="color:#7a8898;">—</small>
+                </td>
+                <td th:text="${c.catedratico != null ? c.catedratico.nombreCompleto : '—'}">Cat</td>
+                <td th:text="${c.salon}">Salón</td>
+                <td><small th:text="${c.horario}">Horario</small></td>
+                <td>
+                  <a th:href="@{/cursos/{id}(id=${c.id})}" class="btn btn-outline btn-xs" title="Ver estudiantes">
+                    <i class="fas fa-users"></i> Estudiantes
+                  </a>
+                  <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs" title="Asistencia">
+                    <i class="fas fa-clipboard-check"></i> Asistencia
+                  </a>
+                  <a th:href="@{/cursos/{id}/editar(id=${c.id})}" class="btn btn-warning btn-xs" title="Editar"
+                     sec:authorize="hasRole('ADMIN')">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                </td>
+              </tr>
+              <tr th:if="${cursos == null or #lists.isEmpty(cursos)}">
+                <td colspan="8" style="text-align:center;color:#7a8898;padding:40px;">
+                  No hay cursos registrados.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- ═══════════════════════════ VISTA ÁRBOL (solo ADMIN) ═══════════════════════════ -->
+  <div id="vistaArbol" style="display:none;" sec:authorize="hasRole('ADMIN')">
+
+    <style>
+      .root-card-curso {
+        display: flex; align-items: center; gap: 16px;
+        background: var(--umg-azul); color: #fff;
+        padding: 14px 22px; border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(0,51,102,.3);
+        max-width: 420px; margin: 0 auto;
+      }
+      .root-avatar-curso {
+        width: 52px; height: 52px; border-radius: 50%;
+        background: rgba(255,255,255,.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,.3);
+      }
+      .root-role-curso {
+        font-size: 10px; font-weight: 700;
+        letter-spacing: 1.4px; text-transform: uppercase;
+        color: var(--umg-dorado); margin-bottom: 3px;
+      }
+      .root-name-curso  { font-size: 16px; font-weight: 700; line-height: 1.2; }
+      .tree-connector   { width: 2px; height: 24px;
+        background: linear-gradient(to bottom, var(--umg-azul), #c5d8ea);
+        margin: 0 auto; }
+      .facu-folder {
+        border: 2px solid #dde8f5; border-radius: 10px;
+        overflow: hidden; background: #fff; margin-bottom: 12px;
+      }
+      .facu-header {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 16px;
+        background: linear-gradient(to right, #e8f0fb, #f5f8fc);
+        border-bottom: 2px solid #dde8f5;
+        font-size: 13px; font-weight: 700; color: var(--umg-azul);
+        cursor: pointer; user-select: none;
+      }
+      .facu-header i.folder-icon { font-size: 15px; color: var(--umg-dorado); }
+      .facu-count { margin-left: auto; font-size: 11px; font-weight: 600; color: #7a8898; }
+      .curso-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 16px; border-bottom: 1px solid #f0f4fa;
+      }
+      .curso-row:last-child { border-bottom: none; }
+      .curso-row::before {
+        content: ''; display: block; width: 3px;
+        background: var(--umg-dorado); align-self: stretch;
+        border-radius: 2px; flex-shrink: 0; margin-right: 4px;
+      }
+      .curso-nombre { flex: 1; font-size: 13px; font-weight: 600; color: #1a2a3a; }
+      .curso-cod {
+        font-size: 11px; font-weight: 700; padding: 2px 8px;
+        border-radius: 10px; background: #e8f0fe; color: var(--umg-azul); flex-shrink: 0;
+      }
+    </style>
+
+    <!-- Sin datos -->
+    <div th:if="${cursosPorCarrera == null or cursosPorCarrera.isEmpty()}" class="card">
+      <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+        <i class="fas fa-sitemap" style="font-size:40px;display:block;margin-bottom:14px;opacity:.4;"></i>
+        Ningún curso tiene facultad asignada aún.
+        <br/><br/>
+        <a th:href="@{/cursos/nuevo}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Crear curso con facultad
+        </a>
+      </div>
+    </div>
+
+    <div th:if="${cursosPorCarrera != null and not cursosPorCarrera.isEmpty()}">
+
+      <!-- Nodo raíz: UMG -->
+      <div class="root-card-curso">
+        <div class="root-avatar-curso">
+          <i class="fas fa-university"></i>
+        </div>
+        <div>
+          <div class="root-role-curso">Universidad Mariano Gálvez</div>
+          <div class="root-name-curso">Árbol de Cursos</div>
+          <div style="font-size:12px;opacity:.75;margin-top:4px;">
+            <span th:text="${#lists.size(cursos)} + ' cursos activos'">0 cursos</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree-connector"></div>
+
+      <!-- Nodos: Facultad → Cursos -->
+      <div th:each="entrada : ${cursosPorCarrera}">
+        <div class="facu-folder">
+
+          <div class="facu-header"
+               th:attr="data-key=${#strings.replace(entrada.key,' ','-')}"
+               onclick="toggleFacultad(this.dataset.key, this)">
+            <i class="fas fa-folder-open folder-icon"></i>
+            <span th:text="${entrada.key}">Facultad</span>
+            <span class="facu-count"
+                  th:text="${#lists.size(entrada.value)} + ' curso(s)'">0</span>
+            <i class="fas fa-chevron-down" style="color:#7a8898;transition:transform .2s;margin-left:6px;"></i>
+          </div>
+
+          <div th:id="'facu-' + ${#strings.replace(entrada.key,' ','-')}">
+            <div th:each="c : ${entrada.value}" class="curso-row">
+              <i class="fas fa-book" style="color:var(--umg-dorado);flex-shrink:0;"></i>
+              <div class="curso-nombre" th:text="${c.nombre}">Curso</div>
+              <span class="curso-cod" th:text="${c.codigo}">COD</span>
+              <a th:href="@{/cursos/{id}(id=${c.id})}" class="btn btn-outline btn-xs">
+                <i class="fas fa-users"></i> Estudiantes
+              </a>
+              <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-success btn-xs">
+                <i class="fas fa-clipboard-check"></i> Asistencia
+              </a>
+              <a th:href="@{/cursos/{id}/editar(id=${c.id})}" class="btn btn-warning btn-xs">
+                <i class="fas fa-edit"></i>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script sec:authorize="hasRole('ADMIN')">
+    function mostrarVista(vista) {
+      const lista = document.getElementById('vistaLista');
+      const arbol = document.getElementById('vistaArbol');
+      const tLista = document.getElementById('tabLista');
+      const tArbol = document.getElementById('tabArbol');
+
+      if (vista === 'lista') {
+        lista.style.display = '';
+        arbol.style.display = 'none';
+        tLista.style.color = 'var(--umg-azul)';
+        tLista.style.borderBottomColor = 'var(--umg-azul)';
+        tArbol.style.color = '#7a8898';
+        tArbol.style.borderBottomColor = 'transparent';
+      } else {
+        lista.style.display = 'none';
+        arbol.style.display = '';
+        tArbol.style.color = 'var(--umg-azul)';
+        tArbol.style.borderBottomColor = 'var(--umg-azul)';
+        tLista.style.color = '#7a8898';
+        tLista.style.borderBottomColor = 'transparent';
+      }
+      localStorage.setItem('cursos_vista', vista);
+    }
+
+    function toggleFacultad(key, header) {
+      const contenedor = document.getElementById('facu-' + key);
+      const icono = header.querySelector('.fa-chevron-down');
+      const abierto = contenedor.style.display !== 'none';
+      contenedor.style.display = abierto ? 'none' : '';
+      if (icono) icono.style.transform = abierto ? 'rotate(-90deg)' : '';
+      header.querySelector('.fas.folder-icon').className =
+              abierto ? 'fas fa-folder folder-icon' : 'fas fa-folder-open folder-icon';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const preferencia = localStorage.getItem('cursos_vista');
+      if (preferencia === 'arbol') mostrarVista('arbol');
+    });
+  </script>
 
 </th:block>
 </body>

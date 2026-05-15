@@ -37,6 +37,9 @@ public class Curso {
     @Column(length = 10)
     private String seccion;
 
+    @Column(length = 200)
+    private String carrera;
+
     @Column(nullable = false)
     private Boolean activo = true;
 
