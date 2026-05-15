@@ -94,44 +94,49 @@
             </td>
 
             <td sec:authorize="hasRole('ADMIN')">
-              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+              <div style="display:flex;gap:8px;align-items:center;justify-content:center;">
 
+                <!-- Editar acceso/salón -->
                 <a th:href="@{/instalaciones/{id}/puerta/{pid}/editar(id=${instalacion.id},pid=${p.id})}"
                    class="btn btn-outline"
-                   style="padding:4px 10px;font-size:0.8rem;">
-                  <i class="fas fa-edit"></i> Editar
+                   title="Editar acceso/salón"
+                   style="width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;">
+                  <i class="fas fa-edit"></i>
                 </a>
 
+                <!-- Abrir kiosko -->
                 <a th:if="${camara != null}"
                    th:href="@{/kiosko/(camaraId=${camara.id})}"
                    target="_blank"
                    class="btn"
-                   style="padding:4px 10px;font-size:0.8rem;background:#0d6efd;color:white;border:none;border-radius:6px;">
-                  <i class="fas fa-external-link-alt"></i> Kiosko
+                   title="Abrir kiosko"
+                   style="width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#0d6efd;color:#fff;">
+                  <i class="fas fa-external-link-alt"></i>
                 </a>
 
+                <!-- Activar / Desactivar cámara -->
                 <form th:if="${camara != null}"
                       th:action="@{/instalaciones/{id}/camara/{camaraId}/toggle(id=${instalacion.id},camaraId=${camara.id})}"
                       method="post"
                       style="display:inline;">
                   <button type="submit"
-                          class="btn"
+                          title="Activar / Desactivar cámara"
                           th:style="${camara.activa}
-                            ? 'padding:4px 10px;font-size:0.8rem;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;'
-                            : 'padding:4px 10px;font-size:0.8rem;background:#198754;color:#fff;border:none;border-radius:6px;cursor:pointer;'">
+                ? 'width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#b00000;color:#fff;border:none;cursor:pointer;'
+                : 'width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#198754;color:#fff;border:none;cursor:pointer;'">
                     <i th:class="${camara.activa} ? 'fas fa-ban' : 'fas fa-check'"></i>
-                    <span th:text="${camara.activa} ? 'Desactivar' : 'Activar'">Acción</span>
                   </button>
                 </form>
 
+                <!-- Eliminar acceso/salón -->
                 <form th:if="${p.esSalon}"
                       th:action="@{/instalaciones/{id}/puerta/{pid}/eliminar(id=${instalacion.id},pid=${p.id})}"
                       method="post"
                       style="display:inline;"
                       onsubmit="return confirm('¿Eliminar este acceso/salón?');">
                   <button type="submit"
-                          class="btn"
-                          style="padding:4px 10px;font-size:0.8rem;background:#b00020;color:#fff;border:none;border-radius:6px;cursor:pointer;">
+                          title="Eliminar acceso/salón"
+                          style="width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#b00020;color:#fff;border:none;cursor:pointer;">
                     <i class="fas fa-trash"></i>
                   </button>
                 </form>
