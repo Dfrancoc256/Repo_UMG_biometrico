@@ -83,7 +83,7 @@
             </td>
 
             <td>
-              <div th:with="camara=${#lists.isEmpty(camaras.?[puerta != null and puerta.id == p.id]) ? null : camaras.?[puerta != null and puerta.id == p.id][0]}">
+              <div th:with="camara=${camarasPorPuerta[p.id]}">
 
                 <div th:if="${camara != null}">
                   <strong th:text="${camara.nombre}">Cámara</strong>

@@ -10,6 +10,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.umg.biometrico.repository.CamaraRepository;
+import com.umg.biometrico.model.Camara;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/instalaciones")
@@ -45,9 +49,20 @@ public class InstalacionController {
     public String ver(@PathVariable Long id, Model model) {
 
         instalacionRepository.findById(id).ifPresent(inst -> {
+            List<Puerta> puertas = puertaRepository.findByInstalacionId(id);
+            List<Camara> camaras = camaraRepository.findByPuerta_Instalacion_Id(id);
+
+            Map<Long, Camara> camarasPorPuerta = camaras.stream()
+                    .filter(c -> c.getPuerta() != null && c.getPuerta().getId() != null)
+                    .collect(Collectors.toMap(
+                            c -> c.getPuerta().getId(),
+                            c -> c,
+                            (c1, c2) -> c1
+                    ));
+
             model.addAttribute("instalacion", inst);
-            model.addAttribute("puertas", puertaRepository.findByInstalacionId(id));
-            model.addAttribute("camaras", camaraRepository.findByPuerta_Instalacion_Id(id));
+            model.addAttribute("puertas", puertas);
+            model.addAttribute("camarasPorPuerta", camarasPorPuerta);
         });
 
         model.addAttribute("activeMenu", "instalaciones");
