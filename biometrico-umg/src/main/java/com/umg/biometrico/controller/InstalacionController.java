@@ -43,6 +43,7 @@ public class InstalacionController {
 
     @GetMapping("/{id}")
     public String ver(@PathVariable Long id, Model model) {
+
         instalacionRepository.findById(id).ifPresent(inst -> {
             model.addAttribute("instalacion", inst);
             model.addAttribute("puertas", puertaRepository.findByInstalacionId(id));
