@@ -152,6 +152,7 @@ public class InstalacionController {
 
         camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
             camara.setActiva(false);
+            camara.setPuerta(null);
             camaraRepository.save(camara);
         });
 
