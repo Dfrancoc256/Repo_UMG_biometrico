@@ -23,11 +23,24 @@
           <div class="form-group">
             <label class="form-label">Código
               <small style="color:#7a8898;font-weight:400;"
-                     th:if="${curso.id == null}">(auto-generado si se deja vacío)</small>
+                     th:if="${curso.id == null}">(auto-generado)</small>
             </label>
-            <input type="text" class="form-control" name="codigo" th:value="${curso.codigo}"
-                   placeholder="Ej: SIS-301 (opcional)"
-                   th:readonly="${curso.id != null}"/>
+            <div th:if="${curso.id == null}" style="position:relative;">
+              <input type="text" class="form-control" name="codigo" id="campoCodigo"
+                     th:placeholder="${codigoPreview}"
+                     style="padding-right:110px; font-family:monospace; color:#1a3a6b; font-weight:600;"/>
+              <span id="badgeCodigo"
+                    style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+                           background:#eef2ff;color:#3730a3;font-size:11px;font-weight:700;
+                           padding:2px 8px;border-radius:10px;pointer-events:none;"
+                    th:text="${codigoPreview}">CUR-2026-001</span>
+            </div>
+            <input th:if="${curso.id != null}" type="text" class="form-control"
+                   name="codigo" th:value="${curso.codigo}" readonly
+                   style="font-family:monospace;color:#1a3a6b;font-weight:600;background:#f5f7fa;"/>
+            <small th:if="${curso.id == null}" style="color:#7a8898;font-size:11px;margin-top:4px;display:block;">
+              <i class="fas fa-info-circle"></i> Deja en blanco para usar el código sugerido.
+            </small>
           </div>
           <div class="form-group">
             <label class="form-label">Nombre del Curso *</label>
@@ -52,6 +65,33 @@
                                 and (curso.id == null or curso.catedratico == null or curso.catedratico.id != cat.id)}
                                ? 'color:#aaa;' : ''">
               Catedrático
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Facultad / Carrera *</label>
+          <select class="form-control" name="carrera" required>
+            <option value="">-- Seleccione la facultad --</option>
+            <option value="Ingeniería en Sistemas de la Información"
+                    th:selected="${curso.carrera == 'Ingeniería en Sistemas de la Información'}">
+              Ingeniería en Sistemas de la Información
+            </option>
+            <option value="Estadística"
+                    th:selected="${curso.carrera == 'Estadística'}">
+              Estadística
+            </option>
+            <option value="Psicología"
+                    th:selected="${curso.carrera == 'Psicología'}">
+              Psicología
+            </option>
+            <option value="Derecho"
+                    th:selected="${curso.carrera == 'Derecho'}">
+              Derecho
+            </option>
+            <option value="Arquitectura"
+                    th:selected="${curso.carrera == 'Arquitectura'}">
+              Arquitectura
             </option>
           </select>
         </div>
@@ -82,6 +122,23 @@
       </form>
     </div>
   </div>
+
+  <script th:if="${curso.id == null}">
+    const campoCodigo = document.getElementById('campoCodigo');
+    const badgeCodigo = document.getElementById('badgeCodigo');
+
+    campoCodigo.addEventListener('input', () => {
+      badgeCodigo.style.display = campoCodigo.value.trim() ? 'none' : '';
+    });
+
+    fetch('/cursos/preview-codigo')
+      .then(r => r.text())
+      .then(codigo => {
+        campoCodigo.placeholder = codigo;
+        badgeCodigo.textContent = codigo;
+      })
+      .catch(() => {});
+  </script>
 
 </th:block>
 </body>

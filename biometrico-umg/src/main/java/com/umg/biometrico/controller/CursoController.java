@@ -33,14 +33,18 @@ public class CursoController {
         String correo = authentication.getName();
         Persona persona = personaService.buscarPorCorreo(correo).orElse(null);
 
-        if (persona != null
-                && persona.getRol() != null
+        boolean esAdmin = persona != null && persona.getRol() != null
+                && persona.getRol().getNombre().equalsIgnoreCase("ADMIN");
+
+        if (persona != null && persona.getRol() != null
                 && persona.getRol().getNombre().equalsIgnoreCase("CATEDRATICO")) {
-
             model.addAttribute("cursos", cursoService.listarPorCatedratico(persona.getId()));
-
         } else {
             model.addAttribute("cursos", cursoService.listarActivos());
+        }
+
+        if (esAdmin) {
+            model.addAttribute("cursosPorCarrera", cursoService.listarActivosAgrupadosPorCarrera());
         }
 
         model.addAttribute("activeMenu", "cursos");
@@ -53,8 +57,15 @@ public class CursoController {
         List<Persona> catedraticos = personaService.listarCatedraticos();
         model.addAttribute("catedraticos", catedraticos);
         model.addAttribute("cursosPerCatedratico", buildCursosPerCatedratico(catedraticos));
+        model.addAttribute("codigoPreview", cursoService.generarCodigoPreview());
         model.addAttribute("activeMenu", "cursos");
         return "cursos/formulario";
+    }
+
+    @GetMapping("/preview-codigo")
+    @ResponseBody
+    public String previewCodigo() {
+        return cursoService.generarCodigoPreview();
     }
 
     @GetMapping("/{id}/editar")
@@ -89,7 +100,7 @@ public class CursoController {
         }
     }
 
-    @GetMapping("/{id}")
+@GetMapping("/{id}")
     public String ver(@PathVariable Long id, Model model) {
         cursoService.buscarPorId(id).ifPresent(c -> {
             model.addAttribute("curso", c);

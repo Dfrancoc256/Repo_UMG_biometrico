@@ -3,6 +3,7 @@ package com.umg.biometrico.controller;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.service.EmailService;
 import com.umg.biometrico.service.PdfService;
+import com.umg.biometrico.repository.CamaraRepository;
 import com.umg.biometrico.service.PersonaService;
 import com.umg.biometrico.service.WhatsAppService;
 import com.umg.biometrico.repository.RolRepository;
@@ -35,6 +36,7 @@ public class PersonaController {
     private final EmailService emailService;
     private final WhatsAppService whatsAppService;
     private final RolRepository rolRepository;
+    private final CamaraRepository camaraRepository;
 
     @Value("${app.base-url}")
     private String appBaseUrl;
@@ -63,6 +65,7 @@ public class PersonaController {
         model.addAttribute("persona", new Persona());
         model.addAttribute("activeMenu", "personas");
         model.addAttribute("roles", rolRepository.findAll());
+        model.addAttribute("camaras", camaraRepository.findByActivaTrue());
         return "personas/formulario";
     }
 
@@ -114,6 +117,7 @@ public class PersonaController {
         personaService.buscarPorId(id).ifPresent(p -> model.addAttribute("persona", p));
         model.addAttribute("activeMenu", "personas");
         model.addAttribute("roles", rolRepository.findAll());
+        model.addAttribute("camaras", camaraRepository.findByActivaTrue());
         return "personas/formulario";
     }
 
