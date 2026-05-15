@@ -15,4 +15,8 @@ public interface CamaraRepository extends JpaRepository<Camara, Long> {
     List<Camara> findByPuerta_IdAndActivaTrue(Long puertaId);
 
     Optional<Camara> findByIdAndActivaTrue(Long id);
+
+    List<Camara> findByPuerta_Instalacion_Id(Long instalacionId);
+
+    Optional<Camara> findByPuerta_Id(Long puertaId);
 }

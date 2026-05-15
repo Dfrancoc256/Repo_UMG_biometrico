@@ -24,7 +24,7 @@ public class SesionAsistenciaService {
     private static final int HORAS_EXPIRACION = 3;
 
     public SesionAsistencia habilitarSesion(Long cursoId,
-                                            Long catedraticoId,
+                                            Long usuarioId,
                                             Long puertaId,
                                             Long camaraId) {
 
@@ -33,8 +33,8 @@ public class SesionAsistenciaService {
         Curso curso = cursoRepository.findById(cursoId)
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
 
-        Persona catedratico = personaRepository.findById(catedraticoId)
-                .orElseThrow(() -> new RuntimeException("Catedrático no encontrado"));
+        Persona usuario = personaRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         Puerta puerta = puertaRepository.findById(puertaId)
                 .orElseThrow(() -> new RuntimeException("Puerta o salón no encontrado"));
@@ -42,24 +42,53 @@ public class SesionAsistenciaService {
         Camara camara = camaraRepository.findById(camaraId)
                 .orElseThrow(() -> new RuntimeException("Cámara no encontrada"));
 
-        if (sesionRepository.existsByCamara_IdAndActivaTrue(camaraId)) {
-            throw new RuntimeException("Esta cámara ya tiene una sesión activa.");
+        boolean esAdmin = usuario.getRol() != null
+                && usuario.getRol().getNombre() != null
+                && usuario.getRol().getNombre().equalsIgnoreCase("ADMIN");
+
+        boolean esCatedratico = usuario.getRol() != null
+                && usuario.getRol().getNombre() != null
+                && usuario.getRol().getNombre().equalsIgnoreCase("CATEDRATICO");
+
+        if (esCatedratico) {
+            if (curso.getCatedratico() == null ||
+                    !curso.getCatedratico().getId().equals(usuarioId)) {
+                throw new RuntimeException("Este curso no pertenece al catedrático seleccionado.");
+            }
         }
 
-        if (sesionRepository.existsByCurso_IdAndActivaTrue(cursoId)) {
-            throw new RuntimeException("Este curso ya tiene una sesión activa.");
-        }
-
-        if (curso.getCatedratico() == null ||
-                !curso.getCatedratico().getId().equals(catedraticoId)) {
-            throw new RuntimeException("Este curso no pertenece al catedrático seleccionado.");
+        if (!esAdmin && !esCatedratico) {
+            throw new RuntimeException("No tiene permisos para iniciar asistencia.");
         }
 
         LocalDateTime ahora = LocalDateTime.now();
 
+        var sesionCursoActiva = sesionRepository.findByCurso_IdAndActivaTrue(cursoId);
+
+        if (sesionCursoActiva.isPresent()) {
+            SesionAsistencia existente = sesionCursoActiva.get();
+
+            if (existente.getCamara() != null && existente.getCamara().getId().equals(camaraId)) {
+                return existente;
+            }
+
+            existente.setActiva(false);
+            existente.setHoraFin(ahora);
+            sesionRepository.save(existente);
+        }
+
+        var sesionCamaraActiva = sesionRepository.findByCamara_IdAndActivaTrue(camaraId);
+
+        if (sesionCamaraActiva.isPresent()) {
+            SesionAsistencia existente = sesionCamaraActiva.get();
+            existente.setActiva(false);
+            existente.setHoraFin(ahora);
+            sesionRepository.save(existente);
+        }
+
         SesionAsistencia sesion = new SesionAsistencia();
         sesion.setCurso(curso);
-        sesion.setCatedratico(catedratico);
+        sesion.setCatedratico(esCatedratico ? usuario : curso.getCatedratico());
         sesion.setPuerta(puerta);
         sesion.setCamara(camara);
         sesion.setFecha(LocalDate.now());
@@ -100,11 +129,15 @@ public class SesionAsistenciaService {
 
     public void cerrarSesionesExpiradas() {
         List<SesionAsistencia> sesionesActivas = sesionRepository.findByActivaTrue();
-
         LocalDateTime ahora = LocalDateTime.now();
 
         for (SesionAsistencia sesion : sesionesActivas) {
-            if (sesion.getExpiraEn() != null && sesion.getExpiraEn().isBefore(ahora)) {
+            boolean expiradaPorHora = sesion.getExpiraEn() != null && sesion.getExpiraEn().isBefore(ahora);
+            boolean expiradaSinFecha = sesion.getExpiraEn() == null
+                    && sesion.getHoraInicio() != null
+                    && sesion.getHoraInicio().plusHours(HORAS_EXPIRACION).isBefore(ahora);
+
+            if (expiradaPorHora || expiradaSinFecha) {
                 sesion.setActiva(false);
                 sesion.setHoraFin(ahora);
                 sesionRepository.save(sesion);

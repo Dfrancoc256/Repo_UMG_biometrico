@@ -11,8 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Year;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,16 +43,32 @@ public class CursoService {
     }
 
     public Curso guardar(Curso curso) {
+        if (curso.getId() == null && curso.getCatedratico() != null) {
+            long count = cursoRepository.countByCatedratico_IdAndActivoTrue(curso.getCatedratico().getId());
+            if (count >= 5) {
+                throw new IllegalArgumentException(
+                        "El catedrático ya tiene 5 cursos asignados (límite máximo). " +
+                        "Debe quitar un curso antes de asignar uno nuevo.");
+            }
+        }
         if (curso.getCodigo() == null || curso.getCodigo().isBlank()) {
             curso.setCodigo(generarCodigoCurso());
         }
         return cursoRepository.save(curso);
     }
 
+    public long contarCursosPorCatedratico(Long catedraticoId) {
+        return cursoRepository.countByCatedratico_IdAndActivoTrue(catedraticoId);
+    }
+
+    public String generarCodigoPreview() {
+        return generarCodigoCurso();
+    }
+
     private String generarCodigoCurso() {
         int anio = Year.now().getValue();
-        long total = cursoRepository.count() + 1;
-        return String.format("CUR-%d-%03d", anio, total);
+        long seq = cursoRepository.countByCodigoAnio(String.valueOf(anio)) + 1;
+        return String.format("CUR-%d-%03d", anio, seq);
     }
 
     public void inscribirEstudiante(Long cursoId, Long estudianteId) {
@@ -78,5 +97,16 @@ public class CursoService {
 
     public Long contarActivos() {
         return cursoRepository.contarActivos();
+    }
+
+    public Map<String, List<Curso>> listarActivosAgrupadosPorCarrera() {
+        return cursoRepository.findByActivoTrue().stream()
+                .collect(Collectors.groupingBy(
+                        c -> c.getCarrera() != null && c.getCarrera().getNombre() != null && !c.getCarrera().getNombre().isBlank()
+                                ? c.getCarrera().getNombre()
+                                : "Sin facultad asignada",
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
     }
 }

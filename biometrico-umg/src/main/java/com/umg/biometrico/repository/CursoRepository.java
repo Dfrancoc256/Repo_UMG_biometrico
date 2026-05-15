@@ -13,6 +13,8 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
 
     List<Curso> findByCatedratico_IdAndActivoTrue(Long catedraticoId);
 
+    long countByCatedratico_IdAndActivoTrue(Long catedraticoId);
+
     List<Curso> findByActivoTrue();
     
     List<Curso> findByActivoTrueOrderByCarreraNombreAscNombreAsc();
@@ -22,4 +24,7 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
 
     @Query("SELECT COUNT(c) FROM Curso c WHERE c.activo = true")
     Long contarActivos();
+
+    @Query("SELECT COUNT(c) FROM Curso c WHERE c.codigo LIKE CONCAT('CUR-', :anio, '-%')")
+    long countByCodigoAnio(@org.springframework.data.repository.query.Param("anio") String anio);
 }

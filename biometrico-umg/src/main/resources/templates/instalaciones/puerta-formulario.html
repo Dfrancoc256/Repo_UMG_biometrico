@@ -1,52 +1,113 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::content}, 'Agregar Acceso', ${activeMenu})}">
+      th:replace="~{layout/main :: layout(~{::content}, ${puerta.id != null} ? 'Editar Salón' : 'Agregar Acceso', ${activeMenu})}">
 <body>
 <th:block th:fragment="content">
+
   <div class="page-header">
     <div>
-      <h2><i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>Agregar Acceso / Salón</h2>
+      <h2>
+        <i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>
+        <span th:text="${puerta.id != null} ? 'Editar Salón' : 'Agregar Acceso / Salón'">
+          Agregar Acceso / Salón
+        </span>
+      </h2>
+
       <p class="breadcrumb">
         <a th:href="@{/instalaciones}">Instalaciones</a> &rsaquo;
-        <span th:text="${instalacion.nombre}">Instalación</span> &rsaquo; Nuevo Acceso
+        <a th:href="@{/instalaciones/{id}(id=${instalacion.id})}" th:text="${instalacion.nombre}">Instalación</a>
+        &rsaquo;
+        <span th:text="${puerta.id != null} ? 'Editar' : 'Nuevo Acceso'">Nuevo Acceso</span>
       </p>
     </div>
   </div>
-  <div class="card" style="max-width:560px;">
-    <div class="card-header"><h5>Datos del Acceso</h5></div>
+
+  <div class="card" style="max-width:640px;">
+    <div class="card-header">
+      <h5 th:text="${puerta.id != null} ? 'Editar acceso / salón' : 'Datos del acceso / salón'">
+        Datos del Acceso
+      </h5>
+    </div>
+
     <div class="card-body">
-      <form th:action="@{/instalaciones/{id}/puerta/guardar(id=${instalacion.id})}" method="post">
+      <form th:action="${puerta.id != null}
+                        ? @{/instalaciones/{id}/puerta/{pid}/guardar(id=${instalacion.id},pid=${puerta.id})}
+                        : @{/instalaciones/{id}/puerta/guardar(id=${instalacion.id})}"
+            method="post">
+
         <div class="form-group">
           <label class="form-label">Nombre del Acceso / Salón *</label>
-          <input type="text" class="form-control" name="nombre"
-                 placeholder="Ej: Puerta Principal, Salón 201" required/>
+          <input type="text"
+                 class="form-control"
+                 name="nombre"
+                 th:value="${puerta.nombre}"
+                 placeholder="Ej: Puerta Principal, Salón 201"
+                 required/>
         </div>
+
         <div class="form-group">
           <label class="form-label">Nivel</label>
-          <input type="text" class="form-control" name="nivel"
+          <input type="text"
+                 class="form-control"
+                 name="nivel"
+                 th:value="${puerta.nivel}"
                  placeholder="Ej: Primer Nivel, Segundo Nivel"/>
         </div>
+
         <div class="form-group">
           <label class="form-label">¿Es salón de clases?</label>
           <select class="form-control" name="esSalon">
-            <option value="false">No — Puerta de acceso principal</option>
-            <option value="true">Sí — Salón de clases</option>
+            <option value="false" th:selected="${puerta.esSalon == null or !puerta.esSalon}">
+              No — Puerta de acceso principal
+            </option>
+            <option value="true" th:selected="${puerta.esSalon}">
+              Sí — Salón de clases
+            </option>
           </select>
         </div>
+
         <div class="form-group">
           <label class="form-label">Descripción</label>
-          <input type="text" class="form-control" name="descripcion"
+          <input type="text"
+                 class="form-control"
+                 name="descripcion"
+                 th:value="${puerta.descripcion}"
                  placeholder="Descripción adicional..."/>
         </div>
-        <div style="display:flex;gap:12px;">
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+
+        <hr style="margin:18px 0;border:none;border-top:1px solid #e5e7eb;">
+
+        <div class="form-group">
+          <label class="form-label">¿Este acceso / salón tiene cámara?</label>
+          <select class="form-control" name="tieneCamara">
+            <option value="false" th:selected="${tieneCamara == null or !tieneCamara}">
+              No
+            </option>
+            <option value="true" th:selected="${tieneCamara != null and tieneCamara}">
+              Sí
+            </option>
+          </select>
+
+          <small style="display:block;margin-top:6px;color:#7a8898;">
+            Si seleccionas “Sí”, el sistema creará o actualizará automáticamente la cámara asociada.
+          </small>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i>
+            <span th:text="${puerta.id != null} ? 'Actualizar' : 'Guardar'">Guardar</span>
+          </button>
+
           <a th:href="@{/instalaciones/{id}(id=${instalacion.id})}" class="btn btn-outline">
             <i class="fas fa-arrow-left"></i> Cancelar
           </a>
         </div>
+
       </form>
     </div>
   </div>
+
 </th:block>
 </body>
 </html>

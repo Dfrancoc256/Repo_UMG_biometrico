@@ -1,231 +1,270 @@
-const API_BASE = window.location.origin;
+const API_BASE = "https://umg1.duckdns.org/kiosko/api";
+
 const params = new URLSearchParams(window.location.search);
-const camaraId = params.get("camaraId");
+const camaraId = params.get("camaraId") || localStorage.getItem("camaraId") || "1";
 
-let sesionActiva = null;
-let personaActual = null;
-let streamCam = null;
-let intentosRostro = 0;
+localStorage.setItem("camaraId", camaraId);
 
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const carnetInput = document.getElementById("carnet");
+const btnValidar = document.getElementById("btnValidar");
+const infoCurso = document.getElementById("infoCurso");
+const resultado = document.getElementById("resultado");
+
+const TIEMPO_RESET = 30000;
+const TIEMPO_REFRESH = 1800000;
 const MAX_INTENTOS = 3;
 
-window.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("modalConfig").style.display = "none";
+let temporizadorReset = null;
+let procesando = false;
+let intentos = 0;
+let carnetActual = null;
 
-    if (!camaraId) {
-        mostrarResultado("No se recibió camaraId en la URL.", "error");
-        return;
-    }
-
-    iniciarReloj();
-    cargarSesionActiva();
-
-    document.getElementById("carnet").focus();
-
-    setInterval(() => document.getElementById("carnet").focus(), 1500);
-    setInterval(cargarSesionActiva, 30000);
+document.addEventListener("DOMContentLoaded", () => {
+    iniciarCamara();
+    cargarSesion();
+    inicializarEventosKiosko();
+    carnetInput.focus();
 });
 
-function iniciarReloj() {
+function inicializarEventosKiosko() {
+    btnValidar.addEventListener("click", iniciarValidacion);
+
+    carnetInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") iniciarValidacion();
+    });
+
+    document.addEventListener("click", reiniciarTemporizador);
+    document.addEventListener("keydown", reiniciarTemporizador);
+
+    document.addEventListener("click", activarPantallaCompleta, { once: true });
+
+    document.addEventListener("click", () => {
+        if (!procesando) {
+            carnetInput.focus();
+        }
+    });
+
+    video.addEventListener("error", async () => {
+        await iniciarCamara();
+    });
+
+    reiniciarTemporizador();
+
+    setInterval(() => location.reload(), TIEMPO_REFRESH);
+
+    setInterval(async () => {
+        if (!video.srcObject) await iniciarCamara();
+    }, 10000);
+
     setInterval(() => {
-        document.getElementById("reloj").textContent =
-            new Date().toLocaleTimeString("es-GT");
-    }, 1000);
+        if (!procesando) {
+            carnetInput.focus();
+            carnetInput.setSelectionRange(
+                carnetInput.value.length,
+                carnetInput.value.length
+            );
+        }
+    }, 500);
 }
 
-function cargarSesionActiva() {
-    fetch(`${API_BASE}/kiosko/api/sesion-activa/${camaraId}`)
-        .then(r => r.json())
-        .then(data => {
-            const badge = document.getElementById("sesionBadge");
-            const info = document.getElementById("infoCurso");
-            const puerta = document.getElementById("lblPuerta");
+async function iniciarCamara() {
+    try {
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
 
-            if (data.success) {
-                sesionActiva = data;
-                badge.className = "sesion-badge activa";
-                badge.textContent = "● Sesión activa";
-                puerta.textContent = data.puerta || "Acceso";
-
-                info.innerHTML = `
-                    <i class="fas fa-book-open"></i>
-                    <strong>${data.curso}</strong> ·
-                    ${data.catedratico} ·
-                    <span class="puerta-tag">${data.puerta}</span>
-                `;
-            } else {
-                sesionActiva = null;
-                badge.className = "sesion-badge";
-                badge.textContent = "Sin sesión activa";
-                info.innerHTML = `<i class="fas fa-info-circle"></i> No hay sesión activa para esta cámara.`;
-            }
-        })
-        .catch(() => {
-            mostrarResultado("Sin conexión con el servidor.", "error");
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
         });
+
+        video.srcObject = stream;
+
+    } catch (error) {
+        mostrarResultado("No se pudo acceder a la cámara.", false);
+    }
 }
 
-function validarCarnet() {
-    if (!sesionActiva) {
-        mostrarResultado("No hay sesión activa para esta cámara.", "error");
-        reiniciarPronto();
-        return;
-    }
+async function cargarSesion() {
+    try {
+        const response = await fetch(`${API_BASE}/sesion-activa/${camaraId}`);
+        const data = await response.json();
 
-    const numero = document.getElementById("carnet").value.trim();
+        if (data.success) {
+            infoCurso.innerHTML = `
+                <strong>Curso:</strong> ${data.curso}<br>
+                <strong>Catedrático:</strong> ${data.catedratico}<br>
+                <strong>Ubicación:</strong> ${data.puerta}<br>
+                <strong>Cámara:</strong> ${data.camara}
+            `;
+        } else {
+            infoCurso.innerHTML = "No hay sesión activa para esta cámara.";
+        }
+
+    } catch (error) {
+        infoCurso.innerHTML = "Error cargando sesión activa.";
+    }
+}
+
+function iniciarValidacion() {
+    if (procesando) return;
+
+    let numero = carnetInput.value.trim();
 
     if (!numero) {
-        mostrarResultado("Ingrese su carnet.", "error");
+        mostrarResultado("Ingrese o escanee un carnet.", false);
         return;
     }
 
-    const carnet = numero.toUpperCase().startsWith("UMG-")
-        ? numero.toUpperCase()
-        : "UMG-" + numero.toUpperCase();
+    let carnet = numero.toUpperCase();
 
-    mostrarResultado(`<i class="fas fa-spinner fa-spin"></i> Buscando carnet...`, "info");
+    if (!carnet.startsWith("UMG-")) {
+        carnet = "UMG-" + carnet;
+    }
 
-    fetch(`${API_BASE}/personas/buscar-carnet?carnet=${encodeURIComponent(carnet)}`)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.encontrado) {
-                mostrarResultado("Carnet no encontrado.", "error");
-                reiniciarPronto();
-                return;
-            }
+    carnetActual = carnet;
+    intentos = 0;
+    procesando = true;
+    btnValidar.disabled = true;
 
-            personaActual = data;
-            intentosRostro = 0;
-            mostrarPasoRostro(data);
-        })
-        .catch(() => {
-            mostrarResultado("Error buscando el carnet.", "error");
-            reiniciarPronto();
+    activarScanner(true);
+
+    mostrarResultado("Coloque su rostro frente a la cámara...", null);
+
+    setTimeout(capturarYVerificar, 900);
+}
+
+async function capturarYVerificar() {
+    if (!carnetActual) return;
+
+    intentos++;
+    activarScanner(true);
+
+    try {
+        mostrarResultado(`Verificando rostro... intento ${intentos}/${MAX_INTENTOS}`, null);
+
+        const imagen = capturarImagen();
+
+        const response = await fetch(`${API_BASE}/verificar-asistencia`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                camaraId: camaraId,
+                carnet: carnetActual,
+                imagen: imagen
+            })
         });
-}
 
-function mostrarPasoRostro(data) {
-    document.getElementById("paso1").style.display = "none";
-    document.getElementById("paso2").style.display = "block";
-    document.getElementById("resultado").innerHTML = "";
+        const data = await response.json();
 
-    document.getElementById("fotoEstudiante").src = data.fotoUrl ? API_BASE + data.fotoUrl : "";
-    document.getElementById("nombreEstudiante").textContent = data.nombre;
-    document.getElementById("carnetEstudiante").textContent = data.carnet;
-    document.getElementById("tipoEstudiante").textContent = data.tipo || "";
+        activarScanner(false);
 
-    encenderCamara().then(() => {
-        setTimeout(capturarYVerificar, 1200);
-    });
-}
+        if (data.success) {
+            mostrarResultado(`
+                <div class="result-icon">✅</div>
+                <div>ASISTENCIA REGISTRADA</div>
+                <small>${data.nombre}</small>
+                <small>${data.carnet}</small>
+                <small>${data.curso}</small>
+                <small>Confianza facial: ${data.confianza}%</small>
+            `, true);
 
-function encenderCamara() {
-    return navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
-        .then(stream => {
-            streamCam = stream;
-            document.getElementById("video").srcObject = stream;
-        })
-        .catch(err => {
-            mostrarResultado("No se pudo acceder a la cámara: " + err.message, "error");
-            reiniciarPronto();
-        });
-}
+            setTimeout(reiniciarKiosko, 3500);
+            return;
+        }
 
-function capturarYVerificar() {
-    if (!personaActual) return;
+        if (intentos < MAX_INTENTOS) {
+            mostrarResultado(
+                `Rostro no reconocido. Coloque mejor su rostro. Intento ${intentos}/${MAX_INTENTOS}`,
+                null
+            );
 
-    intentosRostro++;
+            setTimeout(capturarYVerificar, 1600);
+        } else {
+            mostrarResultado(
+                data.mensaje || "No se pudo validar el rostro después de 3 intentos.",
+                false
+            );
 
-    const estado = document.getElementById("estadoVerificacion");
-    estado.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Verificando rostro... intento ${intentosRostro}/${MAX_INTENTOS}`;
+            setTimeout(reiniciarKiosko, 3000);
+        }
 
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imagen = canvas.toDataURL("image/jpeg", 0.9);
-
-    fetch(`${API_BASE}/kiosko/api/verificar-asistencia`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            camaraId: camaraId,
-            carnet: personaActual.carnet,
-            imagen: imagen
-        })
-    })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                mostrarResultado(`
-                    <div class="resultado-ok">
-                        <i class="fas fa-check-circle"></i>
-                        <div>
-                            <strong>Asistencia registrada</strong>
-                            <span>${data.nombre}</span>
-                            <span>${data.carnet}</span>
-                            <span>${data.curso}</span>
-                            <span>Confianza: ${data.confianza}%</span>
-                        </div>
-                    </div>
-                `, "ok");
-
-                setTimeout(reiniciar, 3500);
-                return;
-            }
-
-            if (intentosRostro < MAX_INTENTOS) {
-                estado.innerHTML = `<i class="fas fa-eye"></i> Coloque mejor su rostro. Intento ${intentosRostro + 1}/${MAX_INTENTOS}`;
-                setTimeout(capturarYVerificar, 1800);
-            } else {
-                mostrarResultado("No se pudo verificar el rostro. Intente nuevamente desde el inicio.", "error");
-                setTimeout(reiniciar, 3000);
-            }
-        })
-        .catch(() => {
-            mostrarResultado("Error de conexión al verificar rostro.", "error");
-            reiniciarPronto();
-        });
-}
-
-function reiniciar() {
-    apagarCamara();
-
-    personaActual = null;
-    intentosRostro = 0;
-
-    document.getElementById("carnet").value = "";
-    document.getElementById("paso1").style.display = "flex";
-    document.getElementById("paso2").style.display = "none";
-    document.getElementById("resultado").innerHTML = "";
-    document.getElementById("estadoVerificacion").innerHTML =
-        `<i class="fas fa-eye"></i> Mira directo a la cámara...`;
-
-    document.getElementById("carnet").focus();
-}
-
-function reiniciarPronto() {
-    setTimeout(reiniciar, 2500);
-}
-
-function apagarCamara() {
-    if (streamCam) {
-        streamCam.getTracks().forEach(t => t.stop());
-        streamCam = null;
+    } catch (error) {
+        activarScanner(false);
+        mostrarResultado("Error de conexión con el servidor.", false);
+        setTimeout(reiniciarKiosko, 2500);
     }
 }
 
-function mostrarResultado(msg, tipo) {
-    const el = document.getElementById("resultado");
-    const clases = {
-        ok: "resultado-ok",
-        error: "resultado-error",
-        info: "resultado-info"
-    };
+function capturarImagen() {
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
 
-    el.className = "resultado " + (clases[tipo] || "");
-    el.innerHTML = msg;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    return canvas.toDataURL("image/jpeg", 0.9);
+}
+
+function activarScanner(activo) {
+    const videoBox = document.querySelector(".video-box");
+    if (!videoBox) return;
+
+    if (activo) videoBox.classList.add("escaneando");
+    else videoBox.classList.remove("escaneando");
+}
+
+function mostrarResultado(mensaje, success) {
+    resultado.style.display = "flex";
+    resultado.className = "resultado";
+
+    if (success === true) {
+        resultado.classList.add("success");
+    } else if (success === false) {
+        resultado.classList.add("error");
+    } else {
+        resultado.classList.add("loading");
+    }
+
+    resultado.innerHTML = mensaje;
+}
+
+function reiniciarKiosko() {
+    activarScanner(false);
+
+    carnetActual = null;
+    intentos = 0;
+    procesando = false;
+    btnValidar.disabled = false;
+
+    carnetInput.value = "";
+    resultado.innerHTML = "";
+    resultado.style.display = "none";
+    carnetInput.focus();
+
+    cargarSesion();
+    reiniciarTemporizador();
+}
+
+function reiniciarTemporizador() {
+    if (temporizadorReset) clearTimeout(temporizadorReset);
+
+    temporizadorReset = setTimeout(() => {
+        if (!procesando) reiniciarKiosko();
+    }, TIEMPO_RESET);
+}
+
+async function activarPantallaCompleta() {
+    try {
+        if (!document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+        }
+    } catch (e) {
+        console.log("Fullscreen bloqueado.");
+    }
 }

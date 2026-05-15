@@ -112,7 +112,7 @@ public class AsistenciaService {
     }
 
     public List<Asistencia> obtenerAsistenciaDeEstudiante(Long estudianteId) {
-        return asistenciaRepository.findByEstudiante_IdOrderByFechaDescHoraRegistroDesc(estudianteId);
+        return asistenciaRepository.findByEstudianteIdConCurso(estudianteId);
     }
 
 }

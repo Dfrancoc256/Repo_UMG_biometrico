@@ -28,6 +28,10 @@ public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
     @Query("SELECT COUNT(a) FROM Asistencia a WHERE a.curso.id = :cursoId AND a.fecha = :fecha AND a.presente = true")
     Long contarPresentesByCursoFecha(@Param("cursoId") Long cursoId, @Param("fecha") LocalDate fecha);
 
+    @Query("SELECT a FROM Asistencia a LEFT JOIN FETCH a.curso LEFT JOIN FETCH a.estudiante " +
+           "WHERE a.estudiante.id = :estudianteId ORDER BY a.fecha DESC, a.horaRegistro DESC")
+    List<Asistencia> findByEstudianteIdConCurso(@Param("estudianteId") Long estudianteId);
+
     List<Asistencia> findByEstudiante_IdOrderByFechaDescHoraRegistroDesc(Long estudianteId);
     
 }
