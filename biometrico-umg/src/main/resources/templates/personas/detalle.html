@@ -9,7 +9,6 @@
   <div class="page-header">
     <div>
       <h2><i class="fas fa-user-circle" style="margin-right:10px;color:var(--umg-azul);"></i>Detalle de Persona</h2>
-      <p class="breadcrumb"><a th:href="@{/personas}">Personas</a> &rsaquo; Detalle</p>
     </div>
     <div class="detalle-acciones">
       <a th:href="@{/personas/{id}/editar(id=${persona.id})}" class="btn btn-warning"
@@ -17,17 +16,19 @@
         <i class="fas fa-edit"></i> Editar
       </a>
 
-      <a th:href="@{/personas/{id}/carnet(id=${persona.id})}" class="btn btn-primary">
+      <a th:href="@{/personas/{id}/carnet(id=${persona.id})}"
+         class="btn btn-primary"
+         sec:authorize="hasRole('ADMIN')">
         <i class="fas fa-id-card"></i> Descargar Carnet PDF
       </a>
 
       <a th:href="@{/personas/{id}/enviar-carnet(id=${persona.id})}" class="btn btn-success"
-         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+         sec:authorize="hasAnyRole('ADMIN')">
         <i class="fas fa-envelope"></i> Enviar por Correo
       </a>
 
       <a th:href="@{/personas/{id}/enviar-whatsapp(id=${persona.id})}" class="btn btn-success"
-         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+         sec:authorize="hasAnyRole('ADMIN')">
         <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
       </a>
     </div>
@@ -75,9 +76,9 @@
         </div>
       </div>
 
-      <!-- Acciones de restricción — ADMIN y CATEDRÁTICO pueden restringir -->
+      <!-- Acciones de restricción — ADMIN -->
       <div class="card" style="margin-top:16px;" th:unless="${persona.restringido}"
-           sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+           sec:authorize="hasAnyRole('ADMIN')">
         <div class="card-header"><h5><i class="fas fa-user-slash"></i> Restricción</h5></div>
         <div class="card-body">
           <form th:action="@{/personas/{id}/restringir(id=${persona.id})}" method="post">
@@ -124,7 +125,7 @@
               <tr><td style="font-weight:600;color:#3a4a5c;">Tipo</td>
                   <td th:text="${persona.tipoPersona}">—</td></tr>
               <tr><td style="font-weight:600;color:#3a4a5c;">Carrera</td>
-                  <td th:text="${persona.carrera}">—</td></tr>
+                <td th:text="${persona.carrera != null ? persona.carrera.nombre : '—'}"></td></tr>
               <tr><td style="font-weight:600;color:#3a4a5c;">Sección</td>
                   <td th:text="${persona.seccion}">—</td></tr>
               <tr><td style="font-weight:600;color:#3a4a5c;">Fecha Registro</td>

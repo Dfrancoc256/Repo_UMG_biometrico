@@ -24,6 +24,12 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
     List<Persona> findByRestringidoTrue();
 
+    Optional<Persona> findByCorreoIgnoreCase(String correo);
+
+    boolean existsByCorreoIgnoreCase(String correo);
+
+    boolean existsByCorreoIgnoreCaseAndIdNot(String correo, Long id);
+
     /** Restricción directa con UPDATE — evita problemas de caché Hibernate */
     @Transactional
     @Modifying

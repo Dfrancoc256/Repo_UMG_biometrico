@@ -107,28 +107,42 @@
         </div>
 
         <!-- SALON Y HORARIO -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">Horario *</label>
 
-          <div class="form-group">
-            <label class="form-label">Salón</label>
+          <select class="form-control" name="horario" required>
+            <option value="">-- Seleccione un horario --</option>
 
-            <input type="text"
-                   class="form-control"
-                   name="salon"
-                   th:value="${curso.salon}"
-                   placeholder="Ej: Salón 201"/>
-          </div>
+            <option value="Lunes y Miércoles 07:00-09:00"
+                    th:selected="${curso.horario == 'Lunes y Miércoles 07:00-09:00'}">
+              Lunes y Miércoles 07:00-09:00
+            </option>
 
-          <div class="form-group">
-            <label class="form-label">Horario</label>
+            <option value="Lunes y Miércoles 09:00-11:00"
+                    th:selected="${curso.horario == 'Lunes y Miércoles 09:00-11:00'}">
+              Lunes y Miércoles 09:00-11:00
+            </option>
 
-            <input type="text"
-                   class="form-control"
-                   name="horario"
-                   th:value="${curso.horario}"
-                   placeholder="Ej: Lunes y Miércoles 18:00-21:00"/>
-          </div>
+            <option value="Martes y Jueves 07:00-09:00"
+                    th:selected="${curso.horario == 'Martes y Jueves 07:00-09:00'}">
+              Martes y Jueves 07:00-09:00
+            </option>
 
+            <option value="Martes y Jueves 09:00-11:00"
+                    th:selected="${curso.horario == 'Martes y Jueves 09:00-11:00'}">
+              Martes y Jueves 09:00-11:00
+            </option>
+
+            <option value="Sábado 08:00-12:00"
+                    th:selected="${curso.horario == 'Sábado 08:00-12:00'}">
+              Sábado 08:00-12:00
+            </option>
+
+            <option value="Domingo 08:00-12:00"
+                    th:selected="${curso.horario == 'Domingo 08:00-12:00'}">
+              Domingo 08:00-12:00
+            </option>
+          </select>
         </div>
 
         <!-- BOTONES -->

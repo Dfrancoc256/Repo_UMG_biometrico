@@ -2,6 +2,7 @@ package com.umg.biometrico.controller;
 
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.CarreraRepository;
+import com.umg.biometrico.repository.PersonaRepository;
 import com.umg.biometrico.service.EmailService;
 import com.umg.biometrico.service.PdfService;
 import com.umg.biometrico.service.PersonaService;
@@ -37,6 +38,7 @@ public class PersonaController {
     private final WhatsAppService whatsAppService;
     private final RolRepository rolRepository;
     private final CarreraRepository carreraRepository;
+    private final PersonaRepository personaRepository;
 
     @Value("${app.base-url}")
     private String appBaseUrl;
@@ -69,6 +71,7 @@ public class PersonaController {
         return "personas/formulario";
     }
 
+
     @PostMapping("/guardar")
     public String guardar(@ModelAttribute Persona persona,
                           @RequestParam(value = "foto", required = false) MultipartFile foto,
@@ -76,6 +79,42 @@ public class PersonaController {
                           RedirectAttributes redirectAttributes) {
         try {
             boolean esNueva = (persona.getId() == null);
+
+            String correo = persona.getCorreo() != null
+                    ? persona.getCorreo().trim().toLowerCase()
+                    : "";
+
+            persona.setCorreo(correo);
+
+            boolean correoDuplicado;
+
+            if (persona.getId() == null) {
+
+                // NUEVA PERSONA
+                correoDuplicado = personaRepository
+                        .existsByCorreoIgnoreCase(correo);
+
+            } else {
+
+                // EDITAR PERSONA
+                correoDuplicado = personaRepository
+                        .existsByCorreoIgnoreCaseAndIdNot(correo, persona.getId());
+            }
+
+            if (correoDuplicado) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error",
+                        "Ya existe una persona registrada con ese correo electrónico."
+                );
+
+                if (persona.getId() == null) {
+                    return "redirect:/personas/nuevo";
+                } else {
+                    return "redirect:/personas/" + persona.getId() + "/editar";
+                }
+            }
+
             if ("CATEDRATICO".equalsIgnoreCase(persona.getTipoPersona()) ||
                     "ADMIN".equalsIgnoreCase(persona.getTipoPersona())) {
                 persona.setCarrera(null);
