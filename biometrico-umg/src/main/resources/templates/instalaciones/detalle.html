@@ -17,19 +17,11 @@
       </p>
     </div>
 
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <a th:href="@{/instalaciones/{id}/puerta/nueva(id=${instalacion.id})}"
-         class="btn btn-outline"
-         sec:authorize="hasRole('ADMIN')">
-        <i class="fas fa-plus"></i> Agregar Acceso / Salón
-      </a>
-
-      <a th:href="@{/instalaciones/{id}/camara/nueva(id=${instalacion.id})}"
-         class="btn btn-primary"
-         sec:authorize="hasRole('ADMIN')">
-        <i class="fas fa-video"></i> Agregar Cámara
-      </a>
-    </div>
+    <a th:href="@{/instalaciones/{id}/puerta/nueva(id=${instalacion.id})}"
+       class="btn btn-primary"
+       sec:authorize="hasRole('ADMIN')">
+      <i class="fas fa-plus"></i> Agregar Acceso / Salón
+    </a>
   </div>
 
   <div class="card">
@@ -37,7 +29,7 @@
       <h5>
         <i class="fas fa-network-wired" style="margin-right:8px;"></i>
         Infraestructura de la Instalación
-        (<span th:text="${#lists.size(puertas)}">0</span>)
+        (<span th:text="${puertas != null ? #lists.size(puertas) : 0}">0</span>)
       </h5>
     </div>
 
@@ -59,116 +51,76 @@
           </thead>
 
           <tbody>
-          <tr th:each="p, iter : ${puertas}">
+          <tr th:each="p, iter : ${puertas}" th:with="camara=${camarasPorPuerta[p.id]}">
             <td th:text="${iter.count}">1</td>
 
-            <td>
-              <strong th:text="${p.nombre}">Nombre</strong>
-            </td>
+            <td><strong th:text="${p.nombre}">Nombre</strong></td>
 
-            <td>
-              <span class="badge badge-info" th:text="${p.nivel}">Nivel</span>
-            </td>
+            <td><span class="badge badge-info" th:text="${p.nivel}">Nivel</span></td>
 
             <td>
               <span class="badge"
                     th:classappend="${p.esSalon} ? 'badge-warning' : 'badge-secondary'"
-                    th:text="${p.esSalon} ? 'Salón de Clase' : 'Acceso / Puerta'">
-                Tipo
-              </span>
+                    th:text="${p.esSalon} ? 'Salón de Clase' : 'Acceso / Puerta'">Tipo</span>
             </td>
 
-            <td>
-              <small th:text="${p.descripcion}">—</small>
-            </td>
+            <td><small th:text="${p.descripcion}">—</small></td>
 
             <td>
-              <div th:with="camara=${camarasPorPuerta[p.id]}">
-
-                <div th:if="${camara != null}">
-                  <strong th:text="${camara.nombre}">Cámara</strong>
-                  <br>
-                  <small th:text="${camara.ip != null && !#strings.isEmpty(camara.ip) ? camara.ip : 'LOCAL'}">LOCAL</small>
-                </div>
-
-                <div th:if="${camara == null}" style="color:#7a8898;">
-                  <small>Sin cámara asignada</small>
-                </div>
-
+              <div th:if="${camara != null}">
+                <strong th:text="${camara.nombre}">Cámara</strong><br>
+                <small th:text="${camara.ip != null && !#strings.isEmpty(camara.ip) ? camara.ip : 'LOCAL'}">LOCAL</small>
               </div>
+              <small th:if="${camara == null}" style="color:#7a8898;">Sin cámara asignada</small>
             </td>
 
             <td>
-              <div th:with="camara=${#lists.isEmpty(camaras.?[puerta != null and puerta.id == p.id]) ? null : camaras.?[puerta != null and puerta.id == p.id][0]}">
+              <span th:if="${camara != null}"
+                    class="badge"
+                    th:classappend="${camara.activa} ? 'badge-success' : 'badge-secondary'"
+                    th:text="${camara.activa} ? 'Activa' : 'Inactiva'">Estado</span>
 
-                <span th:if="${camara != null}"
-                      class="badge"
-                      th:classappend="${camara.activa} ? 'badge-success' : 'badge-secondary'"
-                      th:text="${camara.activa} ? 'Activa' : 'Inactiva'">
-                  Estado
-                </span>
-
-                <span th:if="${camara == null}" class="badge badge-secondary">
-                  Sin cámara
-                </span>
-
-              </div>
+              <span th:if="${camara == null}" class="badge badge-secondary">Sin cámara</span>
             </td>
 
             <td>
-              <div th:with="camara=${#lists.isEmpty(camaras.?[puerta != null and puerta.id == p.id]) ? null : camaras.?[puerta != null and puerta.id == p.id][0]}">
+              <a th:if="${camara != null}"
+                 th:href="@{/kiosko/(camaraId=${camara.id})}"
+                 target="_blank">
+                <code th:text="'/kiosko/?camaraId=' + ${camara.id}">/kiosko/?camaraId=1</code>
+              </a>
 
-                <code th:if="${camara != null}"
-                      th:text="'/kiosko/?camaraId=' + ${camara.id}">
-                  /kiosko/?camaraId=1
-                </code>
-
-                <span th:if="${camara == null}" style="color:#7a8898;">
-                  —
-                </span>
-
-              </div>
+              <span th:if="${camara == null}" style="color:#7a8898;">—</span>
             </td>
 
             <td sec:authorize="hasRole('ADMIN')">
-              <div style="display:flex;gap:6px;flex-wrap:wrap;"
-                   th:with="camara=${#lists.isEmpty(camaras.?[puerta != null and puerta.id == p.id]) ? null : camaras.?[puerta != null and puerta.id == p.id][0]}">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
 
                 <a th:href="@{/instalaciones/{id}/puerta/{pid}/editar(id=${instalacion.id},pid=${p.id})}"
                    class="btn btn-outline"
                    style="padding:4px 10px;font-size:0.8rem;">
-                  <i class="fas fa-edit"></i> Editar acceso
-                </a>
-
-                <a th:if="${camara == null}"
-                   th:href="@{/instalaciones/{id}/camara/nueva(id=${instalacion.id},puertaId=${p.id})}"
-                   class="btn btn-primary"
-                   style="padding:4px 10px;font-size:0.8rem;">
-                  <i class="fas fa-video"></i> Agregar cámara
+                  <i class="fas fa-edit"></i> Editar
                 </a>
 
                 <a th:if="${camara != null}"
-                   th:href="@{/instalaciones/{id}/camara/{camaraId}/editar(id=${instalacion.id},camaraId=${camara.id})}"
-                   class="btn btn-outline"
-                   style="padding:4px 10px;font-size:0.8rem;">
-                  <i class="fas fa-video"></i> Editar cámara
+                   th:href="@{/kiosko/(camaraId=${camara.id})}"
+                   target="_blank"
+                   class="btn"
+                   style="padding:4px 10px;font-size:0.8rem;background:#0d6efd;color:white;border:none;border-radius:6px;">
+                  <i class="fas fa-external-link-alt"></i> Kiosko
                 </a>
 
                 <form th:if="${camara != null}"
                       th:action="@{/instalaciones/{id}/camara/{camaraId}/toggle(id=${instalacion.id},camaraId=${camara.id})}"
                       method="post"
                       style="display:inline;">
-
                   <button type="submit"
                           class="btn"
                           th:style="${camara.activa}
                             ? 'padding:4px 10px;font-size:0.8rem;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;'
                             : 'padding:4px 10px;font-size:0.8rem;background:#198754;color:#fff;border:none;border-radius:6px;cursor:pointer;'">
-
                     <i th:class="${camara.activa} ? 'fas fa-ban' : 'fas fa-check'"></i>
-                    <span th:text="${camara.activa} ? 'Desactivar' : 'Activar'">
-                      Acción
-                    </span>
+                    <span th:text="${camara.activa} ? 'Desactivar' : 'Activar'">Acción</span>
                   </button>
                 </form>
 
@@ -179,8 +131,8 @@
                       onsubmit="return confirm('¿Eliminar este acceso/salón?');">
                   <button type="submit"
                           class="btn"
-                          style="padding:4px 10px;font-size:0.8rem;background:#dc3545;color:#fff;border:none;border-radius:6px;cursor:pointer;">
-                    <i class="fas fa-trash"></i> Eliminar acceso
+                          style="padding:4px 10px;font-size:0.8rem;background:#b00020;color:#fff;border:none;border-radius:6px;cursor:pointer;">
+                    <i class="fas fa-trash"></i>
                   </button>
                 </form>
 
