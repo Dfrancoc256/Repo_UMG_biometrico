@@ -106,7 +106,7 @@
         </div>
       </div>
 
-      <div class="card" style="margin-top:20px;" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+      <div class="card" style="margin-top:20px;" sec:authorize="hasAnyRole('ADMIN')">
         <div class="card-header">
           <h5><i class="fas fa-user-plus"></i> Inscribir Estudiante</h5>
         </div>
@@ -292,6 +292,8 @@
   </div>
 
   <script>
+    let sesionActivaId = null;
+
     function abrirModalAsistencia() {
       document.getElementById('modalAsistencia').style.display = 'flex';
     }
@@ -331,16 +333,122 @@
         const data = await response.json();
 
         if (data.success) {
+          sesionActivaId = data.sesionId;
+
           document.getElementById('resultadoSesion').style.display = 'block';
-          mensaje.innerHTML = '<span style="color:#1b5e20;">Sesión activa para ' + data.curso + '.</span>';
+
+          mensaje.innerHTML =
+                  '<span style="color:#1b5e20;">Sesión activa para ' + data.curso + '.</span>';
+
+          btn.classList.remove('btn-success');
+          btn.classList.add('btn-danger');
+          btn.innerHTML = '<i class="fas fa-stop"></i> Cerrar sesión';
+          btn.setAttribute('onclick', 'cerrarSesionAsistencia()');
+
         } else {
-          mensaje.innerHTML = '<span style="color:#dc3545;">' + (data.error || 'No se pudo habilitar la sesión.') + '</span>';
+          document.getElementById('resultadoSesion').style.display = 'none';
+
+          mensaje.innerHTML =
+                  '<div style="color:#92400e;background:#fff7ed;border:1px solid #fed7aa;padding:10px;border-radius:8px;">'
+                  + (data.error || 'No se pudo habilitar la sesión.')
+                  + '<br><br>'
+                  + '<button type="button" class="btn btn-danger btn-xs" onclick="cerrarSesionActivaPorPuerta()">'
+                  + '<i class="fas fa-stop"></i> Cerrar sesión activa'
+                  + '</button>'
+                  + '</div>';
         }
 
       } catch (e) {
         mensaje.innerHTML = '<span style="color:#dc3545;">Error de conexión.</span>';
       } finally {
         btn.disabled = false;
+      }
+    }
+
+    async function cerrarSesionAsistencia() {
+      const mensaje = document.getElementById('mensajeSesion');
+      const btn = document.getElementById('btnIniciarSesion');
+
+      if (!sesionActivaId) {
+        mensaje.innerHTML = '<span style="color:#dc3545;">No hay una sesión activa para cerrar.</span>';
+        return;
+      }
+
+      try {
+        btn.disabled = true;
+        mensaje.innerHTML = '<span style="color:#6b7280;">Cerrando sesión...</span>';
+
+        const response = await fetch(window.location.origin + '/asistencia/sesion/api/finalizar/' + sesionActivaId, {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          sesionActivaId = null;
+
+          document.getElementById('resultadoSesion').style.display = 'none';
+
+          mensaje.innerHTML =
+                  '<span style="color:#1b5e20;">Sesión cerrada correctamente.</span>';
+
+          btn.classList.remove('btn-danger');
+          btn.classList.add('btn-success');
+          btn.innerHTML = '<i class="fas fa-play"></i> Iniciar sesión';
+          btn.setAttribute('onclick', 'iniciarSesionAsistencia()');
+
+        } else {
+          mensaje.innerHTML =
+                  '<span style="color:#dc3545;">' + (data.error || 'No se pudo cerrar la sesión.') + '</span>';
+        }
+
+      } catch (e) {
+        mensaje.innerHTML = '<span style="color:#dc3545;">Error de conexión.</span>';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function cerrarSesionActivaPorPuerta() {
+      const selectCamara = document.getElementById('camaraIdAsistencia');
+      const puertaId = selectCamara.options[selectCamara.selectedIndex]?.dataset.puertaId;
+
+      const mensaje = document.getElementById('mensajeSesion');
+
+      if (!puertaId) {
+        mensaje.innerHTML = '<span style="color:#dc3545;">Seleccione una cámara válida.</span>';
+        return;
+      }
+
+      try {
+        mensaje.innerHTML = '<span style="color:#6b7280;">Cerrando sesión activa...</span>';
+
+        const response = await fetch(window.location.origin + '/asistencia/sesion/api/finalizar-activa/puerta/' + puertaId, {
+          method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          mensaje.innerHTML = '<span style="color:#1b5e20;">Sesión activa cerrada correctamente. Ahora puede iniciar una nueva sesión.</span>';
+
+          document.getElementById('resultadoSesion').style.display = 'none';
+
+          const btn = document.getElementById('btnIniciarSesion');
+
+          btn.classList.remove('btn-danger');
+          btn.classList.add('btn-success');
+
+          btn.innerHTML = '<i class="fas fa-play"></i> Iniciar sesión';
+          btn.setAttribute('onclick', 'iniciarSesionAsistencia()');
+
+          sesionActivaId = null;
+        } else {
+          mensaje.innerHTML = '<span style="color:#dc3545;">' + (data.error || 'No se pudo cerrar la sesión activa.') + '</span>';
+        }
+
+      } catch (e) {
+        mensaje.innerHTML = '<span style="color:#dc3545;">Error de conexión.</span>';
       }
     }
   </script>

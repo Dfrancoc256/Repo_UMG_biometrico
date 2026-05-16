@@ -21,7 +21,7 @@ public class SesionAsistenciaService {
     private final PuertaRepository puertaRepository;
     private final CamaraRepository camaraRepository;
 
-    private static final int HORAS_EXPIRACION = 3;
+    private static final int HORAS_EXPIRACION = 1;
 
     public SesionAsistencia habilitarSesion(Long cursoId,
                                             Long usuarioId,
@@ -81,9 +81,40 @@ public class SesionAsistenciaService {
 
         if (sesionCamaraActiva.isPresent()) {
             SesionAsistencia existente = sesionCamaraActiva.get();
-            existente.setActiva(false);
-            existente.setHoraFin(ahora);
-            sesionRepository.save(existente);
+
+            String nombreCatedratico = existente.getCatedratico() != null
+                    ? existente.getCatedratico().getNombreCompleto()
+                    : "otro catedrático";
+
+            String nombreSalon = existente.getPuerta() != null
+                    ? existente.getPuerta().getNombre()
+                    : "este salón";
+
+            throw new RuntimeException(
+                    "El catedrático " + nombreCatedratico +
+                            " está usando el kiosko en el salón " + nombreSalon +
+                            " y terminará pronto."
+            );
+        }
+
+        var sesionPuertaActiva = sesionRepository.findByPuerta_IdAndActivaTrue(puertaId);
+
+        if (sesionPuertaActiva.isPresent()) {
+            SesionAsistencia existente = sesionPuertaActiva.get();
+
+            String nombreCatedratico = existente.getCatedratico() != null
+                    ? existente.getCatedratico().getNombreCompleto()
+                    : "otro catedrático";
+
+            String nombreSalon = existente.getPuerta() != null
+                    ? existente.getPuerta().getNombre()
+                    : "este salón";
+
+            throw new RuntimeException(
+                    "El catedrático " + nombreCatedratico +
+                            " está usando el kiosko en el salón " + nombreSalon +
+                            " y terminará pronto."
+            );
         }
 
         SesionAsistencia sesion = new SesionAsistencia();
@@ -144,4 +175,17 @@ public class SesionAsistenciaService {
             }
         }
     }
+
+    public SesionAsistencia finalizarSesionActivaPorPuerta(Long puertaId) {
+        cerrarSesionesExpiradas();
+
+        SesionAsistencia sesion = sesionRepository.findByPuerta_IdAndActivaTrue(puertaId)
+                .orElseThrow(() -> new RuntimeException("No hay sesión activa para este salón."));
+
+        sesion.setActiva(false);
+        sesion.setHoraFin(LocalDateTime.now());
+
+        return sesionRepository.save(sesion);
+    }
+
 }

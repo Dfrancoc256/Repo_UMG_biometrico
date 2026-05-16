@@ -69,9 +69,15 @@ public class SesionAsistenciaController {
             ));
 
         } catch (Exception e) {
+            String mensaje = e.getMessage();
+
+            if (mensaje == null || mensaje.contains("could not execute statement") || mensaje.contains("duplicate key")) {
+                mensaje = "Esta cámara ya tiene una sesión activa. Intente con otra cámara o espere a que finalice.";
+            }
+
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "error", e.getMessage()
+                    "error", mensaje
             ));
         }
     }
@@ -120,4 +126,25 @@ public class SesionAsistenciaController {
             ));
         }
     }
+
+    @PostMapping("/api/finalizar-activa/puerta/{puertaId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> finalizarActivaPorPuerta(@PathVariable Long puertaId) {
+        try {
+            SesionAsistencia sesion = sesionService.finalizarSesionActivaPorPuerta(puertaId);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "sesionId", sesion.getId(),
+                    "mensaje", "Sesión activa cerrada correctamente."
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
+    
 }

@@ -15,6 +15,8 @@ public interface SesionAsistenciaRepository extends JpaRepository<SesionAsistenc
 
     Optional<SesionAsistencia> findByCurso_IdAndActivaTrue(Long cursoId);
 
+    Optional<SesionAsistencia> findByPuerta_IdAndActivaTrue(Long puertaId);
+
     List<SesionAsistencia> findByCatedratico_IdAndActivaTrue(Long catedraticoId);
 
     List<SesionAsistencia> findByFechaAndActivaTrue(LocalDate fecha);
