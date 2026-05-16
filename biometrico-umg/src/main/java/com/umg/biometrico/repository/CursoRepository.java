@@ -15,6 +15,8 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
 
     long countByCatedratico_IdAndActivoTrue(Long catedraticoId);
 
+    boolean existsByCodigo(String codigo);
+
     List<Curso> findByActivoTrue();
     
     List<Curso> findByActivoTrueOrderByCarreraNombreAscNombreAsc();

@@ -68,7 +68,15 @@ public class CursoService {
     private String generarCodigoCurso() {
         int anio = Year.now().getValue();
         long seq = cursoRepository.countByCodigoAnio(String.valueOf(anio)) + 1;
-        return String.format("CUR-%d-%03d", anio, seq);
+
+        String codigo;
+
+        do {
+            codigo = String.format("CUR-%d-%03d", anio, seq);
+            seq++;
+        } while (cursoRepository.existsByCodigo(codigo));
+
+        return codigo;
     }
 
     public void inscribirEstudiante(Long cursoId, Long estudianteId) {
