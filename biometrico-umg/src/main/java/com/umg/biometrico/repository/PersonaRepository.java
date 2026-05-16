@@ -18,6 +18,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
 
     Optional<Persona> findByNumeroCarnet(String numeroCarnet);
 
+    Optional<Persona> findByNumeroCarnetAndRol_NombreIgnoreCase(String numeroCarnet, String nombreRol);
+
     List<Persona> findByRol_NombreAndActivo(String nombreRol, Boolean activo);
 
     List<Persona> findByActivoTrue();

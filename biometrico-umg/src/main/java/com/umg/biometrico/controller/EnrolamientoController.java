@@ -3,8 +3,10 @@ package com.umg.biometrico.controller;
 import com.umg.biometrico.model.Curso;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.repository.CursoEstudianteRepository;
+import com.umg.biometrico.repository.PersonaRepository;
 import com.umg.biometrico.service.CursoService;
 import com.umg.biometrico.service.PersonaService;
+import com.umg.biometrico.repository.PersonaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,7 @@ public class EnrolamientoController {
     private final PersonaService personaService;
     private final CursoService cursoService;
     private final CursoEstudianteRepository cursoEstudianteRepository;
+    private final PersonaRepository personaRepository;
 
     private static final int MAX_CURSOS = 5;
 
@@ -32,7 +35,20 @@ public class EnrolamientoController {
 
     @PostMapping("/buscar")
     public String buscarPorCarnet(@RequestParam String carnet, Model model) {
-        Optional<Persona> opt = personaService.buscarPorCarnet(carnet);
+
+        carnet = carnet != null ? carnet.trim() : "";
+
+        if (carnet.isBlank()) {
+            model.addAttribute("errorMsg", "Debes ingresar tu número de carnet.");
+            return "enrolamiento/buscar";
+        }
+
+        if (!carnet.toUpperCase().startsWith("UMG-")) {
+            carnet = "UMG-" + carnet;
+        }
+
+        Optional<Persona> opt = personaRepository
+                .findByNumeroCarnetAndRol_NombreIgnoreCase(carnet, "ESTUDIANTE");
 
         if (opt.isEmpty()) {
             model.addAttribute("errorMsg", "No se encontró ningún estudiante con el carnet: " + carnet);
