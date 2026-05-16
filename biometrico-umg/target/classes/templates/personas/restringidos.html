@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Personas Restringidas', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-user-slash" style="margin-right:10px;color:var(--umg-rojo);"></i>Personas con Restricción</h2>
+      <p class="breadcrumb">Módulo de control de acceso restringido</p>
+    </div>
+  </div>
+
+  <div th:if="${#lists.isEmpty(personas)}" class="card">
+    <div class="card-body" style="text-align:center;padding:50px;color:#7a8898;">
+      <i class="fas fa-check-circle" style="font-size:40px;color:#4caf50;display:block;margin-bottom:14px;"></i>
+      No hay personas con restricción de acceso actualmente.
+    </div>
+  </div>
+
+  <div th:unless="${#lists.isEmpty(personas)}" class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-ban" style="margin-right:8px;color:var(--umg-rojo);"></i>
+        Personas Restringidas (<span th:text="${#lists.size(personas)}">0</span>)
+      </h5>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Foto</th><th>Nombre</th><th>Tipo</th>
+              <th>Correo</th><th>Motivo</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="p, iter : ${personas}" style="background:#fdecea5a;">
+              <td th:text="${iter.count}">1</td>
+              <td>
+                <img th:if="${p.fotoRuta != null}" th:src="@{'/' + ${p.fotoRuta}}" class="avatar-sm" alt="Foto"
+                     style="border-color:var(--umg-rojo);"/>
+                <div th:unless="${p.fotoRuta != null}" class="avatar-sm avatar-placeholder">
+                  <i class="fas fa-user"></i>
+                </div>
+              </td>
+              <td><strong th:text="${p.nombreCompleto}">Nombre</strong></td>
+              <td><span class="badge badge-secondary" th:text="${p.tipoPersona}">tipo</span></td>
+              <td><small th:text="${p.correo}">correo</small></td>
+              <td>
+                <span style="font-size:12px;color:#c62828;" th:text="${p.motivoRestriccion}">Motivo</span>
+              </td>
+              <td>
+                <a th:href="@{/personas/{id}/ver(id=${p.id})}" class="btn btn-outline btn-xs">
+                  <i class="fas fa-eye"></i>
+                </a>
+                <form th:action="@{/personas/{id}/levantar-restriccion(id=${p.id})}" method="post" style="display:inline;">
+                  <button type="submit" class="btn btn-success btn-xs"
+                          data-confirm="¿Levantar la restricción de esta persona?">
+                    <i class="fas fa-unlock"></i> Levantar
+                  </button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario para agregar restricción desde aquí -->
+  <div class="card" style="margin-top:24px;">
+    <div class="card-header">
+      <h5><i class="fas fa-plus-circle" style="margin-right:8px;color:var(--umg-rojo);"></i>Agregar Restricción por Carnet / Correo</h5>
+    </div>
+    <div class="card-body">
+      <!-- Buscar persona primero -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+        <div class="form-group" style="margin:0;flex:1;min-width:220px;">
+          <label class="form-label">Carnet o Correo</label>
+          <input type="text" class="form-control" id="buscarRestriccion"
+                 placeholder="UMG-0001234 o correo@umg.edu.gt"/>
+        </div>
+        <button type="button" class="btn btn-outline" onclick="buscarParaRestringir()">
+          <i class="fas fa-search"></i> Buscar
+        </button>
+      </div>
+
+      <!-- Resultado búsqueda -->
+      <div id="resultadoBusqueda" style="display:none;border:1px solid #dde8f5;border-radius:8px;
+           padding:12px;margin-bottom:14px;background:#f8fafc;">
+        <strong id="rNombre">—</strong>
+        <small id="rCarnet" style="color:#7a8898;margin-left:8px;">—</small>
+      </div>
+
+      <!-- Form real — el action se construye con JS -->
+      <form id="formRestringir" action="#" method="post"
+            style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <input type="hidden" id="rPersonaId" name="_personaId"/>
+        <div class="form-group" style="margin:0;flex:1;min-width:240px;">
+          <label class="form-label">Motivo *</label>
+          <input type="text" class="form-control" name="motivo"
+                 placeholder="Motivo de restricción" required/>
+        </div>
+        <button type="button" class="btn btn-danger" onclick="enviarRestriccion()">
+          <i class="fas fa-ban"></i> Aplicar Restricción
+        </button>
+      </form>
+      <div id="msgRestriccion" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <script>
+    function buscarParaRestringir() {
+      const q = document.getElementById('buscarRestriccion').value.trim();
+      if (!q) return;
+      fetch('/personas/buscar-correo?correo=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+          if (data.encontrado) {
+            document.getElementById('rNombre').textContent = data.nombre;
+            document.getElementById('rCarnet').textContent = 'Carnet: ' + data.carnet + ' · ID: ' + data.id;
+            document.getElementById('rPersonaId').value = data.id;
+            document.getElementById('resultadoBusqueda').style.display = 'block';
+            document.getElementById('msgRestriccion').innerHTML = '';
+          } else {
+            document.getElementById('resultadoBusqueda').style.display = 'none';
+            document.getElementById('msgRestriccion').innerHTML =
+              '<div style="color:#c62828;">No se encontró persona con ese dato.</div>';
+          }
+        })
+        .catch(() => {
+          document.getElementById('msgRestriccion').innerHTML =
+            '<div style="color:#c62828;">Error de conexión.</div>';
+        });
+    }
+
+    function enviarRestriccion() {
+      const id = document.getElementById('rPersonaId').value;
+      if (!id) {
+        document.getElementById('msgRestriccion').innerHTML =
+          '<div style="color:#c62828;">Busca primero a la persona.</div>';
+        return;
+      }
+      const form = document.getElementById('formRestringir');
+      form.action = '/personas/' + id + '/restringir';
+      form.submit();
+    }
+
+    document.getElementById('buscarRestriccion').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); buscarParaRestringir(); }
+    });
+  </script>
+
+</th:block>
+</body>
+</html>

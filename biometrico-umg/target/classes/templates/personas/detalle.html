@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      th:replace="~{layout/main :: layout(~{::content}, 'Detalle Persona', ${activeMenu})}">
+
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-user-circle" style="margin-right:10px;color:var(--umg-azul);"></i>Detalle de Persona</h2>
+      <p class="breadcrumb"
+         sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas}">Personas</a>
+        &rsaquo; Detalle
+      </p>
+    </div>
+    <div class="detalle-acciones">
+      <a th:href="@{/personas/{id}/editar(id=${persona.id})}" class="btn btn-warning"
+         sec:authorize="hasRole('ADMIN')">
+        <i class="fas fa-edit"></i> Editar
+      </a>
+
+      <a th:href="@{/personas/{id}/carnet(id=${persona.id})}"
+         class="btn btn-primary"
+         sec:authorize="hasRole('ADMIN')">
+        <i class="fas fa-id-card"></i> Descargar Carnet PDF
+      </a>
+
+      <a th:href="@{/personas/{id}/enviar-carnet(id=${persona.id})}" class="btn btn-success"
+         sec:authorize="hasAnyRole('ADMIN')">
+        <i class="fas fa-envelope"></i> Enviar por Correo
+      </a>
+
+      <a th:href="@{/personas/{id}/enviar-whatsapp(id=${persona.id})}" class="btn btn-success"
+         sec:authorize="hasAnyRole('ADMIN')">
+        <i class="fab fa-whatsapp"></i> Enviar por WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <div class="detalle-persona-grid" th:if="${persona != null}">
+
+    <!-- Columna izquierda: foto y estado -->
+    <div>
+      <div class="card detalle-perfil-card">
+        <div class="card-body detalle-perfil-body">
+          <img th:if="${persona.fotoRuta != null}"
+               th:src="@{'/' + ${persona.fotoRuta}}"
+               class="avatar-lg"
+               style="width:120px;height:120px;margin-bottom:14px;"
+               alt="Foto"/>
+          <div th:unless="${persona.fotoRuta != null}"
+               class="avatar-lg avatar-placeholder"
+               style="width:120px;height:120px;font-size:40px;margin:0 auto 14px;">
+            <i class="fas fa-user"></i>
+          </div>
+          <h4 th:text="${persona.nombreCompleto}" style="margin-bottom:6px;color:var(--umg-azul);">Nombre</h4>
+          <span class="badge"
+                th:classappend="${persona.tipoPersona == 'estudiante'} ? 'badge-info' : (${persona.tipoPersona == 'catedratico'} ? 'badge-warning' : 'badge-secondary')"
+                th:text="${persona.tipoPersona}">tipo</span>
+          <!-- QR de validación -->
+          <div th:if="${persona.numeroCarnet != null}" style="margin-top:18px;">
+            <a th:href="@{/personas/{id}/carnet-publico(id=${persona.id})}" target="_blank">
+              <img th:src="@{/personas/{id}/qr(id=${persona.id})}"
+                   alt="QR del carné"
+                   style="width:120px;height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:4px;background:#fff;"/>
+            </a>
+            <div style="font-size:10px;color:#7a8898;margin-top:4px;">
+              Escanear o tocar para abrir carné PDF
+            </div>
+          </div>
+          <br/><br/>
+          <span class="badge" style="font-size:13px;"
+                th:classappend="${persona.restringido} ? 'badge-danger' : 'badge-success'"
+                th:text="${persona.restringido} ? '⚠ Restringido' : '✓ Activo'">Estado</span>
+          <div th:if="${persona.restringido}" style="margin-top:14px;padding:12px;background:#fdecea;border-radius:8px;font-size:12px;color:#c62828;">
+            <strong>Motivo de restricción:</strong><br/>
+            <span th:text="${persona.motivoRestriccion}">Motivo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones de restricción — ADMIN -->
+      <div class="card" style="margin-top:16px;" th:unless="${persona.restringido}"
+           sec:authorize="hasAnyRole('ADMIN')">
+        <div class="card-header"><h5><i class="fas fa-user-slash"></i> Restricción</h5></div>
+        <div class="card-body">
+          <form th:action="@{/personas/{id}/restringir(id=${persona.id})}" method="post">
+            <div class="form-group">
+              <label class="form-label">Motivo de restricción *</label>
+              <textarea class="form-control" name="motivo" rows="3" required
+                        placeholder="Describa el motivo..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger" data-confirm="¿Aplicar restricción a esta persona?">
+              <i class="fas fa-ban"></i> Restringir Acceso
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;" th:if="${persona.restringido}"
+           sec:authorize="hasRole('ADMIN')">
+        <div class="card-body">
+          <form th:action="@{/personas/{id}/levantar-restriccion(id=${persona.id})}" method="post">
+            <button type="submit" class="btn btn-success" style="width:100%;"
+                    data-confirm="¿Levantar la restricción de esta persona?">
+              <i class="fas fa-unlock"></i> Levantar Restricción
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna derecha: datos -->
+    <div>
+      <div class="card">
+        <div class="card-header"><h5><i class="fas fa-id-card" style="margin-right:8px;"></i>Información Biográfica</h5></div>
+        <div class="card-body">
+          <table class="umg-table" style="font-size:14px;">
+            <tbody>
+              <tr><td style="width:200px;font-weight:600;color:#3a4a5c;">No. Carnet</td>
+                  <td><code th:text="${persona.numeroCarnet}">—</code></td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Nombre Completo</td>
+                  <td th:text="${persona.nombreCompleto}">—</td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Correo UMG</td>
+                  <td th:text="${persona.correo}">—</td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Teléfono</td>
+                  <td th:text="${persona.telefono}">—</td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Tipo</td>
+                  <td th:text="${persona.tipoPersona}">—</td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Carrera</td>
+                <td th:text="${persona.carrera != null ? persona.carrera.nombre : '—'}"></td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Sección</td>
+                  <td th:text="${persona.seccion}">—</td></tr>
+              <tr><td style="font-weight:600;color:#3a4a5c;">Fecha Registro</td>
+                  <td th:text="${#temporals.format(persona.fechaRegistro, 'dd/MM/yyyy HH:mm')}">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</th:block>
+</body>
+</html>

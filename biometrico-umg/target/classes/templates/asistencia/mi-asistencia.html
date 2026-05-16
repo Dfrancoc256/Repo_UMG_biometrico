@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Mi Asistencia', 'mi-asistencia')}">
+
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h2>Mi Asistencia</h2>
+      <div class="breadcrumb">Historial de asistencia de mis cursos</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5>Listado de asistencias</h5>
+    </div>
+
+    <div class="card-body">
+      <div th:if="${#lists.isEmpty(asistencias)}" class="alert alert-warning">
+        No tienes registros de asistencia por el momento.
+      </div>
+
+      <div th:if="${not #lists.isEmpty(asistencias)}" class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Curso</th>
+            <th>Código</th>
+            <th>Estado</th>
+            <th>Hora de Registro</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="asistencia : ${asistencias}">
+            <td th:text="${asistencia.fecha}">2026-04-22</td>
+            <td th:text="${asistencia.curso != null ? asistencia.curso.nombre : 'Sin curso'}">Programación</td>
+            <td th:text="${asistencia.curso != null ? asistencia.curso.codigo : '---'}">CUR-001</td>
+            <td>
+              <span th:if="${asistencia.presente}" class="badge badge-success">Presente</span>
+              <span th:unless="${asistencia.presente}" class="badge badge-danger">Ausente</span>
+            </td>
+            <td th:text="${asistencia.horaRegistro != null ? #temporals.format(asistencia.horaRegistro, 'dd/MM/yyyy HH:mm') : 'Sin registro'}">
+              22/04/2026 07:10
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</html>

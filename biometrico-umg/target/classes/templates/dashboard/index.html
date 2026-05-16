@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Dashboard', 'dashboard')}">
+<body>
+<th:block th:fragment="content">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-tachometer-alt" style="margin-right:10px;color:var(--umg-rojo);"></i>Dashboard General</h2>
+      <p class="breadcrumb">Bienvenido al Sistema Biométrico de Ingreso UMG · La Florida Zona 19</p>
+    </div>
+    <div style="font-size:13px;color:#7a8898;">
+      <i class="fas fa-calendar-alt" style="margin-right:5px;"></i>
+      <span th:text="${fechaActual}">01/01/2026</span>
+    </div>
+  </div>
+
+  <!-- Tarjetas de estadísticas -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-user-graduate" style="color:var(--umg-azul);"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.totalEstudiantes}">0</div>
+        <div class="stat-label">Estudiantes Activos</div>
+      </div>
+    </div>
+
+    <div class="stat-card gold">
+      <div class="stat-icon"><i class="fas fa-chalkboard-teacher" style="color:#9e6c00;"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.totalCatedraticos}">0</div>
+        <div class="stat-label">Catedráticos</div>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-book-open" style="color:#2e7d32;"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.totalCursos}">0</div>
+        <div class="stat-label">Cursos Activos</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-door-open" style="color:var(--umg-azul);"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.ingresosHoy}">0</div>
+        <div class="stat-label">Ingresos Hoy</div>
+      </div>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon"><i class="fas fa-clipboard-check" style="color:#2e7d32;"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.asistenciasHoy}">0</div>
+        <div class="stat-label">Asistencias Hoy</div>
+      </div>
+    </div>
+
+    <div class="stat-card red">
+      <div class="stat-icon"><i class="fas fa-user-slash" style="color:var(--umg-rojo);"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.personasRestringidas}">0</div>
+        <div class="stat-label">Restricciones Activas</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-users" style="color:var(--umg-azul);"></i></div>
+      <div class="stat-info">
+        <div class="stat-value" th:text="${stats.totalPersonas}">0</div>
+        <div class="stat-label">Total Personas</div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Accesos rápidos -->
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-header">
+      <h5><i class="fas fa-bolt" style="color:var(--umg-dorado);margin-right:8px;"></i>Acciones Rápidas</h5>
+    </div>
+    <div class="card-body" style="display:flex;flex-wrap:wrap;gap:12px;">
+      <a th:href="@{/personas/nuevo}" class="btn btn-primary"
+         sec:authorize="hasRole('ADMIN')">
+        <i class="fas fa-user-plus"></i> Enrolar Persona
+      </a>
+      <a th:href="@{/asistencia}" class="btn btn-success">
+        <i class="fas fa-clipboard-check"></i> Tomar Asistencia
+      </a>
+      <a th:href="@{/ingreso}" class="btn btn-outline"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <i class="fas fa-door-open"></i> Registrar Ingreso
+      </a>
+      <a th:href="@{/reportes}" class="btn btn-warning"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <i class="fas fa-chart-bar"></i> Ver Reportes
+      </a>
+      <a th:href="@{/personas/restringidos}" class="btn btn-danger"
+         sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <i class="fas fa-user-slash"></i> Gestionar Restricciones
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabla de últimas personas registradas -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-user-clock" style="margin-right:8px;color:var(--umg-azul);"></i>Últimas Personas Registradas</h5>
+      <a th:href="@{/personas}" class="btn btn-outline btn-sm">Ver todos</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+      <div class="table-wrapper">
+        <table class="umg-table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Foto</th>
+            <th>Nombre Completo</th>
+            <th>Tipo</th>
+            <th>Carnet</th>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="p, iter : ${ultimosEstudiantes}">
+            <td th:text="${iter.count}">1</td>
+            <td>
+              <img th:if="${p.fotoRuta != null}" th:src="@{'/' + ${p.fotoRuta}}" class="avatar-sm" alt="Foto"/>
+              <div th:unless="${p.fotoRuta != null}" class="avatar-sm avatar-placeholder">
+                <i class="fas fa-user"></i>
+              </div>
+            </td>
+            <td><strong th:text="${p.nombreCompleto}">Nombre</strong></td>
+            <td>
+                    <span class="badge"
+                    th:classappend="${p.tipoPersona == 'ESTUDIANTE'} ? 'badge-info' : (${p.tipoPersona == 'CATEDRATICO'} ? 'badge-warning' : (${p.tipoPersona == 'ADMIN'} ? 'badge-danger' : 'badge-secondary'))"
+                    th:text="${p.tipoPersona != null ? p.tipoPersona : '—'}">tipo</span>
+            </td>
+            <td th:text="${p.numeroCarnet}">carnet</td>
+            <td th:text="${p.correo}">correo</td>
+            <td>
+                            <span class="badge" th:classappend="${p.restringido} ? 'badge-danger' : 'badge-success'"
+                                  th:text="${p.restringido} ? 'Restringido' : 'Activo'">Activo</span>
+            </td>
+            <td>
+              <a th:href="@{/personas/{id}/ver(id=${p.id})}" class="btn btn-outline btn-xs">
+                <i class="fas fa-eye"></i>
+              </a>
+              <a th:href="@{/personas/{id}/carnet(id=${p.id})}" class="btn btn-primary btn-xs">
+                <i class="fas fa-id-card"></i>
+              </a>
+            </td>
+          </tr>
+          <tr th:if="${ultimosEstudiantes == null or #lists.isEmpty(ultimosEstudiantes)}">
+            <td colspan="8" style="text-align:center;color:#7a8898;padding:30px;">
+              <i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;"></i>
+              No hay personas registradas aún.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

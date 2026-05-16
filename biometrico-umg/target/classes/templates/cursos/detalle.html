@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/main :: layout(~{::content}, 'Detalle de Curso', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header" th:if="${curso != null}">
+    <div>
+      <h2>
+        <i class="fas fa-book" style="margin-right:10px;color:var(--umg-azul);"></i>
+        <span th:text="${curso.nombre}">Curso</span>
+      </h2>
+      <p class="breadcrumb">
+        <a th:href="@{/cursos}">Cursos</a> &rsaquo;
+        <span th:text="${curso.codigo}">cod</span>
+      </p>
+    </div>
+
+    <button type="button"
+            class="btn btn-success btn-tomar-asistencia"
+            onclick="abrirModalAsistencia()"
+            sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+      <i class="fas fa-clipboard-check"></i> Tomar Asistencia
+    </button>
+  </div>
+
+  <div class="detalle-curso-grid" th:if="${curso != null}">
+
+    <div class="detalle-curso-columna-izquierda">
+
+      <div class="card">
+        <div class="card-header">
+          <h5>Información del Curso</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Código:</strong> <code th:text="${curso.codigo}">—</code></p>
+          <p><strong>Nombre:</strong> <span th:text="${curso.nombre}">—</span></p>
+          <p><strong>Catedrático:</strong> <span th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : '—'}">—</span></p>
+          <p><strong>Salón:</strong> <span th:text="${curso.salon}">—</span></p>
+          <p><strong>Horario:</strong> <span th:text="${curso.horario}">—</span></p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;" sec:authorize="hasRole('ADMIN')">
+        <div class="card-header">
+          <h5><i class="fas fa-chalkboard-teacher"></i> Catedrático por Sección</h5>
+        </div>
+
+        <div class="card-body">
+
+          <div th:if="${asignaciones != null and not #lists.isEmpty(asignaciones)}" style="margin-bottom:14px;">
+            <div th:each="a : ${asignaciones}"
+                 style="display:flex;align-items:center;justify-content:space-between;
+                        padding:6px 0;border-bottom:1px solid #eef2f7;">
+              <span>
+                <strong th:text="${'Sección ' + a.seccion}">Sección A</strong>
+                &rarr;
+                <span th:text="${a.catedratico.nombreCompleto}">Catedrático</span>
+              </span>
+
+              <form th:action="@{/cursos/{id}/quitar-seccion(id=${curso.id})}" method="post" style="display:inline;">
+                <input type="hidden" name="seccion" th:value="${a.seccion}"/>
+                <button type="submit" class="btn btn-danger btn-xs"
+                        data-confirm="¿Quitar esta asignación?">
+                  <i class="fas fa-times"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <form th:action="@{/cursos/{id}/asignar-seccion(id=${curso.id})}" method="post">
+            <div class="curso-form-row">
+
+              <div class="form-group">
+                <label class="form-label">Sección</label>
+                <select class="form-control" name="seccion" required>
+                  <option value="">--</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Catedrático</label>
+                <select class="form-control" name="catedraticoId" required>
+                  <option value="">-- Seleccione --</option>
+                  <option th:each="c : ${catedraticos}"
+                          th:value="${c.id}"
+                          th:text="${c.nombreCompleto}">
+                    Catedrático
+                  </option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Asignar
+              </button>
+
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <div class="card-header">
+          <h5><i class="fas fa-user-plus"></i> Inscribir Estudiante</h5>
+        </div>
+
+        <div class="card-body">
+          <form th:action="@{/cursos/{id}/inscribir(id=${curso.id})}" method="post">
+            <div class="form-group">
+              <label class="form-label">Seleccionar Estudiante</label>
+              <select class="form-control" name="estudianteId" required>
+                <option value="">-- Seleccione --</option>
+                <option th:each="e : ${todosEstudiantes}"
+                        th:value="${e.id}"
+                        th:text="${e.nombreCompleto + ' (' + e.numeroCarnet + ')'}">
+                  Estudiante
+                </option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Inscribir
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="detalle-curso-columna-derecha">
+
+      <div class="card">
+        <div class="card-header">
+          <h5>
+            <i class="fas fa-users" style="margin-right:8px;"></i>
+            Estudiantes Inscritos (<span th:text="${#lists.size(estudiantes)}">0</span>)
+          </h5>
+        </div>
+
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrapper">
+            <table class="umg-table">
+              <thead>
+              <tr>
+                <th>#</th>
+                <th>Foto</th>
+                <th>Nombre</th>
+                <th>Carnet</th>
+                <th>Correo</th>
+                <th>Acciones</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              <tr th:each="ce, iter : ${estudiantes}">
+                <td th:text="${iter.count}">1</td>
+
+                <td>
+                  <img th:if="${ce.estudiante.fotoRuta != null}"
+                       th:src="@{'/' + ${ce.estudiante.fotoRuta}}"
+                       class="avatar-sm"
+                       alt="Foto"/>
+
+                  <div th:unless="${ce.estudiante.fotoRuta != null}"
+                       class="avatar-sm avatar-placeholder">
+                    <i class="fas fa-user"></i>
+                  </div>
+                </td>
+
+                <td>
+                  <strong th:text="${ce.estudiante.nombreCompleto}">Nombre</strong>
+                </td>
+
+                <td>
+                  <code th:text="${ce.estudiante.numeroCarnet}">carnet</code>
+                </td>
+
+                <td>
+                  <small th:text="${ce.estudiante.correo}">correo</small>
+                </td>
+
+                <td>
+                  <form th:action="@{/cursos/{id}/desinscribir(id=${curso.id})}"
+                        method="post"
+                        style="display:inline;"
+                        sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+                    <input type="hidden" name="estudianteId" th:value="${ce.estudiante.id}"/>
+                    <button type="submit"
+                            class="btn btn-danger btn-xs"
+                            data-confirm="¿Quitar a este estudiante del curso?">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+
+              <tr th:if="${estudiantes == null or #lists.isEmpty(estudiantes)}">
+                <td colspan="6" style="text-align:center;color:#7a8898;padding:30px;">
+                  No hay estudiantes inscritos en este curso.
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL ASISTENCIA -->
+  <div id="modalAsistencia"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+
+    <div style="background:#fff;width:520px;max-width:95%;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.25);overflow:hidden;">
+
+      <div style="background:var(--umg-azul);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;font-size:18px;">
+          <i class="fas fa-camera" style="margin-right:8px;"></i>
+          Habilitar asistencia biométrica
+        </h3>
+
+        <button type="button"
+                onclick="cerrarModalAsistencia()"
+                style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">
+          &times;
+        </button>
+      </div>
+
+      <div style="padding:20px;">
+        <p style="font-size:13px;color:#6b7280;margin-bottom:14px;">
+          Selecciona la cámara/salón donde los estudiantes validarán su asistencia.
+        </p>
+
+        <input type="hidden" id="cursoIdAsistencia" th:value="${curso.id}">
+
+        <div class="form-group">
+          <label class="form-label" for="camaraIdAsistencia">Cámara disponible</label>
+          <select class="form-control" id="camaraIdAsistencia" required>
+            <option value="">-- Seleccione cámara --</option>
+            <option th:each="cam : ${camaras}"
+                    th:value="${cam.id}"
+                    th:data-puerta-id="${cam.puerta != null ? cam.puerta.id : ''}"
+                    th:text="${cam.nombre + ' — ' + (cam.puerta != null ? cam.puerta.nombre : 'Sin puerta')}">
+              Cámara
+            </option>
+          </select>
+        </div>
+
+        <div id="resultadoSesion"
+             style="display:none;margin-top:14px;padding:14px;border-radius:10px;background:#eef6ff;border:1px solid #bfd8f0;">
+          <p style="font-size:13px;color:#003366;margin:0 0 8px;font-weight:600;">
+            Sesión habilitada correctamente
+          </p>
+
+          <p style="font-size:13px;color:#374151;margin:0;">
+            La cámara fija ya puede registrar asistencia automáticamente.
+          </p>
+
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <a th:href="@{/asistencia/curso/{id}(id=${curso.id})}" class="btn btn-success">
+              <i class="fas fa-users"></i> Ver asistencia
+            </a>
+          </div>
+        </div>
+
+        <div id="mensajeSesion" style="margin-top:12px;font-size:13px;"></div>
+      </div>
+
+      <div style="padding:14px 20px;background:#f5f7fa;display:flex;justify-content:flex-end;gap:10px;">
+        <button type="button" class="btn btn-outline" onclick="cerrarModalAsistencia()">
+          Cancelar
+        </button>
+
+        <button type="button"
+                class="btn btn-success"
+                id="btnIniciarSesion"
+                onclick="iniciarSesionAsistencia()">
+          <i class="fas fa-play"></i> Iniciar sesión
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function abrirModalAsistencia() {
+      document.getElementById('modalAsistencia').style.display = 'flex';
+    }
+
+    function cerrarModalAsistencia() {
+      document.getElementById('modalAsistencia').style.display = 'none';
+    }
+
+    async function iniciarSesionAsistencia() {
+      const cursoId = document.getElementById('cursoIdAsistencia').value;
+      const selectCamara = document.getElementById('camaraIdAsistencia');
+      const camaraId = selectCamara.value;
+      const puertaId = selectCamara.options[selectCamara.selectedIndex]?.dataset.puertaId;
+
+      const mensaje = document.getElementById('mensajeSesion');
+      const btn = document.getElementById('btnIniciarSesion');
+
+      if (!camaraId || !puertaId) {
+        mensaje.innerHTML = '<span style="color:#dc3545;">Seleccione una cámara válida.</span>';
+        return;
+      }
+
+      try {
+        btn.disabled = true;
+        mensaje.innerHTML = '<span style="color:#6b7280;">Habilitando sesión...</span>';
+
+        const response = await fetch('/asistencia/sesion/api/habilitar', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            cursoId: cursoId,
+            camaraId: camaraId,
+            puertaId: puertaId
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('resultadoSesion').style.display = 'block';
+          mensaje.innerHTML = '<span style="color:#1b5e20;">Sesión activa para ' + data.curso + '.</span>';
+        } else {
+          mensaje.innerHTML = '<span style="color:#dc3545;">' + (data.error || 'No se pudo habilitar la sesión.') + '</span>';
+        }
+
+      } catch (e) {
+        mensaje.innerHTML = '<span style="color:#dc3545;">Error de conexión.</span>';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+
+</th:block>
+</body>
+</html>

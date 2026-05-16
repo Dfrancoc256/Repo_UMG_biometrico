@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Mi Dashboard', 'dashboard')}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2>
+        <i class="fas fa-graduation-cap" style="margin-right:10px;color:var(--umg-azul);"></i>
+        Hola, <span th:text="${estudiante != null ? estudiante.nombre : 'Estudiante'}">Nombre</span>
+      </h2>
+      <p class="breadcrumb">UMG · La Florida Zona 19</p>
+    </div>
+    <div style="font-size:13px;color:#7a8898;">
+      <i class="fas fa-calendar-alt" style="margin-right:5px;"></i>
+      <span th:text="${fechaActual}">01/01/2026</span>
+    </div>
+  </div>
+
+  <!-- Sin cursos -->
+  <div th:if="${cursos == null or cursos.isEmpty()}"
+       style="text-align:center;padding:60px 20px;color:#7a8898;">
+    <i class="fas fa-book-open" style="font-size:40px;display:block;margin-bottom:12px;color:#c5d8ea;"></i>
+    <p style="font-size:15px;">No estás inscrito en ningún curso activo todavía.</p>
+    <p style="font-size:12px;">Contacta a tu catedrático para que te inscriba.</p>
+  </div>
+
+  <!-- Cursos inscritos -->
+  <div th:each="curso : ${cursos}" class="card" style="margin-bottom:20px;">
+    <div class="card-header"
+         style="background:linear-gradient(to right,var(--umg-azul),#1a5276);color:#fff;">
+      <h5 style="color:#fff;margin:0;">
+        <i class="fas fa-book" style="margin-right:8px;color:var(--umg-dorado);"></i>
+        <span th:text="${curso.nombre}">Curso</span>
+      </h5>
+      <span style="font-size:11px;opacity:.8;"
+            th:text="${curso.codigo + (curso.horario != null ? ' · ' + curso.horario : '')}">COD</span>
+    </div>
+    <div class="card-body" style="padding:16px 20px;">
+
+      <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+
+        <!-- Info del curso -->
+        <div style="min-width:200px;">
+          <p style="margin:0 0 6px;font-size:13px;">
+            <i class="fas fa-chalkboard-teacher" style="color:var(--umg-azul);margin-right:5px;"></i>
+            <span th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar'}">Cat.</span>
+          </p>
+          <p style="margin:0;font-size:13px;">
+            <i class="fas fa-door-open" style="color:var(--umg-azul);margin-right:5px;"></i>
+            <span th:text="${curso.salon != null ? curso.salon : '—'}">Salón</span>
+          </p>
+        </div>
+
+        <!-- Estadísticas de asistencia -->
+        <div th:with="registros=${historial != null ? historial[curso] : null}">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;" th:if="${registros != null and not registros.isEmpty()}">
+            <div style="background:#e8f5e9;border-radius:8px;padding:10px 16px;text-align:center;min-width:80px;">
+              <div style="font-size:22px;font-weight:800;color:#2e7d32;"
+                   th:text="${#lists.size(registros.?[presente == true])}">0</div>
+              <div style="font-size:11px;color:#4caf50;font-weight:600;">Presentes</div>
+            </div>
+            <div style="background:#fdecea;border-radius:8px;padding:10px 16px;text-align:center;min-width:80px;">
+              <div style="font-size:22px;font-weight:800;color:var(--umg-rojo);"
+                   th:text="${#lists.size(registros.?[presente == false])}">0</div>
+              <div style="font-size:11px;color:var(--umg-rojo);font-weight:600;">Ausentes</div>
+            </div>
+            <div style="background:#e8f0fb;border-radius:8px;padding:10px 16px;text-align:center;min-width:80px;">
+              <div style="font-size:22px;font-weight:800;color:var(--umg-azul);"
+                   th:text="${#lists.size(registros)}">0</div>
+              <div style="font-size:11px;color:var(--umg-azul);font-weight:600;">Total clases</div>
+            </div>
+          </div>
+          <p th:if="${registros == null or registros.isEmpty()}"
+             style="color:#7a8898;font-size:13px;margin:0;">
+            <i class="fas fa-calendar-times" style="margin-right:4px;"></i>Sin registros de asistencia aún.
+          </p>
+        </div>
+
+        <!-- Acceso rápido -->
+        <div style="margin-left:auto;">
+          <a th:href="@{/asistencia}" class="btn btn-outline btn-sm">
+            <i class="fas fa-clipboard-list"></i> Ver historial completo
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Chips de últimas fechas -->
+      <div th:with="registros=${historial != null ? historial[curso] : null}"
+           th:if="${registros != null and not registros.isEmpty()}"
+           style="margin-top:14px;padding-top:14px;border-top:1px solid #eef2f7;">
+        <small style="color:#7a8898;font-weight:600;font-size:11px;">ÚLTIMAS CLASES:</small>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+          <span th:each="a : ${#lists.subList(registros, 0, T(java.lang.Math).min(8, #lists.size(registros)))}"
+                style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600;"
+                th:style="${a.presente} ? 'background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;' :
+                                          'background:#fdecea;color:#c62828;border:1px solid #ffcdd2;'">
+            <i class="fas" th:classappend="${a.presente} ? 'fa-check-circle' : 'fa-times-circle'"></i>
+            <span th:text="${#temporals.format(a.fecha, 'dd/MM')}">01/01</span>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Acciones rápidas del estudiante -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-bolt" style="color:var(--umg-dorado);margin-right:8px;"></i>Acciones Rápidas</h5>
+    </div>
+    <div class="card-body" style="display:flex;flex-wrap:wrap;gap:12px;">
+      <a th:href="@{/personas/{id}/ver(id=${estudiante != null ? estudiante.id : 0})}"
+         class="btn btn-outline">
+        <i class="fas fa-user-circle"></i> Mi Perfil
+      </a>
+      <a th:href="@{/personas/{id}/carnet(id=${estudiante != null ? estudiante.id : 0})}"
+         class="btn btn-primary">
+        <i class="fas fa-id-card"></i> Descargar mi Carné
+      </a>
+      <a th:href="@{/asistencia}" class="btn btn-success">
+        <i class="fas fa-clipboard-check"></i> Ver mi Asistencia
+      </a>
+      <a th:href="@{/cursos}" class="btn btn-outline">
+        <i class="fas fa-book"></i> Ver Cursos
+      </a>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Asignarse a cursos | Biométrico UMG</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { background: linear-gradient(135deg, #1a3a6b 0%, #0d2244 60%, #0a1a35 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .enrol-card { background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); width: 100%; max-width: 480px; overflow: hidden; }
+    .enrol-header { background: linear-gradient(135deg, #1a3a6b, #0d2244); color: #fff; padding: 32px 36px 24px; text-align: center; }
+    .enrol-header img { width: 72px; margin-bottom: 12px; }
+    .enrol-header h2 { margin: 0 0 4px; font-size: 20px; font-weight: 700; }
+    .enrol-header p { margin: 0; font-size: 13px; opacity: .75; }
+    .enrol-body { padding: 32px 36px; }
+    .enrol-body .form-label { font-weight: 600; color: #1a3a6b; font-size: 13px; }
+    .enrol-back { display: block; text-align: center; margin-top: 18px; font-size: 13px; color: #7a8898; text-decoration: none; }
+    .enrol-back:hover { color: #1a3a6b; }
+    .enrol-info-box { background: #f0f5ff; border: 1px solid #c7d8f5; border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; font-size: 13px; color: #1a3a6b; line-height: 1.6; }
+    .enrol-info-box i { margin-right: 6px; color: var(--umg-dorado, #cc9933); }
+  </style>
+</head>
+<body>
+
+<div class="enrol-card">
+  <div class="enrol-header">
+    <img th:src="@{/img/logo-umg.png}" alt="UMG"/>
+    <h2>Asignarse a cursos</h2>
+    <p>Universidad Mariano Gálvez &mdash; Sede La Florida</p>
+  </div>
+
+  <div class="enrol-body">
+
+    <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:18px;">
+      <i class="fas fa-check-circle"></i>
+      <span th:text="${successMsg}"></span>
+    </div>
+
+    <div th:if="${errorMsg}" class="alert alert-danger" style="margin-bottom:18px;">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span th:text="${errorMsg}"></span>
+    </div>
+
+    <div class="enrol-info-box">
+      <i class="fas fa-info-circle"></i>
+      Ingresa tu número de carnet para ver los cursos disponibles.
+      Podrás seleccionar hasta <strong>5 cursos</strong> en total.
+    </div>
+
+    <form th:action="@{/enrolamiento/buscar}" method="post">
+      <div class="form-group">
+        <label class="form-label" for="carnet">
+          <i class="fas fa-id-card" style="margin-right:6px;color:#7a8898;"></i>
+          Número de Carnet
+        </label>
+
+        <div style="display:flex;align-items:center;">
+
+    <span style="
+      background:#eef2f7;
+      border:1px solid #cfd8e3;
+      border-right:none;
+      padding:11px 14px;
+      border-radius:10px 0 0 10px;
+      font-weight:700;
+      color:#1a3a6b;
+      font-size:14px;
+      ">
+      UMG-
+    </span>
+
+          <input type="text"
+                 class="form-control"
+                 id="carnet"
+                 name="carnet"
+                 th:value="${carnetBuscado != null ? #strings.replace(carnetBuscado, 'UMG-', '') : ''}"
+                 placeholder="2024001234"
+                 style="border-radius:0 10px 10px 0;"
+                 required
+                 autofocus/>
+
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;">
+        <i class="fas fa-search"></i> Buscar mis cursos
+      </button>
+    </form>
+
+    <a th:href="@{/auth/login}" class="enrol-back">
+      <i class="fas fa-arrow-left" style="margin-right:4px;"></i> Volver al inicio de sesión
+    </a>
+  </div>
+</div>
+
+</body>
+</html>
