@@ -519,6 +519,98 @@ public class PdfService {
         table.addCell(cell);
     }
 
+    public byte[] generarReporteIngreso(String titulo, String subtitulo,
+                                        List<com.umg.biometrico.model.RegistroIngreso> registros)
+            throws DocumentException {
+        Document document = new Document(PageSize.A4);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfWriter.getInstance(document, baos);
+        document.open();
+
+        Font titleFont    = new Font(Font.FontFamily.HELVETICA, 15, Font.BOLD,  UMG_AZUL);
+        Font subtitleFont = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD,  UMG_ROJO);
+        Font normalFont   = new Font(Font.FontFamily.HELVETICA,  9, Font.NORMAL, BaseColor.BLACK);
+        Font headerFont   = new Font(Font.FontFamily.HELVETICA,  9, Font.BOLD,  BaseColor.WHITE);
+        Font smallFont    = new Font(Font.FontFamily.HELVETICA,  8, Font.NORMAL, GRIS_TEXTO);
+
+        try {
+            ClassPathResource logoResource = new ClassPathResource("static/img/logo-umg.png");
+            try (InputStream is = logoResource.getInputStream()) {
+                Image logo = Image.getInstance(is.readAllBytes());
+                logo.scaleToFit(55, 55);
+                logo.setAlignment(Element.ALIGN_LEFT);
+                document.add(logo);
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo cargar el logo: {}", e.getMessage());
+        }
+
+        Paragraph h1 = new Paragraph("UNIVERSIDAD MARIANO GÁLVEZ DE GUATEMALA", titleFont);
+        h1.setAlignment(Element.ALIGN_CENTER);
+        document.add(h1);
+
+        Paragraph sede = new Paragraph("Sede La Florida, Zona 19", subtitleFont);
+        sede.setAlignment(Element.ALIGN_CENTER);
+        document.add(sede);
+
+        Paragraph repTit = new Paragraph(titulo.toUpperCase(), subtitleFont);
+        repTit.setAlignment(Element.ALIGN_CENTER);
+        repTit.setSpacingBefore(4);
+        document.add(repTit);
+
+        Paragraph sub = new Paragraph(subtitulo, normalFont);
+        sub.setAlignment(Element.ALIGN_CENTER);
+        sub.setSpacingBefore(2);
+        document.add(sub);
+
+        Paragraph fechaGen = new Paragraph(
+                "Generado: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")),
+                smallFont);
+        fechaGen.setAlignment(Element.ALIGN_RIGHT);
+        document.add(fechaGen);
+
+        document.add(new Paragraph(" "));
+        document.add(new Chunk(new LineSeparator(1f, 100, UMG_AZUL, Element.ALIGN_CENTER, 0)));
+        document.add(new Paragraph(" "));
+
+        PdfPTable tabla = new PdfPTable(5);
+        tabla.setWidthPercentage(100);
+        tabla.setWidths(new float[]{4, 28, 32, 14, 22});
+        tabla.setSpacingBefore(8);
+
+        for (String hText : new String[]{"#", "Nombre Completo", "Correo Electrónico", "Tipo", "Fecha / Hora"}) {
+            PdfPCell cell = new PdfPCell(new Phrase(hText, headerFont));
+            cell.setBackgroundColor(UMG_AZUL);
+            cell.setPadding(5);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            tabla.addCell(cell);
+        }
+
+        for (int i = 0; i < registros.size(); i++) {
+            com.umg.biometrico.model.RegistroIngreso r = registros.get(i);
+            Persona p = r.getPersona();
+            BaseColor rowColor = (i % 2 == 0) ? BaseColor.WHITE : GRIS_SUAVE;
+
+            addTableCell(tabla, String.valueOf(i + 1), normalFont, rowColor, Element.ALIGN_CENTER);
+            addTableCell(tabla, p != null ? valor(p.getNombreCompleto()) : "—", normalFont, rowColor, Element.ALIGN_LEFT);
+            addTableCell(tabla, p != null ? valor(p.getCorreo()) : "—", smallFont, rowColor, Element.ALIGN_LEFT);
+            addTableCell(tabla, p != null ? valor(p.getTipoPersona()) : "—", normalFont, rowColor, Element.ALIGN_CENTER);
+            addTableCell(tabla, r.getFechaHora() != null
+                    ? r.getFechaHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                    : "—", smallFont, rowColor, Element.ALIGN_CENTER);
+        }
+
+        document.add(tabla);
+
+        Paragraph total = new Paragraph("Total de registros: " + registros.size(), subtitleFont);
+        total.setAlignment(Element.ALIGN_RIGHT);
+        total.setSpacingBefore(10);
+        document.add(total);
+
+        document.close();
+        return baos.toByteArray();
+    }
+
     public byte[] generarQR(String contenido, int ancho, int alto) {
         try {
             QRCodeWriter qrWriter = new QRCodeWriter();

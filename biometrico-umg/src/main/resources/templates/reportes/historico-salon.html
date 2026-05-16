@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Histórico por Salón', 'rep-hist-salon')}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-chalkboard" style="margin-right:10px;color:var(--umg-azul);"></i>Histórico de Ingresos por Salón</h2>
+      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Histórico por Salón</p>
+    </div>
+  </div>
+
+  <!-- Filtro instalación -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header"><h5><i class="fas fa-filter" style="margin-right:8px;"></i>Seleccionar Instalación</h5></div>
+    <div class="card-body">
+      <form th:action="@{/reportes/historico-salon}" method="get"
+            style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="form-group" style="margin:0;min-width:260px;">
+          <label class="form-label">Instalación (nodo raíz)</label>
+          <select class="form-control" name="instalacionId" onchange="this.form.submit()">
+            <option value="">-- Seleccione --</option>
+            <option th:each="i : ${instalaciones}" th:value="${i.id}" th:text="${i.nombre}"
+                    th:selected="${instalacionId != null and i.id == instalacionId}"></option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Árbol resultado -->
+  <div th:if="${arbolSalones != null}">
+
+    <div class="rep-path" th:if="${instalacion != null}">
+      <i class="fas fa-university" style="color:var(--umg-azul);"></i>
+      <strong th:text="${instalacion.nombre}">Instalación</strong>
+      <i class="fas fa-chevron-right rep-sep"></i>
+      <span style="color:#7a8898;">Niveles → Salones → Personas</span>
+    </div>
+
+    <div th:if="${#maps.isEmpty(arbolSalones)}" class="card">
+      <div class="card-body" style="text-align:center;padding:50px;color:#7a8898;">
+        <i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;"></i>
+        No hay salones con registros en esta instalación.
+      </div>
+    </div>
+
+    <!-- Árbol: nivel (career-node) → salones (salon-node) → personas -->
+    <div class="tree-container" th:if="${not #maps.isEmpty(arbolSalones)}">
+
+      <div class="tree-root collapsed" th:each="entry : ${arbolSalones}">
+        <div class="career-node nivel-dorado" onclick="toggleNode(this)">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <i class="fas fa-layer-group"></i>
+            <span th:text="${entry.key}">Nivel</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <small style="color:rgba(255,255,255,0.75);font-size:12px;">
+              <span th:text="${#lists.size(entry.value)}">0</span> salon(es)
+            </small>
+            <i class="fas fa-chevron-down arrow-icon"></i>
+          </div>
+        </div>
+
+        <div class="course-children">
+          <div class="salon-block" th:each="sd : ${entry.value}">
+
+            <!-- Nodo salón (colapsa sus personas) -->
+            <div class="salon-node" onclick="toggleSalon(this)">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <i class="fas fa-chalkboard-teacher" style="color:var(--umg-dorado);"></i>
+                <strong th:text="${sd.salon.nombre}">Salón</strong>
+                <span class="badge badge-warning" th:if="${sd.salon.nivel != null and not #strings.isEmpty(sd.salon.nivel)}"
+                      th:text="${sd.salon.nivel}">nivel</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <small style="color:#64748b;font-size:12px;">
+                  <span th:text="${#lists.size(sd.personas)}">0</span> persona(s)
+                </small>
+                <i class="fas fa-chevron-down arrow-icon"></i>
+              </div>
+            </div>
+
+            <!-- Personas del salón -->
+            <div class="personas-children collapsed">
+              <div th:if="${#lists.isEmpty(sd.personas)}"
+                   style="padding:10px 16px;color:#7a8898;font-size:13px;">
+                Sin registros de ingreso.
+              </div>
+              <div class="persona-card" th:each="p : ${sd.personas}">
+                <div class="course-info">
+                  <img th:if="${p.fotoRuta != null}"
+                       th:src="@{'/' + ${p.fotoRuta}}" class="avatar-sm" alt="Foto"/>
+                  <div th:unless="${p.fotoRuta != null}"
+                       class="avatar-sm avatar-placeholder"><i class="fas fa-user"></i></div>
+                  <div>
+                    <strong th:text="${p.nombreCompleto}">Nombre</strong>
+                    <small th:text="${p.correo}">correo</small>
+                  </div>
+                </div>
+                <div class="course-actions">
+                  <span class="badge badge-info" th:text="${p.tipoPersona}">tipo</span>
+                  <span class="badge badge-secondary" th:if="${p.carrera != null}" th:text="${p.carrera}">carrera</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Enviar por correo -->
+    <div class="card email-card" th:if="${not #maps.isEmpty(arbolSalones)}">
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <span style="font-size:13px;color:#3a4a5c;">
+          <i class="fas fa-envelope" style="color:var(--umg-azul);margin-right:6px;"></i>
+          Enviar este reporte como PDF al correo registrado en tu cuenta
+        </span>
+        <form th:action="@{/reportes/historico-salon/email}" method="post">
+          <input type="hidden" name="instalacionId" th:value="${instalacionId}"/>
+          <input th:if="${instalacion != null}" type="hidden" name="instalacionNombre" th:value="${instalacion.nombre}"/>
+          <button type="submit" class="btn btn-outline">
+            <i class="fas fa-paper-plane"></i> Enviar PDF por correo
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Estado inicial -->
+  <div th:if="${arbolSalones == null}" class="card">
+    <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+      <i class="fas fa-hand-point-up" style="font-size:38px;display:block;margin-bottom:14px;"></i>
+      Seleccione una instalación para generar el árbol histórico por salón.
+    </div>
+  </div>
+
+  <style th:inline="none">
+    .tree-container { display:flex; flex-direction:column; gap:20px; padding:6px 0; }
+    .tree-root { border-left:3px solid var(--umg-azul); padding-left:18px; }
+    .career-node { background:#0b3c75; color:white; padding:12px 16px; border-radius:10px;
+      font-weight:700; display:flex; align-items:center; justify-content:space-between;
+      gap:10px; cursor:pointer; user-select:none;
+      box-shadow:0 4px 10px rgba(0,0,0,0.12); min-width:280px; width:fit-content; }
+    .nivel-dorado { background:linear-gradient(135deg,#9e6c00,#b8860b); min-width:340px; }
+    .arrow-icon { transition:transform 0.3s ease; }
+    .tree-root.collapsed > .course-children { display:none; }
+    .tree-root.collapsed > .career-node .arrow-icon { transform:rotate(-90deg); }
+    .course-children { margin-left:28px; margin-top:10px; display:flex; flex-direction:column;
+      gap:14px; border-left:2px dashed #cbd5e1; padding-left:18px; }
+    .salon-block { display:flex; flex-direction:column; gap:0; }
+    .salon-node { background:#f1f5f9; border:1px solid #dbe3ec; border-left:4px solid var(--umg-dorado);
+      padding:10px 14px; border-radius:10px 10px 0 0; display:flex; justify-content:space-between;
+      align-items:center; gap:10px; cursor:pointer; user-select:none; font-weight:600;
+      color:#1e3a5f; }
+    .salon-node .arrow-icon { color:#9e6c00; }
+    .personas-children { border:1px solid #dbe3ec; border-top:none; border-radius:0 0 10px 10px;
+      background:#fff; overflow:hidden; }
+    .personas-children.collapsed { display:none; }
+    .persona-card { display:flex; justify-content:space-between; align-items:center;
+      gap:12px; padding:10px 14px; border-bottom:1px solid #f0f4f8; }
+    .persona-card:last-child { border-bottom:none; }
+    .course-info { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+    .course-info > div { display:flex; flex-direction:column; gap:3px; }
+    .course-info strong { font-size:14px; color:#0f172a; }
+    .course-info small { color:#64748b; font-size:12px; }
+    .course-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+    .rep-path { display:flex; align-items:center; gap:10px; background:#eef2f7;
+      border:1px solid #dbe3ec; padding:10px 16px; border-radius:10px;
+      margin-bottom:16px; font-size:14px; font-weight:600; color:#1e3a5f; flex-wrap:wrap; }
+    .rep-sep { font-size:11px; color:#7a8898; }
+    .email-card { margin-top:18px; }
+    @media(max-width:768px){
+      .career-node,.nivel-dorado { width:100%; min-width:unset; font-size:14px; }
+      .salon-node { font-size:13px; }
+      .course-children { margin-left:12px; padding-left:12px; }
+      .persona-card { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+
+  <script>
+    function toggleNode(el) {
+      const raiz = el.closest('.tree-root');
+      if (raiz.classList.contains('collapsed')) {
+        raiz.parentElement.querySelectorAll(':scope > .tree-root')
+          .forEach(h => h !== raiz && h.classList.add('collapsed'));
+      }
+      raiz.classList.toggle('collapsed');
+    }
+    function toggleSalon(el) {
+      const personas = el.nextElementSibling;
+      const arrow = el.querySelector('.arrow-icon');
+      if (personas.classList.contains('collapsed')) {
+        personas.classList.remove('collapsed');
+        arrow.style.transform = '';
+      } else {
+        personas.classList.add('collapsed');
+        arrow.style.transform = 'rotate(-90deg)';
+      }
+    }
+  </script>
+
+</th:block>
+</body>
+</html>
