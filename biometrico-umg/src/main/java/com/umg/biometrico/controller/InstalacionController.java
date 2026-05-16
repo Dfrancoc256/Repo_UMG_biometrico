@@ -111,8 +111,8 @@ public class InstalacionController {
             model.addAttribute("puerta", p);
 
             boolean tieneCamara = camaraRepository.findByPuerta_Id(puertaId)
-                    .map(c -> Boolean.TRUE.equals(c.getActiva()))
-                    .orElse(false);
+                    .stream()
+                    .anyMatch(c -> Boolean.TRUE.equals(c.getActiva()));
 
             model.addAttribute("tieneCamara", tieneCamara);
         });
@@ -150,7 +150,7 @@ public class InstalacionController {
                                  @PathVariable Long puertaId,
                                  RedirectAttributes ra) {
 
-        camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
+        camaraRepository.findByPuerta_Id(puertaId).forEach(camara -> {
             camara.setActiva(false);
             camara.setPuerta(null);
             camaraRepository.save(camara);
@@ -177,8 +177,9 @@ public class InstalacionController {
     }
 
     private void crearOActualizarCamaraAutomatica(Puerta puerta) {
-        Camara camara = camaraRepository.findByPuerta_Id(puerta.getId())
-                .orElseGet(Camara::new);
+        List<Camara> camaras = camaraRepository.findByPuerta_Id(puerta.getId());
+
+        Camara camara = camaras.isEmpty() ? new Camara() : camaras.get(0);
 
         camara.setPuerta(puerta);
         camara.setNombre("Cámara " + puerta.getNombre());
@@ -187,10 +188,17 @@ public class InstalacionController {
         camara.setToken(null);
 
         camaraRepository.save(camara);
+
+        for (int i = 1; i < camaras.size(); i++) {
+            Camara duplicada = camaras.get(i);
+            duplicada.setActiva(false);
+            duplicada.setPuerta(null);
+            camaraRepository.save(duplicada);
+        }
     }
 
     private void desactivarCamaraSiExiste(Long puertaId) {
-        camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
+        camaraRepository.findByPuerta_Id(puertaId).forEach(camara -> {
             camara.setActiva(false);
             camaraRepository.save(camara);
         });
