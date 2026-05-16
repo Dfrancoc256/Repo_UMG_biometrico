@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout(content, pageTitle, activeMenu)">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${pageTitle != null} ? ${pageTitle} + ' | Biométrico UMG' : 'Sistema Biométrico UMG'">
+    Sistema Biométrico UMG
+  </title>
+
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+
+  <a class="sidebar-brand" th:href="@{/dashboard}">
+    <img th:src="@{/img/logo-umg.png}" alt="UMG Logo"/>
+    <div class="sidebar-brand-text">
+      <span class="brand-name">Biométrico UMG</span>
+      <span class="brand-sub">La Florida · Zona 19</span>
+    </div>
+  </a>
+
+  <!-- SOLO ADMIN -->
+  <span class="sidebar-section" sec:authorize="hasRole('ADMIN')">Principal</span>
+  <ul class="sidebar-nav" sec:authorize="hasRole('ADMIN')">
+    <li>
+      <a th:href="@{/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''">
+        <i class="fas fa-tachometer-alt nav-icon"></i>
+        Dashboard
+      </a>
+    </li>
+  </ul>
+
+  <!-- REGISTRO BIOMÉTRICO -->
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO','ESTUDIANTE')">
+    <button class="menu-toggle" type="button" data-menu="registro">
+      <i class="fas fa-id-card section-icon"></i>
+      <span class="sidebar-section">Registro Biométrico</span>
+    </button>
+
+    <ul class="sidebar-nav submenu">
+      <!-- SOLO ADMIN -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas}" th:classappend="${activeMenu == 'personas'} ? 'active' : ''">
+          <i class="fas fa-users nav-icon"></i>
+          Personas
+        </a>
+      </li>
+
+      <!-- CATEDRÁTICO + ESTUDIANTE -->
+      <li sec:authorize="hasAnyRole('CATEDRATICO','ESTUDIANTE')">
+        <a th:href="@{/personas/{id}/ver(id=${currentUser != null ? currentUser.id : 0})}"
+           th:classappend="${activeMenu == 'mi-perfil'} ? 'active' : ''">
+          <i class="fas fa-user-circle nav-icon"></i>
+          Mi Perfil
+        </a>
+      </li>
+
+      <!-- SOLO ADMIN -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas/nuevo}" th:classappend="${activeMenu == 'nuevo-persona'} ? 'active' : ''">
+          <i class="fas fa-user-plus nav-icon"></i>
+          Enrolar Persona
+        </a>
+      </li>
+
+      <!-- SOLO ADMIN -->
+      <li sec:authorize="hasRole('ADMIN')">
+        <a th:href="@{/personas/restringidos}" th:classappend="${activeMenu == 'restricciones'} ? 'active' : ''">
+          <i class="fas fa-user-slash nav-icon"></i>
+          Restricciones
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- CURSOS Y ASISTENCIA -->
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO','ESTUDIANTE')">
+    <button class="menu-toggle" type="button" data-menu="cursos">
+      <i class="fas fa-book-open section-icon"></i>
+      <span class="sidebar-section">Cursos y Asistencia</span>
+    </button>
+
+    <ul class="sidebar-nav submenu">
+      <!-- ADMIN + CATEDRATICO -->
+      <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <a th:href="@{/cursos}" th:classappend="${activeMenu == 'cursos'} ? 'active' : ''">
+          <i class="fas fa-book nav-icon"></i>
+          Cursos
+        </a>
+      </li>
+
+      <li sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+        <a th:href="@{/asistencia}" th:classappend="${activeMenu == 'asistencia'} ? 'active' : ''">
+          <i class="fas fa-clipboard-check nav-icon"></i>
+          Asistencia
+        </a>
+      </li>
+
+      <!-- ESTUDIANTE -->
+      <li sec:authorize="hasRole('ESTUDIANTE')">
+        <a th:href="@{/mis-cursos}" th:classappend="${activeMenu == 'mis-cursos'} ? 'active' : ''">
+          <i class="fas fa-book nav-icon"></i>
+          Mis Cursos
+        </a>
+      </li>
+
+      <li sec:authorize="hasRole('ESTUDIANTE')">
+        <a th:href="@{/mi-asistencia}" th:classappend="${activeMenu == 'mi-asistencia'} ? 'active' : ''">
+          <i class="fas fa-clipboard-check nav-icon"></i>
+          Mi Asistencia
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- CONTROL DE ACCESOS -->
+  <div class="menu-group" sec:authorize="hasAnyRole('ADMIN','CATEDRATICO')">
+    <button class="menu-toggle" type="button" data-menu="accesos">
+      <i class="fas fa-shield-alt section-icon"></i>
+      <span class="sidebar-section">Control de Accesos</span>
+    </button>
+
+    <ul class="sidebar-nav submenu">
+      <li>
+        <a th:href="@{/instalaciones}" th:classappend="${activeMenu == 'instalaciones'} ? 'active' : ''">
+          <i class="fas fa-building nav-icon"></i>
+          Instalaciones
+        </a>
+      </li>
+
+      <li>
+        <a th:href="@{/ingreso}" th:classappend="${activeMenu == 'ingreso'} ? 'active' : ''">
+          <i class="fas fa-door-open nav-icon"></i>
+          Registro Ingreso
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- SOLO ADMIN -->
+  <div class="menu-group" sec:authorize="hasRole('ADMIN')">
+    <button class="menu-toggle" type="button" data-menu="reportes">
+      <i class="fas fa-chart-line section-icon"></i>
+      <span class="sidebar-section">Reportes y Estadísticas</span>
+    </button>
+
+    <ul class="sidebar-nav submenu">
+      <li>
+        <a th:href="@{/reportes}" th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
+          <i class="fas fa-chart-bar nav-icon"></i>
+          Dashboard Reportes
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/puerta}" th:classappend="${activeMenu == 'rep-puerta'} ? 'active' : ''">
+          <i class="fas fa-door-closed nav-icon"></i>
+          Por Puerta
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/salon}" th:classappend="${activeMenu == 'rep-salon'} ? 'active' : ''">
+          <i class="fas fa-chalkboard-teacher nav-icon"></i>
+          Por Salón
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/historico}" th:classappend="${activeMenu == 'rep-historico'} ? 'active' : ''">
+          <i class="fas fa-history nav-icon"></i>
+          Árbol Histórico
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="sidebar-footer">
+    UMG &copy; 2026 · Biométrico
+  </div>
+</aside>
+
+<!-- ── TOPBAR ────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="topbar-left">
+    <button type="button" class="btn-topbar" id="sidebarToggle" title="Menú">
+      <i class="fas fa-bars"></i>
+    </button>
+    <span class="topbar-title" th:text="${pageTitle != null} ? ${pageTitle} : 'Dashboard'">Dashboard</span>
+  </div>
+  <div class="topbar-right">
+    <a th:href="@{/auth/logout}" class="user-pill logout-pill">
+      <div class="user-avatar">
+        <img th:if="${currentUser != null and currentUser.fotoRuta != null}"
+             th:src="@{'/' + ${currentUser.fotoRuta}}"
+             alt="Foto"/>
+        <i th:unless="${currentUser != null and currentUser.fotoRuta != null}"
+           class="fas fa-user" style="font-size:11px;"></i>
+      </div>
+
+      <span th:if="${currentUser != null}"
+            th:text="${currentUser.nombreCompleto}"
+            style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        Usuario
+      </span>
+
+      <span th:unless="${currentUser != null}" sec:authentication="name">Usuario</span>
+
+      <span th:if="${currentUser != null and currentUser.rol != null}"
+            th:text="${currentUser.rol.nombre}"
+            style="font-size:10px;background:rgba(0,51,102,0.12);color:var(--umg-azul);
+                   padding:2px 7px;border-radius:10px;margin-left:2px;">
+      </span>
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </a>
+  </div>
+</header>
+
+<!-- ── MAIN CONTENT ──────────────────────────────────────── -->
+<main class="main-content">
+  <div class="page-content">
+
+    <div th:if="${success}" class="alert alert-success alert-auto">
+      <i class="fas fa-check-circle" style="margin-right:6px;"></i>
+      <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-auto">
+      <i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>
+      <span th:text="${error}"></span>
+    </div>
+
+    <div th:if="${warning}" class="alert alert-warning alert-auto">
+      <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i>
+      <span th:text="${warning}"></span>
+    </div>
+
+    <th:block th:replace="${content}"></th:block>
+
+  </div>
+</main>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

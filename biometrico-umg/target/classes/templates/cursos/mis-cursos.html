@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Mis Cursos', 'mis-cursos')}">
+
+<div th:fragment="content">
+    <div class="page-header">
+        <div>
+            <h2>Mis Cursos</h2>
+            <div class="breadcrumb">Cursos asignados a mi perfil</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Listado de cursos asignados</h5>
+        </div>
+
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(cursos)}" class="alert alert-warning">
+                No tienes cursos asignados por el momento.
+            </div>
+
+            <div th:if="${not #lists.isEmpty(cursos)}" class="table-wrapper">
+                <table class="umg-table">
+                    <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Curso</th>
+                        <th>Catedrático</th>
+                        <th>Salón</th>
+                        <th>Horario</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="curso : ${cursos}">
+                        <td th:text="${curso.codigo}">CUR-001</td>
+                        <td th:text="${curso.nombre}">Programación</td>
+                        <td th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin asignar'}">Docente</td>
+                        <td th:text="${curso.salon}">A-1</td>
+                        <td th:text="${curso.horario}">07:00 - 09:00</td>
+                        <td>
+                            <span th:if="${curso.activo}" class="badge badge-success">Activo</span>
+                            <span th:unless="${curso.activo}" class="badge badge-danger">Inactivo</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

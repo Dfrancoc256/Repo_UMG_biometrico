@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Registro de Ingreso', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+    <div class="page-header">
+        <div>
+            <h2>
+                <i class="fas fa-door-open" style="margin-right:10px;color:var(--umg-azul);"></i>
+                Registro de Ingreso
+            </h2>
+            <p class="breadcrumb">Bitácora y monitoreo de accesos biométricos</p>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;">
+
+        <!-- COLUMNA IZQUIERDA -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+
+            <div style="border-top:0.5px solid var(--color-border-tertiary);margin:2px 0;"></div>
+
+            <div style="background:linear-gradient(135deg,#003366,#004a99);
+                        border:0.5px solid #003366;
+                        border-radius:12px;
+                        padding:18px 16px;
+                        box-shadow:0 4px 12px rgba(0,51,102,0.25);">
+
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:42px;height:42px;border-radius:10px;
+                                background:rgba(255,255,255,0.15);
+                                display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-camera" style="font-size:17px;color:white;"></i>
+                    </div>
+
+                    <div>
+                        <p style="font-size:13px;font-weight:600;color:white;margin:0;">
+                            Asistencia Biométrica
+                        </p>
+                        <p style="font-size:11px;color:rgba(255,255,255,0.65);margin:2px 0 0;">
+                            Registro automático por kiosko fijo
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:var(--color-background-primary);
+                        border:0.5px solid var(--color-border-tertiary);
+                        border-radius:10px;
+                        padding:12px 14px;">
+
+                <p style="font-size:10px;font-weight:500;color:var(--color-text-secondary);
+                          margin:0 0 8px;text-transform:uppercase;letter-spacing:0.06em;">
+                    Estado del sistema
+                </p>
+
+                <div id="estadoKioskos" style="display:flex;flex-direction:column;gap:6px;">
+                    <p style="font-size:11px;color:var(--color-text-secondary);margin:0;">
+                        <i class="fas fa-check-circle" style="margin-right:4px;color:#1b5e20;"></i>
+                        Kiosko fijo activo por cámara.
+                    </p>
+                    <p style="font-size:11px;color:var(--color-text-secondary);margin:0;">
+                        El docente habilita la sesión desde el curso.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA — BITÁCORA -->
+        <div style="background:var(--color-background-primary);
+                    border:0.5px solid var(--color-border-tertiary);
+                    border-radius:12px;
+                    overflow:hidden;">
+
+            <div style="padding:14px 18px;background:#003366;
+                        display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <p style="font-size:13px;font-weight:600;color:white;margin:0;">
+                        <i class="fas fa-list-alt" style="margin-right:8px;"></i>
+                        Bitácora de Accesos
+                    </p>
+                    <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:2px 0 0;">
+                        Historial completo de ingresos registrados
+                    </p>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span id="totalBadge"
+                          style="background:rgba(255,255,255,0.15);color:white;
+                                 font-size:11px;padding:3px 10px;border-radius:20px;">
+                        0 registros
+                    </span>
+
+                    <button type="button" onclick="cargarBitacora()"
+                            style="background:rgba(255,255,255,0.12);
+                                   border:1px solid rgba(255,255,255,0.2);
+                                   color:white;border-radius:8px;
+                                   padding:5px 10px;font-size:11px;cursor:pointer;">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div style="padding:12px 18px;border-bottom:0.5px solid var(--color-border-tertiary);
+                        background:var(--color-background-secondary);
+                        display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+
+                <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:160px;">
+                    <i class="fas fa-door-open"
+                       style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;"></i>
+
+                    <select id="filtroPuerta" onchange="cargarBitacora()"
+                            style="flex:1;font-size:12px;padding:6px 10px;border-radius:7px;
+                                   border:0.5px solid var(--color-border-tertiary);
+                                   background:var(--color-background-primary);
+                                   color:var(--color-text-primary);outline:none;">
+                        <option value="">— Todos los accesos —</option>
+                    </select>
+                </div>
+
+                <div style="position:relative;flex:1;min-width:200px;">
+                    <i class="fas fa-search"
+                       style="position:absolute;left:9px;top:50%;transform:translateY(-50%);
+                              font-size:11px;color:var(--color-text-secondary);pointer-events:none;"></i>
+
+                    <input type="text" id="filtroBusqueda"
+                           placeholder="Buscar por nombre o carnet..."
+                           oninput="filtrarBitacora()"
+                           style="width:100%;font-size:12px;padding:6px 10px 6px 28px;
+                                  border-radius:7px;border:0.5px solid var(--color-border-tertiary);
+                                  background:var(--color-background-primary);
+                                  color:var(--color-text-primary);outline:none;box-sizing:border-box;"/>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-calendar"
+                       style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;"></i>
+
+                    <input type="date" id="filtroFecha" onchange="filtrarBitacora()"
+                           style="font-size:12px;padding:6px 10px;border-radius:7px;
+                                  border:0.5px solid var(--color-border-tertiary);
+                                  background:var(--color-background-primary);
+                                  color:var(--color-text-primary);outline:none;"/>
+                </div>
+
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                    <tr style="background:var(--color-background-secondary);">
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            Persona
+                        </th>
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            Acceso
+                        </th>
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            Curso
+                        </th>
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:left;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            Hora
+                        </th>
+                        <th style="padding:9px 14px;font-size:10px;font-weight:600;color:var(--color-text-secondary);text-align:center;text-transform:uppercase;letter-spacing:0.05em;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            Confianza
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="tablaIngresos">
+                    <tr>
+                        <td colspan="5" style="text-align:center;padding:40px 14px;color:var(--color-text-secondary);">
+                            <i class="fas fa-clipboard-list"
+                               style="font-size:24px;opacity:0.3;display:block;margin-bottom:10px;"></i>
+                            <p style="font-size:12px;margin:0;">Sin registros aún</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script th:inline="none">
+        let todosLosIngresos = [];
+
+        function cargarPuertasFiltro() {
+            fetch('/ingreso/api/puertas-todas')
+                .then(r => r.json())
+                .then(puertas => {
+                    const sel = document.getElementById('filtroPuerta');
+                    sel.innerHTML = '<option value="">— Todos los accesos —</option>';
+
+                    puertas.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = p.nombre;
+                        sel.appendChild(opt);
+                    });
+                })
+                .catch(() => {});
+        }
+
+        function cargarBitacora() {
+            const puertaId = document.getElementById('filtroPuerta').value;
+            let url = '/ingreso/api/recientes?limit=200';
+
+            if (puertaId) {
+                url += '&puertaId=' + puertaId;
+            }
+
+            fetch(url)
+                .then(r => r.json())
+                .then(ingresos => {
+                    todosLosIngresos = ingresos || [];
+                    filtrarBitacora();
+                })
+                .catch(() => {
+                    todosLosIngresos = [];
+                    renderTabla([]);
+                });
+        }
+
+        function filtrarBitacora() {
+            const q = document.getElementById('filtroBusqueda').value.toLowerCase().trim();
+            const fechaFiltro = document.getElementById('filtroFecha').value;
+
+            let filtrados = todosLosIngresos;
+
+            if (q) {
+                filtrados = filtrados.filter(i =>
+                    (i.nombre || '').toLowerCase().includes(q) ||
+                    (i.carnet || '').toLowerCase().includes(q)
+                );
+            }
+
+            if (fechaFiltro) {
+                filtrados = filtrados.filter(i => {
+                    if (!i.fechaHora) return false;
+                    const fecha = new Date(i.fechaHora).toISOString().slice(0, 10);
+                    return fecha === fechaFiltro;
+                });
+            }
+
+            renderTabla(filtrados);
+        }
+
+        function renderTabla(ingresos) {
+            const tbody = document.getElementById('tablaIngresos');
+            document.getElementById('totalBadge').textContent = ingresos.length + ' registros';
+
+            if (!ingresos.length) {
+                tbody.innerHTML =
+                    '<tr>' +
+                    '<td colspan="5" style="text-align:center;padding:40px 14px;color:var(--color-text-secondary);">' +
+                    '<i class="fas fa-clipboard-list" style="font-size:24px;opacity:0.3;display:block;margin-bottom:10px;"></i>' +
+                    '<p style="font-size:12px;margin:0;">Sin registros</p>' +
+                    '</td>' +
+                    '</tr>';
+                return;
+            }
+
+            tbody.innerHTML = ingresos.map((i, idx) => {
+                const fechaObj = i.fechaHora ? new Date(i.fechaHora) : null;
+
+                const hora = fechaObj
+                    ? fechaObj.toLocaleTimeString('es-GT', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    })
+                    : '—';
+
+                const fecha = fechaObj
+                    ? fechaObj.toLocaleDateString('es-GT')
+                    : '—';
+
+                const confianza = i.confianza != null ? i.confianza : '—';
+                const colorConfianza = i.confianza >= 80 ? '#1b5e20' : i.confianza >= 60 ? '#e65100' : '#c62828';
+                const bgAlt = idx % 2 === 0 ? '' : 'background:var(--color-background-secondary);';
+
+                return `
+                    <tr style="${bgAlt}">
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin:0;">
+                                ${i.nombre || '—'}
+                            </p>
+                            <p style="font-size:10px;color:var(--color-text-secondary);margin:1px 0 0;">
+                                ${i.carnet || '—'}
+                            </p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;color:var(--color-text-primary);margin:0;">
+                                <i class="fas fa-door-open" style="font-size:10px;margin-right:4px;opacity:0.6;"></i>
+                                ${i.puerta || '—'}
+                            </p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;color:var(--color-text-primary);margin:0;">
+                                ${i.curso || '<span style="opacity:0.4">—</span>'}
+                            </p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);">
+                            <p style="font-size:12px;color:var(--color-text-primary);margin:0;">${hora}</p>
+                            <p style="font-size:10px;color:var(--color-text-secondary);margin:1px 0 0;">${fecha}</p>
+                        </td>
+
+                        <td style="padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:center;">
+                            <span style="background:${colorConfianza};color:white;padding:2px 9px;
+                                         border-radius:12px;font-size:10px;font-weight:500;">
+                                ${confianza}%
+                            </span>
+                        </td>
+                    </tr>`;
+            }).join('');
+        }
+
+        document.getElementById('filtroFecha').valueAsDate = new Date();
+
+        cargarPuertasFiltro();
+        cargarBitacora();
+
+        setInterval(cargarBitacora, 15000);
+    </script>
+
+</th:block>
+</body>
+</html>
