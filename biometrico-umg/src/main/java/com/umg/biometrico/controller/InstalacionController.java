@@ -150,15 +150,23 @@ public class InstalacionController {
                                  @PathVariable Long puertaId,
                                  RedirectAttributes ra) {
 
-        camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
-            camara.setActiva(false);
-            camara.setPuerta(null);
-            camaraRepository.save(camara);
-        });
+        try {
+            camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
+                camara.setActiva(false);
+                camara.setPuerta(null);
+                camaraRepository.save(camara);
+            });
 
-        puertaRepository.deleteById(puertaId);
+            puertaRepository.deleteById(puertaId);
 
-        ra.addFlashAttribute("success", "Acceso/Salón eliminado correctamente.");
+            ra.addFlashAttribute("success", "Acceso/Salón eliminado correctamente.");
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error",
+                    "No se puede eliminar este acceso/salón porque ya tiene registros históricos o sesiones asociadas. " +
+                            "Se recomienda dejarlo sin cámara o desactivarlo.");
+        }
+
         return "redirect:/instalaciones/" + id;
     }
 
