@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-        import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -111,52 +111,106 @@ public class InstalacionController {
             model.addAttribute("puerta", p);
 
             boolean tieneCamara = camaraRepository.findByPuerta_Id(puertaId)
-                    .map(c -> Boolean.TRUE.equals(c.getActiva()))
-                    .orElse(false);
                     .stream()
                     .anyMatch(c -> Boolean.TRUE.equals(c.getActiva()));
 
             model.addAttribute("tieneCamara", tieneCamara);
         });
-        @ -150,7 +150,7 @@ public class InstalacionController {
-            @PathVariable Long puertaId,
-            RedirectAttributes ra) {
 
-                camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
-                    camaraRepository.findByPuerta_Id(puertaId).forEach(camara -> {
-                        camara.setActiva(false);
-                        camara.setPuerta(null);
-                        camaraRepository.save(camara);
-                        @ -177,8 +177,9 @@ public class InstalacionController {
-                        }
+        model.addAttribute("activeMenu", "instalaciones");
+        return "instalaciones/puerta-formulario";
+    }
 
-                        private void crearOActualizarCamaraAutomatica(Puerta puerta) {
-                            Camara camara = camaraRepository.findByPuerta_Id(puerta.getId())
-                                    .orElseGet(Camara::new);
-                            List<Camara> camaras = camaraRepository.findByPuerta_Id(puerta.getId());
+    @PostMapping("/{id}/puerta/{puertaId}/guardar")
+    public String actualizarPuerta(@PathVariable Long id,
+                                   @PathVariable Long puertaId,
+                                   @ModelAttribute Puerta puerta,
+                                   @RequestParam(defaultValue = "false") Boolean tieneCamara,
+                                   RedirectAttributes ra) {
 
-                            Camara camara = camaras.isEmpty() ? new Camara() : camaras.get(0);
+        instalacionRepository.findById(id).ifPresent(inst -> {
+            puerta.setId(puertaId);
+            puerta.setInstalacion(inst);
 
-                            camara.setPuerta(puerta);
-                            camara.setNombre("Cámara " + puerta.getNombre());
-                            @ -187,12 +188,19 @@
-                                    camara.setToken(null);
+            Puerta puertaGuardada = puertaRepository.save(puerta);
 
-                            camaraRepository.save(camara);
+            if (Boolean.TRUE.equals(tieneCamara)) {
+                crearOActualizarCamaraAutomatica(puertaGuardada);
+            } else {
+                desactivarCamaraSiExiste(puertaGuardada.getId());
+            }
+        });
 
-                            for (int i = 1; i < camaras.size(); i++) {
-                                Camara duplicada = camaras.get(i);
-                                duplicada.setActiva(false);
-                                duplicada.setPuerta(null);
-                                camaraRepository.save(duplicada);
-                            }
-                        }
+        ra.addFlashAttribute("success", "Acceso/Salón actualizado correctamente.");
+        return "redirect:/instalaciones/" + id;
+    }
 
-                        private void desactivarCamaraSiExiste(Long puertaId) {
-                            camaraRepository.findByPuerta_Id(puertaId).ifPresent(camara -> {
-                                camaraRepository.findByPuerta_Id(puertaId).forEach(camara -> {
-                                    camara.setActiva(false);
-                                    camaraRepository.save(camara);
-                                });
-                            }
-                        }
+    @PostMapping("/{id}/puerta/{puertaId}/eliminar")
+    public String eliminarPuerta(@PathVariable Long id,
+                                 @PathVariable Long puertaId,
+                                 RedirectAttributes ra) {
+
+        try {
+            List<Camara> camaras = camaraRepository.findByPuerta_Id(puertaId);
+
+            for (Camara camara : camaras) {
+                camara.setActiva(false);
+                camara.setPuerta(null);
+                camaraRepository.save(camara);
+            }
+
+            puertaRepository.deleteById(puertaId);
+
+            ra.addFlashAttribute("success", "Acceso/Salón eliminado correctamente.");
+
+        } catch (Exception e) {
+            ra.addFlashAttribute("error",
+                    "No se puede eliminar este acceso/salón porque ya tiene registros históricos asociados. " +
+                            "Puedes desactivar la cámara o dejarlo sin cámara.");
+        }
+
+        return "redirect:/instalaciones/" + id;
+    }
+
+    @PostMapping("/{id}/camara/{camaraId}/toggle")
+    public String toggleCamara(@PathVariable Long id,
+                               @PathVariable Long camaraId,
+                               RedirectAttributes ra) {
+
+        camaraRepository.findById(camaraId).ifPresent(c -> {
+            c.setActiva(!Boolean.TRUE.equals(c.getActiva()));
+            camaraRepository.save(c);
+        });
+
+        ra.addFlashAttribute("success", "Estado de cámara actualizado.");
+        return "redirect:/instalaciones/" + id;
+    }
+
+    private void crearOActualizarCamaraAutomatica(Puerta puerta) {
+        List<Camara> camaras = camaraRepository.findByPuerta_Id(puerta.getId());
+
+        Camara camara = camaras.isEmpty() ? new Camara() : camaras.get(0);
+
+        camara.setPuerta(puerta);
+        camara.setNombre("Cámara " + puerta.getNombre());
+        camara.setModo("KIOSKO");
+        camara.setActiva(true);
+        camara.setToken(null);
+
+        camaraRepository.save(camara);
+
+        for (int i = 1; i < camaras.size(); i++) {
+            Camara duplicada = camaras.get(i);
+            duplicada.setActiva(false);
+            duplicada.setPuerta(null);
+            camaraRepository.save(duplicada);
+        }
+    }
+
+    private void desactivarCamaraSiExiste(Long puertaId) {
+        camaraRepository.findByPuerta_Id(puertaId).forEach(camara -> {
+            camara.setActiva(false);
+            camaraRepository.save(camara);
+        });
+    }
+}
