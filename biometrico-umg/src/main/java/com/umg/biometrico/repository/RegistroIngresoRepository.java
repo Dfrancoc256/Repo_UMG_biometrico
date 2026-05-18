@@ -1,5 +1,6 @@
 package com.umg.biometrico.repository;
 
+import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.model.RegistroIngreso;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,4 +40,18 @@ public interface RegistroIngresoRepository extends JpaRepository<RegistroIngreso
            "(SELECT p.id FROM Puerta p WHERE p.instalacion.id = :instalacionId AND p.esSalon = true) " +
            "ORDER BY r.fechaHora DESC")
     List<RegistroIngreso> findIngresosASalonesByInstalacion(@Param("instalacionId") Long instalacionId);
+
+    List<RegistroIngreso> findByPuerta_IdOrderByFechaHoraDesc(Long puertaId);
+
+    @Query("SELECT DISTINCT r.persona FROM RegistroIngreso r " +
+           "WHERE r.puerta.id = :puertaId AND r.persona IS NOT NULL")
+    List<Persona> findPersonasDistintasByPuerta(@Param("puertaId") Long puertaId);
+
+    @Query("SELECT r FROM RegistroIngreso r WHERE r.puerta.id = :puertaId " +
+           "AND r.fechaHora BETWEEN :inicio AND :fin " +
+           "AND r.persona.tipoPersona = 'CATEDRATICO' " +
+           "ORDER BY r.fechaHora")
+    List<RegistroIngreso> findCatedraticosEnSalonFecha(@Param("puertaId") Long puertaId,
+                                                       @Param("inicio") LocalDateTime inicio,
+                                                       @Param("fin") LocalDateTime fin);
 }

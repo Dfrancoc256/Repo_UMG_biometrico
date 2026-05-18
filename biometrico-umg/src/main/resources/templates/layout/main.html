@@ -159,21 +159,27 @@
         </a>
       </li>
       <li>
+        <a th:href="@{/reportes/historico-puerta}" th:classappend="${activeMenu == 'rep-hist-puerta'} ? 'active' : ''">
+          <i class="fas fa-history nav-icon"></i>
+          Histórico por Puerta
+        </a>
+      </li>
+      <li>
         <a th:href="@{/reportes/puerta}" th:classappend="${activeMenu == 'rep-puerta'} ? 'active' : ''">
-          <i class="fas fa-door-closed nav-icon"></i>
-          Por Puerta
+          <i class="fas fa-calendar-check nav-icon"></i>
+          Por Fecha / Puerta
+        </a>
+      </li>
+      <li>
+        <a th:href="@{/reportes/historico-salon}" th:classappend="${activeMenu == 'rep-hist-salon'} ? 'active' : ''">
+          <i class="fas fa-chalkboard nav-icon"></i>
+          Histórico por Salón
         </a>
       </li>
       <li>
         <a th:href="@{/reportes/salon}" th:classappend="${activeMenu == 'rep-salon'} ? 'active' : ''">
-          <i class="fas fa-chalkboard-teacher nav-icon"></i>
-          Por Salón
-        </a>
-      </li>
-      <li>
-        <a th:href="@{/reportes/historico}" th:classappend="${activeMenu == 'rep-historico'} ? 'active' : ''">
-          <i class="fas fa-history nav-icon"></i>
-          Árbol Histórico
+          <i class="fas fa-user-tie nav-icon"></i>
+          Por Fecha / Salón
         </a>
       </li>
     </ul>

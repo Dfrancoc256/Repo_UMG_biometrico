@@ -1,112 +1,160 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::content}, 'Reporte por Salón', ${activeMenu})}">
+      th:replace="~{layout/main :: layout(~{::content}, 'Reporte por Salón', 'rep-salon')}">
 <body>
 <th:block th:fragment="content">
 
   <div class="page-header">
     <div>
-      <h2><i class="fas fa-chalkboard-teacher" style="margin-right:10px;color:var(--umg-azul);"></i>Reporte de Ingresos por Salón</h2>
-      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Por Salón</p>
+      <h2><i class="fas fa-user-tie" style="margin-right:10px;color:var(--umg-azul);"></i>Catedráticos por Fecha / Salón</h2>
+      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Por Fecha / Salón</p>
     </div>
   </div>
 
   <!-- Filtros -->
   <div class="card" style="margin-bottom:20px;">
-    <div class="card-header"><h5><i class="fas fa-filter" style="margin-right:8px;"></i>Filtros</h5></div>
+    <div class="card-header"><h5><i class="fas fa-filter" style="margin-right:8px;"></i>Seleccionar Salón y Fecha</h5></div>
     <div class="card-body">
       <form th:action="@{/reportes/salon}" method="get"
             style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
+
         <div class="form-group" style="margin:0;min-width:220px;">
           <label class="form-label">Instalación</label>
-          <select class="form-control" name="instalacionId">
+          <select class="form-control" name="instalacionId" onchange="this.form.submit()">
             <option value="">-- Seleccione --</option>
             <option th:each="i : ${instalaciones}"
                     th:value="${i.id}" th:text="${i.nombre}"
-                    th:selected="${instalacionId != null and i.id == instalacionId}">inst</option>
+                    th:selected="${instalacionId != null and i.id == instalacionId}"></option>
           </select>
         </div>
-        <div class="form-group" style="margin:0;">
-          <label class="form-label">Fecha (opcional)</label>
+
+        <div class="form-group" style="margin:0;min-width:200px;" th:if="${salones != null}">
+          <label class="form-label">Salón</label>
+          <select class="form-control" name="salonId">
+            <option value="">-- Seleccione --</option>
+            <option th:each="s : ${salones}"
+                    th:value="${s.id}" th:text="${s.nombre}"
+                    th:selected="${salonId != null and s.id == salonId}"></option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin:0;" th:if="${salones != null}">
+          <label class="form-label">Fecha</label>
           <input type="date" class="form-control" name="fecha"
                  th:value="${fecha != null ? fecha.toString() : ''}"/>
         </div>
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-search"></i> Buscar
-        </button>
+
+        <div th:if="${salones != null}">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-search"></i> Buscar
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- Árbol jerárquico de salones -->
-  <div th:if="${instalacion != null}">
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-header">
-        <h5><i class="fas fa-sitemap" style="margin-right:8px;"></i>
-          Árbol: <span th:text="${instalacion.nombre}">inst</span>
-        </h5>
-      </div>
-      <div class="card-body">
-        <!-- Nodo raíz: Instalación -->
-        <div class="tree-node nivel-1">
-          <i class="fas fa-building" style="margin-right:8px;color:var(--umg-azul);"></i>
-          <strong th:text="${instalacion.nombre}">Instalación</strong>
-          <small style="color:#7a8898;margin-left:10px;" th:text="${instalacion.direccion}">dir</small>
-        </div>
+  <!-- Resultados -->
+  <div th:if="${registros != null}">
 
-        <!-- Nivel 2: Puertas/Salones -->
-        <div th:each="p : ${puertas}">
-          <div class="tree-node nivel-2">
-            <i class="fas fa-door-open" style="margin-right:8px;color:var(--umg-dorado);"></i>
-            <strong th:text="${p.nombre}">Puerta</strong>
-            <span class="badge badge-warning" style="margin-left:8px;" th:if="${p.esSalon}">Salón</span>
-            <span class="badge badge-secondary" style="margin-left:8px;" th:unless="${p.esSalon}">Acceso</span>
+    <div class="rep-path" th:if="${instalacion != null}">
+      <i class="fas fa-university" style="color:var(--umg-azul);"></i>
+      <strong th:text="${instalacion.nombre}">Instalación</strong>
+      <i class="fas fa-chevron-right rep-sep"></i>
+      <th:block th:each="s : ${salones}" th:if="${s.id == salonId}">
+        <i class="fas fa-chalkboard-teacher" style="color:var(--umg-dorado);"></i>
+        <span th:text="${s.nombre}">Salón</span>
+      </th:block>
+      <th:block th:if="${fecha != null}">
+        <i class="fas fa-chevron-right rep-sep"></i>
+        <i class="fas fa-calendar-day" style="color:#16a34a;"></i>
+        <span th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">fecha</span>
+      </th:block>
+      <span class="badge badge-secondary" style="margin-left:4px;">
+        <span th:text="${#lists.size(registros)}">0</span> catedrático(s)
+      </span>
+    </div>
+
+    <div th:if="${#lists.isEmpty(registros)}" class="card">
+      <div class="card-body" style="text-align:center;padding:50px;color:#7a8898;">
+        <i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;"></i>
+        No hay registros de catedráticos para los filtros seleccionados.
+      </div>
+    </div>
+
+    <div class="tree-container" th:if="${not #lists.isEmpty(registros)}">
+      <div class="course-node borde-verde" th:each="r : ${registros}">
+        <div class="course-info">
+          <img th:if="${r.persona != null and r.persona.fotoRuta != null}"
+               th:src="@{'/' + ${r.persona.fotoRuta}}" class="avatar-sm" alt="Foto"/>
+          <div th:unless="${r.persona != null and r.persona.fotoRuta != null}"
+               class="avatar-sm avatar-placeholder"><i class="fas fa-user"></i></div>
+          <div>
+            <strong th:text="${r.persona != null ? r.persona.nombreCompleto : '—'}">Nombre</strong>
+            <small th:text="${r.persona != null ? r.persona.correo : ''}">correo</small>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Resultados detallados -->
-    <div class="card" th:if="${registros != null}">
-      <div class="card-header">
-        <h5><i class="fas fa-list" style="margin-right:8px;"></i>
-          Ingresos a Salones
-          <span th:if="${fecha != null}">— <span th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">fecha</span></span>
-          (<span th:text="${#lists.size(registros)}">0</span>)
-        </h5>
-      </div>
-      <div class="card-body" style="padding:0;">
-        <div class="table-wrapper">
-          <table class="umg-table">
-            <thead>
-              <tr><th>#</th><th>Foto</th><th>Nombre</th><th>Tipo</th><th>Salón</th><th>Fecha/Hora</th></tr>
-            </thead>
-            <tbody>
-              <tr th:each="r, iter : ${registros}">
-                <td th:text="${iter.count}">1</td>
-                <td>
-                  <img th:if="${r.persona.fotoRuta != null}"
-                       th:src="@{'/' + ${r.persona.fotoRuta}}" class="avatar-sm" alt="Foto"/>
-                  <div th:unless="${r.persona.fotoRuta != null}" class="avatar-sm avatar-placeholder">
-                    <i class="fas fa-user"></i>
-                  </div>
-                </td>
-                <td><strong th:text="${r.persona.nombreCompleto}">Nombre</strong></td>
-                <td><span class="badge badge-info" th:text="${r.persona.tipoPersona}">tipo</span></td>
-                <td th:text="${r.puerta.nombre}">Salón</td>
-                <td th:text="${#temporals.format(r.fechaHora, 'dd/MM/yyyy HH:mm:ss')}">fecha</td>
-              </tr>
-              <tr th:if="${#lists.isEmpty(registros)}">
-                <td colspan="6" style="text-align:center;color:#7a8898;padding:30px;">
-                  Sin registros para los filtros indicados.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="course-actions">
+          <span class="badge badge-info">CATEDRÁTICO</span>
+          <span class="badge badge-secondary" th:if="${r.persona != null and r.persona.carrera != null}"
+                th:text="${r.persona.carrera}">carrera</span>
+          <span class="badge badge-secondary"
+                th:text="${#temporals.format(r.fechaHora, 'HH:mm:ss')}">hora</span>
         </div>
       </div>
     </div>
+
+    <!-- Enviar por correo -->
+    <div class="card email-card" th:if="${not #lists.isEmpty(registros)}">
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <span style="font-size:13px;color:#3a4a5c;">
+          <i class="fas fa-envelope" style="color:var(--umg-azul);margin-right:6px;"></i>
+          Enviar este reporte como PDF al correo registrado en tu cuenta
+        </span>
+        <form th:action="@{/reportes/salon/email}" method="post">
+          <input type="hidden" name="salonId"       th:value="${salonId}"/>
+          <input type="hidden" name="instalacionId" th:value="${instalacionId}"/>
+          <input type="hidden" name="fecha"         th:value="${fecha != null ? fecha.toString() : ''}"/>
+          <input th:if="${instalacion != null}" type="hidden" name="instalacionNombre" th:value="${instalacion.nombre}"/>
+          <th:block th:each="s : ${salones}" th:if="${s.id == salonId}">
+            <input type="hidden" name="salonNombre" th:value="${s.nombre}"/>
+          </th:block>
+          <button type="submit" class="btn btn-outline">
+            <i class="fas fa-paper-plane"></i> Enviar PDF por correo
+          </button>
+        </form>
+      </div>
+    </div>
+
   </div>
+
+  <!-- Estado inicial -->
+  <div th:if="${registros == null}" class="card">
+    <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+      <i class="fas fa-hand-point-up" style="font-size:38px;display:block;margin-bottom:14px;"></i>
+      Seleccione una instalación, un salón y una fecha para ver los catedráticos que ingresaron.
+    </div>
+  </div>
+
+  <style th:inline="none">
+    .tree-container { display:flex; flex-direction:column; gap:10px; padding:6px 0; }
+    .course-node { background:#f8fafc; border:1px solid #dbe3ec; border-left:4px solid #94a3b8;
+      padding:10px 14px; border-radius:10px; display:flex; justify-content:space-between;
+      align-items:center; gap:12px; max-width:100%; box-sizing:border-box; }
+    .course-node.borde-verde { border-left-color:#16a34a; background:#f0fdf4; }
+    .course-info { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+    .course-info > div { display:flex; flex-direction:column; gap:3px; }
+    .course-info strong { font-size:14px; color:#0f172a; }
+    .course-info small { color:#64748b; font-size:12px; }
+    .course-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+    .rep-path { display:flex; align-items:center; gap:10px; background:#eef2f7;
+      border:1px solid #dbe3ec; padding:10px 16px; border-radius:10px;
+      margin-bottom:16px; font-size:14px; font-weight:600; color:#1e3a5f; flex-wrap:wrap; }
+    .rep-sep { font-size:11px; color:#7a8898; }
+    .email-card { margin-top:18px; }
+    @media(max-width:768px){
+      .course-node { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
 
 </th:block>
 </body>

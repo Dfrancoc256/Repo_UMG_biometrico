@@ -159,6 +159,25 @@ public class RegistroIngresoService {
         return registroIngresoRepository.findIngresosASalonesByInstalacion(instalacionId);
     }
 
+    public List<RegistroIngreso> obtenerTodosIngresosPorPuerta(Long puertaId) {
+        return registroIngresoRepository.findByPuerta_IdOrderByFechaHoraDesc(puertaId);
+    }
+
+    public List<Persona> obtenerPersonasEnSalon(Long puertaId) {
+        return registroIngresoRepository.findPersonasDistintasByPuerta(puertaId)
+                .stream()
+                .sorted(java.util.Comparator
+                        .comparing((Persona p) -> p.getApellido() != null ? p.getApellido() : "")
+                        .thenComparing(p -> p.getNombre() != null ? p.getNombre() : ""))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<RegistroIngreso> obtenerCatedraticosEnSalonFecha(Long puertaId, LocalDate fecha) {
+        LocalDateTime inicio = fecha.atStartOfDay();
+        LocalDateTime fin = fecha.atTime(LocalTime.MAX);
+        return registroIngresoRepository.findCatedraticosEnSalonFecha(puertaId, inicio, fin);
+    }
+
     public List<Map<String, Object>> obtenerRecientes(int limit, Long puertaId) {
         List<RegistroIngreso> registros;
 

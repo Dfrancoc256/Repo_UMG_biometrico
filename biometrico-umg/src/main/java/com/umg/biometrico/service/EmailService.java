@@ -108,6 +108,47 @@ public class EmailService {
         mailSender.send(mensaje);
     }
 
+    public void enviarReporteIngreso(String destino, String titulo, String subtitulo, byte[] pdfBytes)
+            throws MessagingException {
+        MimeMessage mensaje = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+        helper.setFrom(fromAddress);
+        helper.setTo(destino);
+        helper.setSubject(titulo + " — " + subtitulo);
+        helper.setText(construirCuerpoIngreso(titulo, subtitulo), true);
+
+        final byte[] adjunto = pdfBytes;
+        helper.addAttachment(
+                "reporte_ingreso.pdf",
+                () -> new java.io.ByteArrayInputStream(adjunto),
+                "application/pdf"
+        );
+        mailSender.send(mensaje);
+    }
+
+    private String construirCuerpoIngreso(String titulo, String subtitulo) {
+        return """
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+              <div style="background:#003366;padding:20px;text-align:center;border-radius:8px 8px 0 0;">
+                <h1 style="color:#fff;margin:0;font-size:20px;">%s</h1>
+                <p style="color:#cce0ff;margin:4px 0 0;">Universidad Mariano Gálvez — La Florida, Zona 19</p>
+              </div>
+              <div style="background:#f5f8fc;padding:24px;border:1px solid #dde3ea;">
+                <p style="font-size:15px;color:#333;">Se adjunta el reporte de ingresos:
+                  <strong>%s</strong></p>
+                <p style="color:#777;font-size:12px;margin-top:20px;">
+                  Este es un mensaje automático del Sistema Biométrico UMG.<br/>
+                  Por favor no respondas a este correo.
+                </p>
+              </div>
+              <div style="background:#003366;padding:10px;text-align:center;border-radius:0 0 8px 8px;">
+                <p style="color:#aac4e8;font-size:11px;margin:0;">© 2026 Universidad Mariano Gálvez de Guatemala</p>
+              </div>
+            </div>
+            """.formatted(titulo, subtitulo);
+    }
+
     private String construirCuerpoReporte(String curso, String fecha) {
         return """
             <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
