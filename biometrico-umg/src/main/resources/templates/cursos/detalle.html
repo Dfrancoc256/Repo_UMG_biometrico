@@ -243,6 +243,14 @@
         <input type="hidden" id="cursoIdAsistencia" th:value="${curso.id}">
 
         <div class="form-group">
+          <label class="form-label" for="buscarCamaraAsistencia">Buscar salón / cámara</label>
+          <input type="text"
+                 class="form-control"
+                 id="buscarCamaraAsistencia"
+                 placeholder="Escriba salón, cámara o acceso..."
+                 onkeyup="filtrarCamarasAsistencia()"
+                 style="margin-bottom:10px;">
+
           <label class="form-label" for="camaraIdAsistencia">Cámara disponible</label>
           <select class="form-control" id="camaraIdAsistencia" required>
             <option value="">-- Seleccione cámara --</option>
@@ -407,6 +415,26 @@
       } finally {
         btn.disabled = false;
       }
+    }
+
+    function filtrarCamarasAsistencia() {
+      const texto = document.getElementById('buscarCamaraAsistencia').value.toLowerCase().trim();
+      const select = document.getElementById('camaraIdAsistencia');
+      const opciones = select.options;
+
+      for (let i = 0; i < opciones.length; i++) {
+        const opcion = opciones[i];
+
+        if (i === 0) {
+          opcion.hidden = false;
+          continue;
+        }
+
+        const contenido = opcion.textContent.toLowerCase();
+        opcion.hidden = !contenido.includes(texto);
+      }
+
+      select.value = "";
     }
 
     async function cerrarSesionActivaPorPuerta() {
