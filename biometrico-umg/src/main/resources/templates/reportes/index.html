@@ -11,73 +11,56 @@
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;">
 
-    <!-- Reporte 1 -->
-    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/historico-puerta'">
-      <div class="card-body" style="padding:28px;text-align:center;">
-        <div style="background:#eef2f7;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-          <i class="fas fa-history" style="font-size:28px;color:var(--umg-azul);"></i>
+    <!-- Reporte por Puerta -->
+    <a th:href="@{/reportes/historico-puerta}" class="card report-card">
+      <div class="card-body" style="padding:32px;text-align:center;">
+        <div style="background:#eef2f7;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+          <i class="fas fa-door-open" style="font-size:30px;color:var(--umg-azul);"></i>
         </div>
-        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Histórico por Puerta</h4>
-        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
-          Árbol de fechas con todos los registros históricos de ingreso por puerta de acceso.
+        <h4 style="color:var(--umg-azul);margin-bottom:10px;">Reporte por Puerta</h4>
+        <p style="font-size:13px;color:#7a8898;line-height:1.6;">
+          Árbol histórico completo de ingresos por puerta de acceso, agrupados por fecha.
         </p>
-        <a th:href="@{/reportes/historico-puerta}" class="btn btn-primary" style="margin-top:14px;">
-          <i class="fas fa-sitemap"></i> Ver Árbol
-        </a>
+        <span class="btn btn-primary" style="margin-top:16px;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fas fa-sitemap"></i> Ver Reporte
+        </span>
       </div>
-    </div>
+    </a>
 
-    <!-- Reporte 2 -->
-    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/puerta'">
-      <div class="card-body" style="padding:28px;text-align:center;">
-        <div style="background:#e8f4fd;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-          <i class="fas fa-calendar-check" style="font-size:28px;color:#1565c0;"></i>
+    <!-- Reporte por Salón -->
+    <a th:href="@{/reportes/historico-salon}" class="card report-card">
+      <div class="card-body" style="padding:32px;text-align:center;">
+        <div style="background:#fff8e1;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+          <i class="fas fa-chalkboard" style="font-size:30px;color:#9e6c00;"></i>
         </div>
-        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Por Fecha / Puerta</h4>
-        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
-          Registros de ingreso por puerta en una fecha específica, con foto y estado (verde/rojo).
+        <h4 style="color:var(--umg-azul);margin-bottom:10px;">Reporte por Salón</h4>
+        <p style="font-size:13px;color:#7a8898;line-height:1.6;">
+          Árbol de niveles y salones con todas las personas que han ingresado a cada salón.
         </p>
-        <a th:href="@{/reportes/puerta}" class="btn btn-primary" style="margin-top:14px;">
-          <i class="fas fa-search"></i> Ver Reporte
-        </a>
+        <span class="btn btn-warning" style="margin-top:16px;display:inline-flex;align-items:center;gap:6px;">
+          <i class="fas fa-sitemap"></i> Ver Reporte
+        </span>
       </div>
-    </div>
-
-    <!-- Reporte 3 -->
-    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/historico-salon'">
-      <div class="card-body" style="padding:28px;text-align:center;">
-        <div style="background:#fff8e1;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-          <i class="fas fa-chalkboard" style="font-size:28px;color:#9e6c00;"></i>
-        </div>
-        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Histórico por Salón</h4>
-        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
-          Árbol de niveles y salones con todas las personas (estudiantes y catedráticos) que han ingresado.
-        </p>
-        <a th:href="@{/reportes/historico-salon}" class="btn btn-warning" style="margin-top:14px;">
-          <i class="fas fa-sitemap"></i> Ver Árbol
-        </a>
-      </div>
-    </div>
-
-    <!-- Reporte 4 -->
-    <div class="card" style="cursor:pointer;" onclick="location.href='/reportes/salon'">
-      <div class="card-body" style="padding:28px;text-align:center;">
-        <div style="background:#e8f5e9;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-          <i class="fas fa-user-tie" style="font-size:28px;color:#2e7d32;"></i>
-        </div>
-        <h4 style="color:var(--umg-azul);margin-bottom:8px;">Por Fecha / Salón</h4>
-        <p style="font-size:13px;color:#7a8898;line-height:1.5;">
-          Listado de catedráticos que ingresaron a un salón de clase en una fecha determinada.
-        </p>
-        <a th:href="@{/reportes/salon}" class="btn btn-success" style="margin-top:14px;">
-          <i class="fas fa-search"></i> Ver Reporte
-        </a>
-      </div>
-    </div>
+    </a>
 
   </div>
+
+  <style th:inline="none">
+    .report-card {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .report-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(26,58,107,0.13);
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
 
 </th:block>
 </body>

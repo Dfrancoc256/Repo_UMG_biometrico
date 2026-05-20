@@ -6,7 +6,7 @@
 
   <div class="page-header">
     <div>
-      <h2><i class="fas fa-user-tie" style="margin-right:10px;color:var(--umg-azul);"></i>Catedráticos por Fecha / Salón</h2>
+      <h2><i class="fas fa-user-tie" style="margin-right:10px;color:var(--umg-azul);"></i>Ingresos por Fecha / Salón</h2>
       <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Por Fecha / Salón</p>
     </div>
   </div>
@@ -70,7 +70,7 @@
         <span th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">fecha</span>
       </th:block>
       <span class="badge badge-secondary" style="margin-left:4px;">
-        <span th:text="${#lists.size(registros)}">0</span> catedrático(s)
+        <span th:text="${#lists.size(registros)}">0</span> registro(s)
       </span>
     </div>
 
@@ -94,9 +94,8 @@
           </div>
         </div>
         <div class="course-actions">
-          <span class="badge badge-info">CATEDRÁTICO</span>
-          <span class="badge badge-secondary" th:if="${r.persona != null and r.persona.carrera != null}"
-                th:text="${r.persona.carrera}">carrera</span>
+          <span class="badge badge-info" th:if="${r.persona != null}"
+                th:text="${r.persona.tipoPersona}">tipo</span>
           <span class="badge badge-secondary"
                 th:text="${#temporals.format(r.fechaHora, 'HH:mm:ss')}">hora</span>
         </div>
@@ -131,7 +130,7 @@
   <div th:if="${registros == null}" class="card">
     <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
       <i class="fas fa-hand-point-up" style="font-size:38px;display:block;margin-bottom:14px;"></i>
-      Seleccione una instalación, un salón y una fecha para ver los catedráticos que ingresaron.
+      Seleccione una instalación, un salón y una fecha para ver los registros de ingreso.
     </div>
   </div>
 

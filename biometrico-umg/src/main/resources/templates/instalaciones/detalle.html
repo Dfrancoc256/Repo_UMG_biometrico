@@ -45,7 +45,7 @@
             <th>Descripción</th>
             <th>Cámara</th>
             <th>Estado</th>
-            <th>URL Kiosko</th>
+            <th sec:authorize="hasRole('ADMIN')">URL Kiosko</th>
             <th sec:authorize="hasRole('ADMIN')">Acciones</th>
           </tr>
           </thead>
@@ -83,7 +83,7 @@
               <span th:if="${camara == null}" class="badge badge-secondary">Sin cámara</span>
             </td>
 
-            <td>
+            <td sec:authorize="hasRole('ADMIN')">
               <a th:if="${camara != null}"
                  th:href="@{/kiosko/(camaraId=${camara.id})}"
                  target="_blank">

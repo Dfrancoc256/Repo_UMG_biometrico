@@ -140,7 +140,13 @@ public class RegistroIngresoService {
     }
 
     public List<LocalDate> obtenerFechasConIngreso(Long puertaId) {
-        return registroIngresoRepository.findFechasDistintasByPuerta(puertaId);
+        return registroIngresoRepository.findByPuerta_IdOrderByFechaHoraDesc(puertaId)
+                .stream()
+                .filter(r -> r.getFechaHora() != null)
+                .map(r -> r.getFechaHora().toLocalDate())
+                .distinct()
+                .sorted(java.util.Comparator.reverseOrder())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public Long contarIngresosHoy() {
@@ -176,6 +182,12 @@ public class RegistroIngresoService {
         LocalDateTime inicio = fecha.atStartOfDay();
         LocalDateTime fin = fecha.atTime(LocalTime.MAX);
         return registroIngresoRepository.findCatedraticosEnSalonFecha(puertaId, inicio, fin);
+    }
+
+    public List<RegistroIngreso> obtenerTodosEnSalonFecha(Long puertaId, LocalDate fecha) {
+        LocalDateTime inicio = fecha.atStartOfDay();
+        LocalDateTime fin = fecha.atTime(LocalTime.MAX);
+        return registroIngresoRepository.findAllEnSalonFecha(puertaId, inicio, fin);
     }
 
     public List<Map<String, Object>> obtenerRecientes(int limit, Long puertaId) {
