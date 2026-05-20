@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/auth :: authLayout(~{::content}, 'login')}">
+<body>
+<th:block th:fragment="content">
+
+  <!-- Alertas -->
+  <div th:if="${errorMsg}" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span th:text="${errorMsg}"></span>
+  </div>
+  <div th:if="${logoutMsg}" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <span th:text="${logoutMsg}"></span>
+  </div>
+
+  <h2>Bienvenido</h2>
+
+  <form th:action="@{/auth/login}" method="post">
+    <div class="form-group">
+      <label class="form-label" for="correo">
+        <i class="fas fa-envelope" style="margin-right:6px;color:#7a8898;"></i>
+        Correo Electrónico
+      </label>
+      <input type="email" class="form-control" id="correo" name="correo"
+             placeholder="usuario@umg.edu.gt" required autofocus/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="contrasena">
+        <i class="fas fa-lock" style="margin-right:6px;color:#7a8898;"></i>
+        Contraseña
+      </label>
+      <input type="password" class="form-control" id="contrasena" name="contrasena"
+             placeholder="••••••••" required/>
+    </div>
+
+    <button type="submit" class="btn btn-primary"
+            style="width:100%;justify-content:center;padding:12px;">
+      <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
+    </button>
+  </form>
+
+  <p style="font-size:11px;color:#aab;margin-top:20px;text-align:center;line-height:1.5;">
+    Sistema Biométrico UMG v2.0 &mdash; 2026<br/>
+    Programación III &mdash; Ingeniería en Sistemas
+  </p>
+
+</th:block>
+</body>
+</html>
