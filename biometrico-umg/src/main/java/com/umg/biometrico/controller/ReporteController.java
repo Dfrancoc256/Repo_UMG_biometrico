@@ -16,11 +16,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,14 +34,21 @@ public class ReporteController {
     private final PdfService pdfService;
     private final EmailService emailService;
 
-    // ── Dashboard de reportes (4 tarjetas) ─────────────────────────────────
+    private static final Set<String> ORDENES_VALIDOS = Set.of("asc", "desc");
+
+    private String validarOrden(String orden) {
+        if (orden == null || !ORDENES_VALIDOS.contains(orden.toLowerCase())) return "desc";
+        return orden.toLowerCase();
+    }
+
+    // ── Dashboard de reportes ────────────────────────────────────────────────
     @GetMapping
     public String inicio(Model model) {
         model.addAttribute("activeMenu", "reportes");
         return "reportes/index";
     }
 
-    // ── REPORTE 1: Histórico por puerta — árbol fechas ──────────────────────
+    // ── REPORTE 1: Histórico por puerta — árbol fechas ───────────────────────
     @GetMapping("/historico-puerta")
     public String historicoPuerta(
             @RequestParam(required = false) Long instalacionId,
@@ -54,7 +61,7 @@ public class ReporteController {
         model.addAttribute("puertaId", puertaId);
 
         if (instalacionId != null) {
-            instalacionRepository.findById(instalacionId).ifPresent(inst -> {
+            instalacionRepository.findByIdWithPuertas(instalacionId).ifPresent(inst -> {
                 model.addAttribute("instalacion", inst);
                 model.addAttribute("puertas", inst.getPuertas());
             });
@@ -63,19 +70,13 @@ public class ReporteController {
         if (puertaId != null) {
             List<RegistroIngreso> todos = registroIngresoService.obtenerTodosIngresosPorPuerta(puertaId);
 
-            Function<RegistroIngreso, LocalDate> classifier =
-                    r -> r.getFechaHora().toLocalDate();
-
+            Function<RegistroIngreso, LocalDate> classifier = r -> r.getFechaHora().toLocalDate();
             Supplier<TreeMap<LocalDate, List<RegistroIngreso>>> mapFactory =
                     () -> new TreeMap<>(Comparator.<LocalDate>reverseOrder());
 
             TreeMap<LocalDate, List<RegistroIngreso>> porFecha = todos.stream()
                     .filter(r -> r.getFechaHora() != null)
-                    .collect(Collectors.groupingBy(
-                            classifier,
-                            mapFactory,
-                            Collectors.toList()
-                    ));
+                    .collect(Collectors.groupingBy(classifier, mapFactory, Collectors.toList()));
 
             model.addAttribute("registrosPorFecha", porFecha);
         }
@@ -103,81 +104,10 @@ public class ReporteController {
             log.error("Error enviando reporte histórico puerta", e);
             redirectAttrs.addFlashAttribute("error", "Error al enviar el reporte. Verifique la configuración de correo.");
         }
-
-        return buildRedirect("/reportes/historico-puerta",
-                "instalacionId", instalacionId, "puertaId", puertaId);
+        return buildRedirect("/reportes/historico-puerta", "instalacionId", instalacionId, "puertaId", puertaId);
     }
 
-    // ── REPORTE 2: Por fecha / puerta — nodos personas verde/rojo ───────────
-    @GetMapping("/puerta")
-    public String reportePuerta(
-            @RequestParam(required = false) Long instalacionId,
-            @RequestParam(required = false) Long puertaId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam(required = false, defaultValue = "desc") String orden,
-            Model model) {
-
-        model.addAttribute("activeMenu", "rep-puerta");
-        model.addAttribute("instalaciones", instalacionRepository.findAll());
-        model.addAttribute("instalacionId", instalacionId);
-        model.addAttribute("puertaId", puertaId);
-        model.addAttribute("fecha", fecha);
-        model.addAttribute("orden", orden);
-
-        if (instalacionId != null) {
-            instalacionRepository.findById(instalacionId).ifPresent(inst -> {
-                model.addAttribute("instalacion", inst);
-                model.addAttribute("puertas", inst.getPuertas());
-            });
-        }
-
-        if (puertaId != null) {
-            model.addAttribute("fechasConIngreso",
-                    registroIngresoService.obtenerFechasConIngreso(puertaId));
-        }
-
-        if (puertaId != null && fecha != null) {
-            model.addAttribute("registros",
-                    registroIngresoService.obtenerIngresosPorPuertaYFecha(puertaId, fecha, orden));
-        }
-
-        return "reportes/puerta";
-    }
-
-    @PostMapping("/puerta/email")
-    public String emailPuerta(
-            Authentication auth,
-            @RequestParam Long puertaId,
-            @RequestParam(required = false) Long instalacionId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam(required = false, defaultValue = "desc") String orden,
-            @RequestParam(required = false) String puertaNombre,
-            @RequestParam(required = false) String instalacionNombre,
-            RedirectAttributes redirectAttrs) {
-
-        String correo = auth.getName();
-        try {
-            List<RegistroIngreso> registros = (fecha != null)
-                    ? registroIngresoService.obtenerIngresosPorPuertaYFecha(puertaId, fecha, orden)
-                    : registroIngresoService.obtenerTodosIngresosPorPuerta(puertaId);
-            String fechaStr = fecha != null ? fecha.toString() : "todas las fechas";
-            String sub = safe(instalacionNombre) + " · " + safe(puertaNombre) + " · " + fechaStr;
-            byte[] pdf = pdfService.generarReporteIngreso("Reporte de Ingresos por Puerta", sub, registros);
-            emailService.enviarReporteIngreso(correo, "Reporte de Ingresos por Puerta", sub, pdf);
-            redirectAttrs.addFlashAttribute("success", "Reporte enviado a " + correo);
-        } catch (Exception e) {
-            log.error("Error enviando reporte por puerta", e);
-            redirectAttrs.addFlashAttribute("error", "Error al enviar el reporte. Verifique la configuración de correo.");
-        }
-
-        StringBuilder url = new StringBuilder("/reportes/puerta?orden=").append(orden);
-        if (instalacionId != null) url.append("&instalacionId=").append(instalacionId);
-        if (puertaId != null)      url.append("&puertaId=").append(puertaId);
-        if (fecha != null)         url.append("&fecha=").append(fecha);
-        return "redirect:" + url;
-    }
-
-    // ── REPORTE 3: Histórico por salón — árbol nivel → salón → personas ─────
+    // ── REPORTE 2: Histórico por salón — árbol nivel → salón → personas ──────
     @GetMapping("/historico-salon")
     public String historicoSalon(
             @RequestParam(required = false) Long instalacionId,
@@ -188,7 +118,7 @@ public class ReporteController {
         model.addAttribute("instalacionId", instalacionId);
 
         if (instalacionId != null) {
-            instalacionRepository.findById(instalacionId).ifPresent(inst -> {
+            instalacionRepository.findByIdWithPuertas(instalacionId).ifPresent(inst -> {
                 model.addAttribute("instalacion", inst);
 
                 List<Puerta> salones = inst.getPuertas().stream()
@@ -230,74 +160,28 @@ public class ReporteController {
             log.error("Error enviando reporte histórico salón", e);
             redirectAttrs.addFlashAttribute("error", "Error al enviar el reporte. Verifique la configuración de correo.");
         }
-
         return "redirect:/reportes/historico-salon?instalacionId=" + instalacionId;
     }
 
-    // ── REPORTE 4: Por fecha / salón — solo catedráticos ────────────────────
+    // ── Rutas antiguas: redirigen a las vistas históricas ────────────────────
+    @GetMapping("/puerta")
+    public String redirigirPuerta(@RequestParam(required = false) Long instalacionId,
+                                  @RequestParam(required = false) Long puertaId) {
+        StringBuilder url = new StringBuilder("redirect:/reportes/historico-puerta");
+        String sep = "?";
+        if (instalacionId != null) { url.append(sep).append("instalacionId=").append(instalacionId); sep = "&"; }
+        if (puertaId != null)      { url.append(sep).append("puertaId=").append(puertaId); }
+        return url.toString();
+    }
+
     @GetMapping("/salon")
-    public String reporteSalon(
-            @RequestParam(required = false) Long instalacionId,
-            @RequestParam(required = false) Long salonId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            Model model) {
-
-        model.addAttribute("activeMenu", "rep-salon");
-        model.addAttribute("instalaciones", instalacionRepository.findAll());
-        model.addAttribute("instalacionId", instalacionId);
-        model.addAttribute("salonId", salonId);
-        model.addAttribute("fecha", fecha);
-
-        if (instalacionId != null) {
-            instalacionRepository.findById(instalacionId).ifPresent(inst -> {
-                model.addAttribute("instalacion", inst);
-                List<Puerta> salones = inst.getPuertas().stream()
-                        .filter(p -> Boolean.TRUE.equals(p.getEsSalon()))
-                        .collect(Collectors.toList());
-                model.addAttribute("salones", salones);
-            });
-        }
-
-        if (salonId != null && fecha != null) {
-            model.addAttribute("registros",
-                    registroIngresoService.obtenerCatedraticosEnSalonFecha(salonId, fecha));
-        }
-
-        return "reportes/salon";
+    public String redirigirSalon(@RequestParam(required = false) Long instalacionId) {
+        if (instalacionId != null)
+            return "redirect:/reportes/historico-salon?instalacionId=" + instalacionId;
+        return "redirect:/reportes/historico-salon";
     }
 
-    @PostMapping("/salon/email")
-    public String emailSalon(
-            Authentication auth,
-            @RequestParam Long salonId,
-            @RequestParam(required = false) Long instalacionId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
-            @RequestParam(required = false) String salonNombre,
-            @RequestParam(required = false) String instalacionNombre,
-            RedirectAttributes redirectAttrs) {
-
-        String correo = auth.getName();
-        try {
-            List<RegistroIngreso> registros = (fecha != null)
-                    ? registroIngresoService.obtenerCatedraticosEnSalonFecha(salonId, fecha)
-                    : List.of();
-            String fechaStr = fecha != null ? fecha.toString() : "sin fecha";
-            String sub = safe(instalacionNombre) + " · " + safe(salonNombre) + " · " + fechaStr;
-            byte[] pdf = pdfService.generarReporteIngreso("Reporte de Catedráticos por Salón", sub, registros);
-            emailService.enviarReporteIngreso(correo, "Reporte de Catedráticos por Salón", sub, pdf);
-            redirectAttrs.addFlashAttribute("success", "Reporte enviado a " + correo);
-        } catch (Exception e) {
-            log.error("Error enviando reporte salón", e);
-            redirectAttrs.addFlashAttribute("error", "Error al enviar el reporte. Verifique la configuración de correo.");
-        }
-
-        StringBuilder url = new StringBuilder("/reportes/salon?salonId=").append(salonId);
-        if (instalacionId != null) url.append("&instalacionId=").append(instalacionId);
-        if (fecha != null)         url.append("&fecha=").append(fecha);
-        return "redirect:" + url;
-    }
-
-    // ── Legacy para compatibilidad ──────────────────────────────────────────
+    // ── Legacy para compatibilidad ────────────────────────────────────────────
     @GetMapping("/historico")
     public String historicoArbol(Model model) {
         model.addAttribute("instalaciones", instalacionRepository.findAllWithPuertas());

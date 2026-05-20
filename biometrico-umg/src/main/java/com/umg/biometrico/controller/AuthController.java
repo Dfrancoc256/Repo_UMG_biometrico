@@ -5,6 +5,7 @@ import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.service.PersonaService;
 import com.umg.biometrico.service.PdfService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,36 +23,43 @@ public class AuthController {
 
     private final PersonaService personaService;
 
+    private boolean esAjax(HttpServletRequest request) {
+        return "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+    }
+
     @GetMapping("/login")
     public String login(@RequestParam(required = false) String error,
                         @RequestParam(required = false) String logout,
-                        Model model) {
+                        Model model, HttpServletRequest request) {
 
         if (error != null) {
             model.addAttribute("errorMsg", "Correo o contraseña incorrectos.");
         }
-
         if (logout != null) {
             model.addAttribute("logoutMsg", "Sesión cerrada correctamente.");
         }
-
         model.addAttribute("paginaActual", "login");
+
+        if (esAjax(request)) return "auth/login :: content";
         return "auth/login";
     }
 
     @GetMapping("/validar-carnet")
-    public String mostrarValidacion(Model model) {
+    public String mostrarValidacion(Model model, HttpServletRequest request) {
         model.addAttribute("paginaActual", "validar-carnet");
+        if (esAjax(request)) return "auth/validar :: content";
         return "auth/validar";
     }
 
     @PostMapping("/validar-carnet")
-    public String validarCarnet(@RequestParam("archivo") MultipartFile archivo, Model model) {
+    public String validarCarnet(@RequestParam("archivo") MultipartFile archivo,
+                                Model model, HttpServletRequest request) {
 
         model.addAttribute("paginaActual", "validar-carnet");
 
         if (archivo == null || archivo.isEmpty()) {
             model.addAttribute("mensajeError", "No se seleccionó ningún archivo PDF.");
+            if (esAjax(request)) return "auth/validar :: content";
             return "auth/validar";
         }
 
@@ -110,6 +118,7 @@ public class AuthController {
             );
         }
 
+        if (esAjax(request)) return "auth/validar :: content";
         return "auth/validar";
     }
 }

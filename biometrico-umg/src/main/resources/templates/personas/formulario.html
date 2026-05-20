@@ -45,9 +45,9 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Correo Electrónico UMG *</label>
+                            <label class="form-label">Correo Electrónico Institucional *</label>
                             <input type="email" class="form-control" name="correo"
-                                   th:value="${persona.correo}" placeholder="usuario@umg.edu.gt" required/>
+                                   th:value="${persona.correo}" placeholder="usuario@miumg.edu.gt" required/>
                         </div>
 
                         <div class="form-group">
@@ -83,17 +83,6 @@
                                         th:selected="${persona.carrera != null and persona.carrera.id == c.id}">
                                     Carrera
                                 </option>
-                            </select>
-                        </div>
-
-                        <div class="form-group" id="grupoSeccion">
-                            <label class="form-label">Sección</label>
-                            <select class="form-control" name="seccion">
-                                <option value="">-- Seleccione --</option>
-                                <option value="A" th:selected="${persona.seccion == 'A'}">Sección A</option>
-                                <option value="B" th:selected="${persona.seccion == 'B'}">Sección B</option>
-                                <option value="C" th:selected="${persona.seccion == 'C'}">Sección C</option>
-                                <option value="D" th:selected="${persona.seccion == 'D'}">Sección D</option>
                             </select>
                         </div>
 

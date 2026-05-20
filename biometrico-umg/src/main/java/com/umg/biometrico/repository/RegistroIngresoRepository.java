@@ -54,4 +54,11 @@ public interface RegistroIngresoRepository extends JpaRepository<RegistroIngreso
     List<RegistroIngreso> findCatedraticosEnSalonFecha(@Param("puertaId") Long puertaId,
                                                        @Param("inicio") LocalDateTime inicio,
                                                        @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT r FROM RegistroIngreso r WHERE r.puerta.id = :puertaId " +
+           "AND r.fechaHora BETWEEN :inicio AND :fin " +
+           "ORDER BY r.fechaHora")
+    List<RegistroIngreso> findAllEnSalonFecha(@Param("puertaId") Long puertaId,
+                                              @Param("inicio") LocalDateTime inicio,
+                                              @Param("fin") LocalDateTime fin);
 }

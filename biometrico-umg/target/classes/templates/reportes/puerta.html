@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::content}, 'Reporte por Puerta', ${activeMenu})}">
+      th:replace="~{layout/main :: layout(~{::content}, 'Reporte por Puerta', 'rep-puerta')}">
 <body>
 <th:block th:fragment="content">
 
   <div class="page-header">
     <div>
-      <h2><i class="fas fa-door-closed" style="margin-right:10px;color:var(--umg-azul);"></i>Reporte de Ingresos por Puerta</h2>
-      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Por Puerta</p>
+      <h2><i class="fas fa-calendar-check" style="margin-right:10px;color:var(--umg-azul);"></i>Ingresos por Fecha / Puerta</h2>
+      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Por Fecha / Puerta</p>
     </div>
   </div>
 
@@ -20,40 +20,39 @@
 
         <div class="form-group" style="margin:0;min-width:220px;">
           <label class="form-label">Instalación</label>
-          <select class="form-control" name="instalacionId" id="selInstalacion"
-                  th:value="${instalacionId}">
+          <select class="form-control" name="instalacionId" onchange="this.form.submit()">
             <option value="">-- Seleccione --</option>
             <option th:each="i : ${instalaciones}"
                     th:value="${i.id}" th:text="${i.nombre}"
-                    th:selected="${instalacionId != null and i.id == instalacionId}">inst</option>
+                    th:selected="${instalacionId != null and i.id == instalacionId}"></option>
           </select>
         </div>
 
         <div class="form-group" style="margin:0;min-width:200px;" th:if="${puertas != null}">
           <label class="form-label">Puerta / Acceso</label>
-          <select class="form-control" name="puertaId" id="selPuerta">
+          <select class="form-control" name="puertaId">
             <option value="">-- Seleccione --</option>
             <option th:each="p : ${puertas}"
                     th:value="${p.id}" th:text="${p.nombre}"
-                    th:selected="${puertaId != null and p.id == puertaId}">puerta</option>
+                    th:selected="${puertaId != null and p.id == puertaId}"></option>
           </select>
         </div>
 
-        <div class="form-group" style="margin:0;">
+        <div class="form-group" style="margin:0;" th:if="${puertas != null}">
           <label class="form-label">Fecha</label>
           <input type="date" class="form-control" name="fecha"
                  th:value="${fecha != null ? fecha.toString() : ''}"/>
         </div>
 
-        <div class="form-group" style="margin:0;">
-          <label class="form-label">Ordenar por</label>
+        <div class="form-group" style="margin:0;" th:if="${puertas != null}">
+          <label class="form-label">Orden</label>
           <select class="form-control" name="orden">
             <option value="desc" th:selected="${orden == 'desc'}">Más reciente primero</option>
-            <option value="asc" th:selected="${orden == 'asc'}">Más antiguo primero</option>
+            <option value="asc"  th:selected="${orden == 'asc'}">Más antiguo primero</option>
           </select>
         </div>
 
-        <div>
+        <div th:if="${puertas != null}">
           <button type="submit" class="btn btn-primary">
             <i class="fas fa-search"></i> Buscar
           </button>
@@ -62,76 +61,131 @@
     </div>
   </div>
 
-  <!-- Árbol de fechas disponibles -->
-  <div class="card" style="margin-bottom:20px;" th:if="${fechasConIngreso != null and not #lists.isEmpty(fechasConIngreso)}">
+  <!-- Fechas disponibles (acceso rápido) -->
+  <div class="card" style="margin-bottom:20px;"
+       th:if="${fechasConIngreso != null and not #lists.isEmpty(fechasConIngreso)}">
     <div class="card-header">
-      <h5><i class="fas fa-calendar-alt" style="margin-right:8px;"></i>Fechas con registros en esta puerta</h5>
+      <h5><i class="fas fa-calendar-alt" style="margin-right:8px;"></i>Fechas con registros</h5>
     </div>
     <div class="card-body" style="display:flex;flex-wrap:wrap;gap:10px;">
       <a th:each="f : ${fechasConIngreso}"
-         th:href="@{/reportes/puerta(instalacionId=${instalacionId}, puertaId=${puertaId}, fecha=${f.toString()})}"
-         class="btn btn-outline btn-sm"
-         th:classappend="${fecha != null and fecha.toString() == f.toString()} ? 'btn-primary' : ''">
+         th:href="@{/reportes/puerta(instalacionId=${instalacionId},puertaId=${puertaId},fecha=${f.toString()},orden=${orden})}"
+         class="btn btn-sm"
+         th:classappend="${fecha != null and fecha.toString() == f.toString()} ? 'btn-primary' : 'btn-outline'">
         <i class="fas fa-calendar-day" style="margin-right:4px;"></i>
         <span th:text="${#temporals.format(f, 'dd/MM/yyyy')}">fecha</span>
       </a>
     </div>
   </div>
 
-  <!-- Resultados / Árbol de ingresos -->
-  <div class="card" th:if="${registros != null}">
-    <div class="card-header">
-      <h5><i class="fas fa-list" style="margin-right:8px;"></i>
-        Registros de Ingreso
-        (<span th:text="${fecha != null ? #temporals.format(fecha, 'dd/MM/yyyy') : 'todas las fechas'}">fecha</span>)
-        — <span th:text="${#lists.size(registros)}">0</span> registros
-      </h5>
+  <!-- Resultados: cards de personas -->
+  <div th:if="${registros != null}">
+
+    <div class="rep-path" th:if="${instalacion != null}">
+      <i class="fas fa-university" style="color:var(--umg-azul);"></i>
+      <strong th:text="${instalacion.nombre}">Instalación</strong>
+      <i class="fas fa-chevron-right rep-sep"></i>
+      <th:block th:each="p : ${puertas}" th:if="${p.id == puertaId}">
+        <i class="fas fa-door-open" style="color:var(--umg-dorado);"></i>
+        <span th:text="${p.nombre}">Puerta</span>
+      </th:block>
+      <th:block th:if="${fecha != null}">
+        <i class="fas fa-chevron-right rep-sep"></i>
+        <i class="fas fa-calendar-day" style="color:#16a34a;"></i>
+        <span th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">fecha</span>
+      </th:block>
+      <span class="badge badge-secondary" style="margin-left:4px;">
+        <span th:text="${#lists.size(registros)}">0</span> registros
+      </span>
     </div>
-    <div class="card-body" style="padding:0;">
-      <div class="table-wrapper">
-        <table class="umg-table">
-          <thead>
-            <tr>
-              <th>#</th><th>Foto</th><th>Nombre Completo</th><th>Correo</th>
-              <th>Tipo</th><th>Fecha y Hora</th><th>Método</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="r, iter : ${registros}">
-              <td th:text="${iter.count}">1</td>
-              <td>
-                <img th:if="${r.persona.fotoRuta != null}"
-                     th:src="@{'/' + ${r.persona.fotoRuta}}"
-                     class="avatar-sm" alt="Foto"/>
-                <div th:unless="${r.persona.fotoRuta != null}" class="avatar-sm avatar-placeholder">
-                  <i class="fas fa-user"></i>
-                </div>
-              </td>
-              <td>
-                <strong th:text="${r.persona.nombreCompleto}">Nombre</strong>
-                <span th:if="${r.persona.restringido}" class="badge badge-danger" style="margin-left:6px;">
-                  Restringido
-                </span>
-              </td>
-              <td><small th:text="${r.persona.correo}">correo</small></td>
-              <td>
-                <span class="badge badge-info" th:text="${r.persona.tipoPersona}">tipo</span>
-              </td>
-              <td th:text="${#temporals.format(r.fechaHora, 'dd/MM/yyyy HH:mm:ss')}">fecha</td>
-              <td>
-                <span class="badge badge-secondary" th:text="${r.metodo}">facial</span>
-              </td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(registros)}">
-              <td colspan="7" style="text-align:center;color:#7a8898;padding:40px;">
-                No hay registros de ingreso para los filtros seleccionados.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+
+    <div th:if="${#lists.isEmpty(registros)}" class="card">
+      <div class="card-body" style="text-align:center;padding:50px;color:#7a8898;">
+        <i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:12px;"></i>
+        No hay registros de ingreso para los filtros seleccionados.
       </div>
     </div>
+
+    <div class="tree-container" th:if="${not #lists.isEmpty(registros)}">
+      <div class="course-node"
+           th:each="r : ${registros}"
+           th:classappend="${r.accesoPermitido == null or r.accesoPermitido} ? ' borde-verde' : ' borde-rojo'">
+        <div class="course-info">
+          <img th:if="${r.persona != null and r.persona.fotoRuta != null}"
+               th:src="@{'/' + ${r.persona.fotoRuta}}" class="avatar-sm" alt="Foto"/>
+          <div th:unless="${r.persona != null and r.persona.fotoRuta != null}"
+               class="avatar-sm avatar-placeholder"><i class="fas fa-user"></i></div>
+          <div>
+            <strong th:text="${r.persona != null ? r.persona.nombreCompleto : '—'}">Nombre</strong>
+            <small th:text="${r.persona != null ? r.persona.correo : ''}">correo</small>
+          </div>
+        </div>
+        <div class="course-actions">
+          <span class="badge badge-info" th:if="${r.persona != null}"
+                th:text="${r.persona.tipoPersona}">tipo</span>
+          <span class="badge" style="background:#e2e8f0;color:#475569;"
+                th:if="${r.accesoPermitido == null or r.accesoPermitido}">Permitido</span>
+          <span class="badge badge-danger" th:unless="${r.accesoPermitido == null or r.accesoPermitido}">Denegado</span>
+          <span class="badge badge-secondary"
+                th:text="${#temporals.format(r.fechaHora, 'HH:mm:ss')}">hora</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enviar por correo -->
+    <div class="card email-card" th:if="${not #lists.isEmpty(registros)}">
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <span style="font-size:13px;color:#3a4a5c;">
+          <i class="fas fa-envelope" style="color:var(--umg-azul);margin-right:6px;"></i>
+          Enviar este reporte como PDF al correo registrado en tu cuenta
+        </span>
+        <form th:action="@{/reportes/puerta/email}" method="post">
+          <input type="hidden" name="puertaId"       th:value="${puertaId}"/>
+          <input type="hidden" name="instalacionId"  th:value="${instalacionId}"/>
+          <input type="hidden" name="fecha"          th:value="${fecha != null ? fecha.toString() : ''}"/>
+          <input type="hidden" name="orden"          th:value="${orden}"/>
+          <input th:if="${instalacion != null}" type="hidden" name="instalacionNombre" th:value="${instalacion.nombre}"/>
+          <th:block th:each="p : ${puertas}" th:if="${p.id == puertaId}">
+            <input type="hidden" name="puertaNombre" th:value="${p.nombre}"/>
+          </th:block>
+          <button type="submit" class="btn btn-outline">
+            <i class="fas fa-paper-plane"></i> Enviar PDF por correo
+          </button>
+        </form>
+      </div>
+    </div>
+
   </div>
+
+  <!-- Estado inicial -->
+  <div th:if="${registros == null and fechasConIngreso == null}" class="card">
+    <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+      <i class="fas fa-hand-point-up" style="font-size:38px;display:block;margin-bottom:14px;"></i>
+      Seleccione una instalación, una puerta y una fecha para ver los registros.
+    </div>
+  </div>
+
+  <style th:inline="none">
+    .tree-container { display:flex; flex-direction:column; gap:10px; padding:6px 0; }
+    .course-node { background:#f8fafc; border:1px solid #dbe3ec; border-left:4px solid #94a3b8;
+      padding:10px 14px; border-radius:10px; display:flex; justify-content:space-between;
+      align-items:center; gap:12px; max-width:100%; box-sizing:border-box; }
+    .course-node.borde-verde { border-left-color:#16a34a; background:#f0fdf4; }
+    .course-node.borde-rojo  { border-left-color:#dc2626; background:#fef2f2; }
+    .course-info { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+    .course-info > div { display:flex; flex-direction:column; gap:3px; }
+    .course-info strong { font-size:14px; color:#0f172a; }
+    .course-info small { color:#64748b; font-size:12px; }
+    .course-actions { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; }
+    .rep-path { display:flex; align-items:center; gap:10px; background:#eef2f7;
+      border:1px solid #dbe3ec; padding:10px 16px; border-radius:10px;
+      margin-bottom:16px; font-size:14px; font-weight:600; color:#1e3a5f; flex-wrap:wrap; }
+    .rep-sep { font-size:11px; color:#7a8898; }
+    .email-card { margin-top:18px; }
+    @media(max-width:768px){
+      .course-node { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
 
 </th:block>
 </body>

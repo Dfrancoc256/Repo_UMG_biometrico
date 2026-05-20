@@ -135,7 +135,7 @@
         </a>
       </li>
 
-      <li>
+      <li sec:authorize="hasRole('ADMIN')">
         <a th:href="@{/ingreso}" th:classappend="${activeMenu == 'ingreso'} ? 'active' : ''">
           <i class="fas fa-door-open nav-icon"></i>
           Registro Ingreso
@@ -153,33 +153,24 @@
 
     <ul class="sidebar-nav submenu">
       <li>
-        <a th:href="@{/reportes}" th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
+        <a th:href="@{/reportes}"
+           th:classappend="${activeMenu == 'reportes'} ? 'active' : ''">
           <i class="fas fa-chart-bar nav-icon"></i>
           Dashboard Reportes
         </a>
       </li>
       <li>
-        <a th:href="@{/reportes/historico-puerta}" th:classappend="${activeMenu == 'rep-hist-puerta'} ? 'active' : ''">
-          <i class="fas fa-history nav-icon"></i>
-          Histórico por Puerta
+        <a th:href="@{/reportes/historico-puerta}"
+           th:classappend="${activeMenu == 'rep-hist-puerta'} ? 'active' : ''">
+          <i class="fas fa-door-open nav-icon"></i>
+          Por Puerta
         </a>
       </li>
       <li>
-        <a th:href="@{/reportes/puerta}" th:classappend="${activeMenu == 'rep-puerta'} ? 'active' : ''">
-          <i class="fas fa-calendar-check nav-icon"></i>
-          Por Fecha / Puerta
-        </a>
-      </li>
-      <li>
-        <a th:href="@{/reportes/historico-salon}" th:classappend="${activeMenu == 'rep-hist-salon'} ? 'active' : ''">
+        <a th:href="@{/reportes/historico-salon}"
+           th:classappend="${activeMenu == 'rep-hist-salon'} ? 'active' : ''">
           <i class="fas fa-chalkboard nav-icon"></i>
-          Histórico por Salón
-        </a>
-      </li>
-      <li>
-        <a th:href="@{/reportes/salon}" th:classappend="${activeMenu == 'rep-salon'} ? 'active' : ''">
-          <i class="fas fa-user-tie nav-icon"></i>
-          Por Fecha / Salón
+          Por Salón
         </a>
       </li>
     </ul>

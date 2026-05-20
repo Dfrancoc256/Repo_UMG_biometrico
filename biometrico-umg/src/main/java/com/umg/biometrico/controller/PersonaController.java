@@ -101,6 +101,15 @@ public class PersonaController {
                         .existsByCorreoIgnoreCaseAndIdNot(correo, persona.getId());
             }
 
+            if (!correo.endsWith("@miumg.edu.gt")) {
+                redirectAttributes.addFlashAttribute("error", "Correo no institucional. El correo debe terminar en @miumg.edu.gt");
+                if (persona.getId() == null) {
+                    return "redirect:/personas/nuevo";
+                } else {
+                    return "redirect:/personas/" + persona.getId() + "/editar";
+                }
+            }
+
             if (correoDuplicado) {
 
                 redirectAttributes.addFlashAttribute(

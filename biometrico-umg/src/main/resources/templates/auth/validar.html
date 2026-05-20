@@ -1,407 +1,94 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Validar Carné | Biométrico UMG</title>
-
-    <link rel="stylesheet" th:href="@{/css/style.css}"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-
-    <style>
-        /* SOLO ESTILOS DE LA BARRA IZQUIERDA */
-        .login-art {
-            justify-content: flex-start;
-            padding-top: 46px;
-            position: relative;
-        }
-
-        .login-art-inner {
-            width: 100%;
-            max-width: 360px;
-        }
-
-        .login-art-actions {
-            margin-top: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            align-items: center;
-        }
-
-        .login-art-btn {
-            width: 100%;
-            max-width: 300px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-            padding: 13px 16px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,.18);
-            background: rgba(255,255,255,.08);
-            color: #fff;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all .2s ease;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-        }
-
-        .login-art-btn:hover {
-            background: rgba(255,255,255,.16);
-            border-color: rgba(255,255,255,.30);
-            transform: translateX(2px);
-        }
-
-        .login-art-btn i {
-            font-size: 14px;
-            color: var(--umg-dorado, #cc9933);
-        }
-
-        .active-side {
-            background: rgba(255,255,255,.18);
-            border-color: rgba(255,255,255,.35);
-            box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
-
-        .login-art-divider {
-            width: 100%;
-            height: 1px;
-            background: rgba(255,255,255,.14);
-            margin: 22px 0 16px;
-        }
-
-        .login-art-subtitle {
-            font-size: 12px;
-            opacity: .72;
-            margin-bottom: 10px;
-            letter-spacing: .3px;
-            text-align: center;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-        }
-
-        .auth-mobile-menu {
-            display: none;
-        }
-
-        .auth-mobile-menu {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .auth-mobile-menu {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 82%;
-                max-width: 370px;
-                height: 100vh;
-                z-index: 9998;
-                background: linear-gradient(135deg, #0b3c75, #0d2244);
-                color: white;
-                padding: 70px 22px 24px;
-                box-shadow: 12px 0 35px rgba(0,0,0,.35);
-                overflow-y: auto;
-            }
-
-            .auth-mobile-menu.open {
-                display: block;
-            }
-
-            .mobile-login-art-inner {
-                width: 100%;
-                text-align: center;
-            }
-
-            .mobile-login-art-inner h1 {
-                color: white;
-                font-size: 22px;
-                line-height: 1.35;
-                margin: 14px 0 10px;
-            }
-
-            .mobile-login-art-inner p {
-                color: rgba(255,255,255,.82);
-                font-size: 13px;
-                line-height: 1.5;
-                margin: 0;
-            }
-
-            .mobile-menu-btn {
-                display: flex;
-                position: fixed;
-                top: 18px;
-                left: 18px;
-                width: 44px;
-                height: 44px;
-                border: none;
-                border-radius: 12px;
-                background: #0b2c63;
-                color: white;
-                align-items: center;
-                justify-content: center;
-                font-size: 18px;
-                z-index: 10000;
-                box-shadow: 0 8px 22px rgba(0,0,0,.25);
-                cursor: pointer;
-            }
-
-            .login-art {
-                display: none;
-            }
-
-            .login-form-panel {
-                width: 100% !important;
-            }
-        }
-    </style>
-</head>
-
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/auth :: authLayout(~{::content}, 'validar')}">
 <body>
+<th:block th:fragment="content">
 
-    <button class="mobile-menu-btn" onclick="toggleAuthMenu()">
-        <i class="fas fa-bars"></i>
+  <h2 style="margin-bottom:6px;">
+    <i class="fas fa-shield-alt" style="margin-right:8px;color:var(--umg-azul);"></i>
+    Validar Carné PDF
+  </h2>
+  <p style="margin-bottom:20px;">
+    Sube el PDF del carné universitario para verificar su autenticidad.
+  </p>
+
+  <!-- Error general -->
+  <div th:if="${mensajeError}" class="alert alert-danger">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span th:text="${mensajeError}"></span>
+  </div>
+
+  <!-- Formulario de carga -->
+  <form th:if="${esValido == null}"
+        th:action="@{/auth/validar-carnet}"
+        method="post"
+        enctype="multipart/form-data"
+        data-ajax>
+
+    <div class="form-group">
+      <label class="form-label">
+        <i class="fas fa-upload" style="margin-right:6px;color:#7a8898;"></i>
+        Archivo PDF del Carné
+      </label>
+      <input type="file" class="form-control" name="archivo"
+             accept=".pdf" required style="padding:10px;"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary"
+            style="width:100%;justify-content:center;padding:12px;margin-top:6px;">
+      <i class="fas fa-search"></i> Verificar Autenticidad
     </button>
+  </form>
 
-    <div id="authMobileMenu" class="auth-mobile-menu">
-        <div class="mobile-login-art-inner">
+  <!-- Resultados -->
+  <div th:if="${esValido != null}">
 
-            <div style="display:flex;justify-content:center;margin-bottom:16px;">
-                <img th:src="@{/img/logo-umg.png}"
-                     alt="Universidad Mariano Gálvez"
-                     style="max-width:105px;"/>
-            </div>
-
-            <h1>Universidad Mariano Gálvez<br/>de Guatemala</h1>
-
-            <p>Sistema de Registro Biométrico de Ingreso<br/>Sede La Florida · Zona 19 · 2026</p>
-
-            <div style="margin-top:28px;display:flex;gap:22px;opacity:.65;font-size:26px;justify-content:center;">
-                <i class="fas fa-camera"></i>
-                <i class="fas fa-fingerprint"></i>
-                <i class="fas fa-shield-alt"></i>
-                <i class="fas fa-id-card"></i>
-            </div>
-
-            <div class="login-art-divider"></div>
-            <div class="login-art-subtitle">OPCIONES DE ACCESO</div>
-
-            <div class="login-art-actions">
-                <a th:href="@{/auth/login}" class="login-art-btn">
-                    <i class="fas fa-keyboard"></i>
-                    <span>Inicio de sesión</span>
-                </a>
-
-                <a th:href="@{/auth/validar-carnet}" class="login-art-btn active-side">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Validar Carné PDF</span>
-                </a>
-
-                <a th:href="@{/enrolamiento}" class="login-art-btn">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Enrolarse a cursos</span>
-                </a>
-            </div>
-
-        </div>
-    </div>
-<div class="login-page">
-
-    <!-- BARRA IZQUIERDA -->
-    <div class="login-art">
-        <div class="login-art-inner">
-
-            <div style="display:flex;justify-content:center;margin-bottom:16px;">
-                <img th:src="@{/img/logo-umg.png}"
-                     alt="Universidad Mariano Gálvez"
-                     style="max-width:120px;"/>
-            </div>
-
-            <h1>Universidad Mariano Gálvez<br/>de Guatemala</h1>
-
-            <p>Verificación de Autenticidad<br/>de Carné Universitario</p>
-
-            <div style="margin-top:32px;display:flex;gap:24px;opacity:.6;font-size:28px;justify-content:center;">
-                <i class="fas fa-file-pdf"></i>
-                <i class="fas fa-shield-alt"></i>
-                <i class="fas fa-id-card"></i>
-                <i class="fas fa-check-circle"></i>
-            </div>
-
-            <div class="login-art-divider"></div>
-            <div class="login-art-subtitle">NAVEGACIÓN</div>
-
-            <div class="login-art-actions">
-                <a th:href="@{/auth/login}" class="login-art-btn">
-                    <i class="fas fa-keyboard"></i>
-                    <span>Inicio de sesión</span>
-                </a>
-
-                <a th:href="@{/auth/validar-carnet}" class="login-art-btn active-side">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Validar Carné PDF</span>
-                </a>
-
-                <a th:href="@{/enrolamiento}" class="login-art-btn">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Enrolarse a cursos</span>
-                </a>
-                
-            </div>
-
-        </div>
+    <div th:if="${esValido}"
+         style="background:#e8f5e9;border:2px solid #2e7d32;border-radius:10px;
+                text-align:center;padding:20px;margin-bottom:16px;">
+      <i class="fas fa-check-circle"
+         style="font-size:36px;color:#2e7d32;display:block;margin-bottom:8px;"></i>
+      <div style="font-size:20px;font-weight:bold;color:#2e7d32;">CARNÉ VÁLIDO</div>
+      <div style="font-size:12px;color:#4caf50;margin-top:4px;">
+        Documento auténtico emitido por UMG
+      </div>
     </div>
 
-    <!-- PANEL DERECHO -->
-    <div class="login-form-panel">
-        <div class="login-form-inner">
-
-            <h2 style="margin-bottom:6px;">
-                <i class="fas fa-shield-alt" style="margin-right:8px;color:var(--umg-azul);"></i>
-                Validar Carné PDF
-            </h2>
-
-            <p style="margin-bottom:20px;">
-                Sube el PDF del carné universitario para verificar su autenticidad.
-            </p>
-
-            <!-- ERROR -->
-            <div th:if="${mensajeError}" class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span th:text="${mensajeError}"></span>
-            </div>
-
-            <!-- FORMULARIO -->
-            <form th:if="${esValido == null}"
-                  th:action="@{/auth/validar-carnet}"
-                  method="post"
-                  enctype="multipart/form-data">
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-upload" style="margin-right:6px;color:#7a8898;"></i>
-                        Archivo PDF del Carné
-                    </label>
-
-                    <input type="file"
-                           class="form-control"
-                           name="archivo"
-                           accept=".pdf"
-                           required
-                           style="padding:10px;"/>
-                </div>
-
-                <button type="submit"
-                        class="btn btn-primary"
-                        style="width:100%;justify-content:center;padding:12px;margin-top:6px;">
-                    <i class="fas fa-search"></i>
-                    Verificar Autenticidad
-                </button>
-
-            </form>
-
-            <!-- RESULTADOS -->
-            <div th:if="${esValido != null}">
-
-                <!-- RESULTADO PRINCIPAL -->
-                <div th:if="${esValido}"
-                     style="background:#e8f5e9;border:2px solid #2e7d32;border-radius:10px;
-                     text-align:center;padding:20px;margin-bottom:16px;">
-                    <i class="fas fa-check-circle"
-                       style="font-size:36px;color:#2e7d32;display:block;margin-bottom:8px;"></i>
-
-                    <div style="font-size:20px;font-weight:bold;color:#2e7d32;">
-                        CARNÉ VÁLIDO
-                    </div>
-
-                    <div style="font-size:12px;color:#4caf50;margin-top:4px;">
-                        Documento auténtico emitido por UMG
-                    </div>
-                </div>
-
-                <div th:unless="${esValido}"
-                     style="background:#fdecea;border:2px solid #c62828;border-radius:10px;
-                     text-align:center;padding:20px;margin-bottom:16px;">
-                    <i class="fas fa-times-circle"
-                       style="font-size:36px;color:#c62828;display:block;margin-bottom:8px;"></i>
-
-                    <div style="font-size:20px;font-weight:bold;color:#c62828;">
-                        CARNÉ NO VÁLIDO
-                    </div>
-
-                    <div style="font-size:12px;color:#e57373;margin-top:4px;">
-                        No se pudo confirmar la autenticidad del documento
-                    </div>
-                </div>
-
-                <!-- DETALLE -->
-                <div class="card" style="margin-bottom:14px;">
-                    <div class="card-header">
-                        <h5 style="margin:0;font-size:13px;">
-                            <i class="fas fa-clipboard-check"></i> Detalle de Verificación
-                        </h5>
-                    </div>
-
-                    <div class="card-body" style="padding:12px;font-size:13px;">
-                        ✔ Firma digital: <b th:text="${tieneSignatura} ? 'Sí' : 'No'"></b><br/>
-                        ✔ Registro en sistema: <b th:text="${personaEncontrada != null} ? 'Sí' : 'No'"></b><br/>
-                        ✔ Código válido: <b th:text="${codigoValido} ? 'Sí' : 'No'"></b>
-                    </div>
-                </div>
-
-                <!-- VALIDAR OTRO -->
-                <a th:href="@{/auth/validar-carnet}"
-                   class="btn btn-outline"
-                   style="width:100%;justify-content:center;padding:11px;">
-                    <i class="fas fa-redo"></i> Validar otro carné
-                </a>
-
-            </div>
-
-            <!-- VOLVER -->
-            <a th:href="@{/auth/login}"
-               style="display:block;text-align:center;margin-top:16px;font-size:13px;color:#7a8898;text-decoration:none;">
-                <i class="fas fa-arrow-left"></i> Volver al inicio de sesión
-            </a>
-
-            <p style="font-size:11px;color:#aab;margin-top:20px;text-align:center;">
-                Sistema Biométrico UMG v2.0 — 2026
-            </p>
-
-        </div>
+    <div th:unless="${esValido}"
+         style="background:#fdecea;border:2px solid #c62828;border-radius:10px;
+                text-align:center;padding:20px;margin-bottom:16px;">
+      <i class="fas fa-times-circle"
+         style="font-size:36px;color:#c62828;display:block;margin-bottom:8px;"></i>
+      <div style="font-size:20px;font-weight:bold;color:#c62828;">CARNÉ NO VÁLIDO</div>
+      <div style="font-size:12px;color:#e57373;margin-top:4px;">
+        No se pudo confirmar la autenticidad del documento
+      </div>
     </div>
 
-</div>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="card-header">
+        <h5 style="margin:0;font-size:13px;">
+          <i class="fas fa-clipboard-check"></i> Detalle de Verificación
+        </h5>
+      </div>
+      <div class="card-body" style="padding:12px;font-size:13px;">
+        ✔ Firma digital: <b th:text="${tieneSignatura} ? 'Sí' : 'No'"></b><br/>
+        ✔ Registro en sistema: <b th:text="${personaEncontrada != null} ? 'Sí' : 'No'"></b><br/>
+        ✔ Código válido: <b th:text="${codigoValido} ? 'Sí' : 'No'"></b>
+      </div>
+    </div>
 
-<script th:src="@{/js/main.js}"></script>
-    <script>
-        function toggleAuthMenu() {
-            document.getElementById('authMobileMenu')
-                .classList.toggle('open');
-        }
-    </script>
-    <script>
-        document.addEventListener("click", function(e) {
+    <a th:href="@{/auth/validar-carnet}" class="btn btn-outline"
+       style="width:100%;justify-content:center;padding:11px;">
+      <i class="fas fa-redo"></i> Validar otro carné
+    </a>
 
-            const menu = document.getElementById("authMobileMenu");
-            const button = document.querySelector(".mobile-menu-btn");
+  </div>
 
-            if (
-                menu.classList.contains("open") &&
-                !menu.contains(e.target) &&
-                !button.contains(e.target)
-            ) {
-                menu.classList.remove("open");
-            }
-        });
-    </script>
+  <p style="font-size:11px;color:#aab;margin-top:20px;text-align:center;">
+    Sistema Biométrico UMG v2.0 &mdash; 2026
+  </p>
 
+</th:block>
 </body>
 </html>
