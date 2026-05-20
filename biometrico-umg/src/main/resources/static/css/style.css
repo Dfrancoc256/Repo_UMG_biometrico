@@ -2048,3 +2048,44 @@ select.form-control {
     min-width: 650px;
   }
 }
+
+.registro-ingreso-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.registro-panel-izquierdo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.registro-bitacora-card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.registro-bitacora-card > div:last-child {
+  overflow-x: auto;
+}
+
+.registro-bitacora-card table {
+  min-width: 760px;
+}
+
+@media (max-width: 900px) {
+  .registro-ingreso-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .registro-panel-izquierdo,
+  .registro-bitacora-card {
+    width: 100%;
+    min-width: 0;
+  }
+}

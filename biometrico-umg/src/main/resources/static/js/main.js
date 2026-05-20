@@ -4,9 +4,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ──────────────────────────────────────
-     Sidebar toggle (botón hamburguesa)
-     ────────────────────────────────────── */
   const sidebarToggle = document.getElementById('sidebarToggle');
   const sidebar = document.getElementById('sidebar');
   const mainContent = document.querySelector('.main-content');
@@ -23,34 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.remove('open');
         sidebar.classList.toggle('sidebar-hidden');
 
-        if (mainContent) {
-          mainContent.classList.toggle('main-expanded');
-        }
-
-        if (topbar) {
-          topbar.classList.toggle('topbar-expanded');
-        }
+        if (mainContent) mainContent.classList.toggle('main-expanded');
+        if (topbar) topbar.classList.toggle('topbar-expanded');
       }
     });
   }
 
-  /* ──────────────────────────────────────
-     Auto-ocultar alertas
-     ────────────────────────────────────── */
   document.querySelectorAll('.alert-auto').forEach(el => {
     setTimeout(() => {
       el.style.transition = 'opacity .6s ease';
       el.style.opacity = '0';
-
-      setTimeout(() => {
-        el.remove();
-      }, 600);
+      setTimeout(() => el.remove(), 600);
     }, 4000);
   });
 
-  /* ──────────────────────────────────────
-     Confirmaciones con data-confirm
-     ────────────────────────────────────── */
   document.querySelectorAll('[data-confirm]').forEach(btn => {
     btn.addEventListener('click', e => {
       if (!confirm(btn.dataset.confirm)) {
@@ -59,9 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ──────────────────────────────────────
-     Webcam para captura de fotografía
-     ────────────────────────────────────── */
   const videoEl = document.getElementById('webcamVideo');
   const canvasEl = document.getElementById('webcamCanvas');
   const captureBtn = document.getElementById('btnCapturar');
@@ -91,9 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const dataUrl = canvasEl.toDataURL('image/jpeg', 0.85);
 
-      if (fotoInput) {
-        fotoInput.value = dataUrl;
-      }
+      if (fotoInput) fotoInput.value = dataUrl;
 
       if (previewImg) {
         previewImg.src = dataUrl;
@@ -102,16 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ──────────────────────────────────────
-     Filtro instalación → puertas
-     ────────────────────────────────────── */
   const selInstalacion = document.getElementById('selInstalacion');
   const selPuerta = document.getElementById('selPuerta');
 
   if (selInstalacion && selPuerta) {
     selInstalacion.addEventListener('change', () => {
       const instalacionId = selInstalacion.value;
-
       if (!instalacionId) return;
 
       fetch(`/instalaciones/${instalacionId}/puertas-json`)
@@ -132,16 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ──────────────────────────────────────
-     Árbol de asistencia: checkboxes
-     ────────────────────────────────────── */
   document.querySelectorAll('.attendance-node').forEach(node => {
     node.addEventListener('click', () => {
       const checkbox = node.querySelector('input[type="checkbox"]');
 
       if (checkbox) {
         checkbox.checked = !checkbox.checked;
-
         node.classList.toggle('presente', checkbox.checked);
         node.classList.toggle('ausente', !checkbox.checked);
 
@@ -153,69 +123,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* ──────────────────────────────────────
-     Sidebar tipo árbol
-     ────────────────────────────────────── */
   const menuGroups = document.querySelectorAll('.menu-group');
   const toggles = document.querySelectorAll('.menu-toggle');
-  const STORAGE_KEY = 'sidebar-open-menu';
 
   function closeAllGroups() {
     menuGroups.forEach(group => group.classList.remove('active'));
   }
 
-  function openGroup(group) {
-    if (group) {
-      group.classList.add('active');
-    }
-  }
+  closeAllGroups();
 
   toggles.forEach(toggle => {
     toggle.addEventListener('click', function () {
-      const currentGroup = this.parentElement;
-      const menuName = this.dataset.menu;
+      const currentGroup = this.closest('.menu-group');
       const isActive = currentGroup.classList.contains('active');
 
       closeAllGroups();
 
       if (!isActive) {
-        openGroup(currentGroup);
-
-        if (menuName) {
-          localStorage.setItem(STORAGE_KEY, menuName);
-        }
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
+        currentGroup.classList.add('active');
       }
     });
   });
 
-  const activeLink = document.querySelector('.submenu a.active');
-
-  if (activeLink) {
-    const parentGroup = activeLink.closest('.menu-group');
-    openGroup(parentGroup);
-
-    const activeToggle = parentGroup ? parentGroup.querySelector('.menu-toggle') : null;
-
-    if (activeToggle && activeToggle.dataset.menu) {
-      localStorage.setItem(STORAGE_KEY, activeToggle.dataset.menu);
-    }
-  } else {
-    const savedMenu = localStorage.getItem(STORAGE_KEY);
-
-    if (savedMenu) {
-      const savedToggle = document.querySelector(`.menu-toggle[data-menu="${savedMenu}"]`);
-      if (savedToggle) {
-        openGroup(savedToggle.parentElement);
-      }
-    }
-  }
-
-  /* ──────────────────────────────────────
-     Cerrar sidebar al hacer click fuera
-     solo en pantallas pequeñas
-     ────────────────────────────────────── */
   document.addEventListener('click', function (e) {
     if (!sidebar) return;
     if (window.innerWidth > 768) return;
