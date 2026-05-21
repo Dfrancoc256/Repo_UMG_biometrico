@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seleccionar Cursos | Biométrico UMG</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { background: linear-gradient(135deg, #1a3a6b 0%, #0d2244 60%, #0a1a35 100%); min-height: 100vh; padding: 32px 16px; display: flex; align-items: flex-start; justify-content: center; }
+    .enrol-card { background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); width: 100%; max-width: 780px; overflow: hidden; }
+    .enrol-header { background: linear-gradient(135deg, #1a3a6b, #0d2244); color: #fff; padding: 24px 36px; display: flex; align-items: center; gap: 16px; }
+    .enrol-header img { width: 52px; }
+    .enrol-header h2 { margin: 0 0 2px; font-size: 18px; font-weight: 700; }
+    .enrol-header p { margin: 0; font-size: 12px; opacity: .75; }
+    .enrol-body { padding: 28px 36px 36px; }
+    .estudiante-info { background: #f0f5ff; border: 1px solid #c7d8f5; border-radius: 10px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; gap: 14px; }
+    .estudiante-info .avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; }
+    .estudiante-info .avatar-placeholder { width: 46px; height: 46px; border-radius: 50%; background: #d0dff5; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #1a3a6b; flex-shrink: 0; }
+    .estudiante-info strong { display: block; color: #1a3a6b; font-size: 15px; }
+    .estudiante-info small { color: #7a8898; font-size: 12px; }
+    .slots-bar { background: #f8fafd; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 18px; margin-bottom: 22px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .slots-bar .slot-count { font-size: 22px; font-weight: 800; color: #1a3a6b; }
+    .slots-bar .slot-label { color: #7a8898; line-height: 1.4; }
+    .slots-bar .slot-count.agotado { color: #cb2431; }
+    .curso-item { border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all .15s; }
+    .curso-item:hover:not(.inscrito):not(.agotado-item) { border-color: #1a3a6b; background: #f5f8ff; }
+    .curso-item.seleccionado { border-color: #1a3a6b; background: #eef3ff; }
+    .curso-item.inscrito { background: #f0fff4; border-color: #84e1bc; cursor: default; opacity: .85; }
+    .curso-item.agotado-item { opacity: .5; cursor: not-allowed; }
+    .curso-item input[type=checkbox] { width: 18px; height: 18px; accent-color: #1a3a6b; flex-shrink: 0; cursor: pointer; }
+    .curso-item input[type=checkbox]:disabled { cursor: not-allowed; }
+    .curso-info { flex: 1; }
+    .curso-info .curso-nombre { font-weight: 700; color: #1a3a6b; font-size: 14px; }
+    .curso-info .curso-meta { font-size: 12px; color: #7a8898; margin-top: 2px; }
+    .curso-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
+    .badge-inscrito { background: #d1fae5; color: #065f46; }
+    .badge-disponible { background: #e0e7ff; color: #3730a3; }
+    .seccion-titulo { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #7a8898; letter-spacing: .5px; margin: 18px 0 8px; }
+    .enrol-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .enrol-back { font-size: 13px; color: #7a8898; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .enrol-back:hover { color: #1a3a6b; }
+  </style>
+</head>
+<body>
+
+<div class="enrol-card">
+  <div class="enrol-header">
+    <img th:src="@{/img/logo-umg.png}" alt="UMG"/>
+    <div>
+      <h2>Selección de Cursos</h2>
+      <p>Universidad Mariano Gálvez &mdash; Sede La Florida</p>
+    </div>
+  </div>
+
+  <div class="enrol-body">
+
+    <!-- Info estudiante -->
+    <div class="estudiante-info">
+      <img th:if="${estudiante.fotoRuta != null}"
+           th:src="@{'/' + ${estudiante.fotoRuta}}"
+           class="avatar" alt="Foto"/>
+      <div th:unless="${estudiante.fotoRuta != null}" class="avatar-placeholder">
+        <i class="fas fa-user"></i>
+      </div>
+      <div>
+        <strong th:text="${estudiante.nombreCompleto}">Nombre Apellido</strong>
+        <small>Carnet: <span th:text="${estudiante.numeroCarnet}">0000-000000</span>
+          &nbsp;|&nbsp; <span th:text="${estudiante.correo}">correo@umg.edu.gt</span></small>
+      </div>
+    </div>
+
+    <!-- Contador de slots -->
+    <div class="slots-bar">
+      <div class="slot-count" th:classappend="${slotsDisponibles == 0} ? 'agotado'" th:text="${slotsDisponibles}">5</div>
+      <div class="slot-label">
+        <span th:if="${slotsDisponibles > 0}">
+          curso(s) disponible(s) para seleccionar<br/>
+          <small>(máximo <span th:text="${maxCursos}">5</span> en total)</small>
+        </span>
+        <span th:unless="${slotsDisponibles > 0}" style="color:#cb2431;font-weight:600;">
+          Ya alcanzaste el límite de <span th:text="${maxCursos}">5</span> cursos inscritos.
+        </span>
+      </div>
+    </div>
+
+    <form th:action="@{/enrolamiento/guardar}" method="post" id="formEnrolamiento">
+      <input type="hidden" name="estudianteId" th:value="${estudiante.id}"/>
+
+      <!-- Cursos ya inscritos -->
+      <div th:if="${not #lists.isEmpty(cursosInscritos)}">
+        <div class="seccion-titulo"><i class="fas fa-check-circle" style="color:#22863a;margin-right:4px;"></i> Cursos en los que ya estás inscrito</div>
+        <div th:each="curso : ${cursos}" th:if="${#lists.contains(cursosInscritos, curso.id)}">
+          <div class="curso-item inscrito">
+            <input type="checkbox" checked disabled/>
+            <div class="curso-info">
+              <div class="curso-nombre" th:text="${curso.nombre}">Nombre del curso</div>
+              <div class="curso-meta">
+                <span th:text="${curso.codigo}">CUR-001</span>
+                &nbsp;&bull;&nbsp;
+                <span th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin catedrático'}">Catedrático</span>
+                &nbsp;&bull;&nbsp;
+                <i class="fas fa-door-open"></i> <span th:text="${curso.salon}">Salón</span>
+                &nbsp;&bull;&nbsp;
+                <i class="fas fa-clock"></i> <span th:text="${curso.horario}">Horario</span>
+              </div>
+            </div>
+            <span class="curso-badge badge-inscrito"><i class="fas fa-check"></i> Inscrito</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cursos disponibles para seleccionar -->
+      <div class="seccion-titulo" style="margin-top:20px;"><i class="fas fa-list" style="color:#1a3a6b;margin-right:4px;"></i> Cursos disponibles</div>
+
+      <div th:each="curso : ${cursos}" th:unless="${#lists.contains(cursosInscritos, curso.id)}">
+        <label th:id="'label-' + ${curso.id}"
+               class="curso-item"
+               th:classappend="${slotsDisponibles == 0} ? 'agotado-item'">
+          <input type="checkbox"
+                 name="cursosSeleccionados"
+                 th:value="${curso.id}"
+                 th:disabled="${slotsDisponibles == 0}"
+                 class="curso-checkbox"
+                 th:id="'chk-' + ${curso.id}"/>
+          <div class="curso-info">
+            <div class="curso-nombre" th:text="${curso.nombre}">Nombre del curso</div>
+            <div class="curso-meta">
+              <span th:text="${curso.codigo}">CUR-001</span>
+              &nbsp;&bull;&nbsp;
+              <span th:text="${curso.catedratico != null ? curso.catedratico.nombreCompleto : 'Sin catedrático'}">Catedrático</span>
+              &nbsp;&bull;&nbsp;
+              <i class="fas fa-door-open"></i> <span th:text="${curso.salon}">Salón</span>
+              &nbsp;&bull;&nbsp;
+              <i class="fas fa-clock"></i> <span th:text="${curso.horario}">Horario</span>
+            </div>
+          </div>
+          <span class="curso-badge badge-disponible">Disponible</span>
+        </label>
+      </div>
+
+      <div th:if="${#lists.isEmpty(cursos)}" style="text-align:center;padding:30px;color:#7a8898;font-size:14px;">
+        <i class="fas fa-inbox" style="font-size:36px;display:block;margin-bottom:10px;opacity:.4;"></i>
+        No hay cursos activos en este momento.
+      </div>
+
+      <div class="enrol-actions">
+        <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center;padding:12px;"
+                th:disabled="${slotsDisponibles == 0}"
+                id="btnGuardar">
+          <i class="fas fa-save"></i> Guardar enrolamiento
+        </button>
+        <a th:href="@{/enrolamiento}" class="btn" style="background:#f0f3f8;color:#4a5568;padding:12px 20px;">
+          <i class="fas fa-arrow-left"></i> Volver
+        </a>
+      </div>
+    </form>
+
+    <div style="margin-top:18px;text-align:center;">
+      <a th:href="@{/auth/login}" class="enrol-back">
+        <i class="fas fa-sign-in-alt"></i> Ir al inicio de sesión
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MAX = /*[[${slotsDisponibles}]]*/ 5;
+  const checkboxes = document.querySelectorAll('.curso-checkbox:not(:disabled)');
+  const btnGuardar = document.getElementById('btnGuardar');
+  const slotsEl = document.querySelector('.slot-count');
+  const slotsLabel = document.querySelector('.slot-label');
+
+  function actualizarContador() {
+    const marcados = document.querySelectorAll('.curso-checkbox:checked:not(:disabled)').length;
+    const restantes = MAX - marcados;
+
+    slotsEl.textContent = restantes;
+    slotsEl.classList.toggle('agotado', restantes === 0);
+
+    checkboxes.forEach(cb => {
+      if (!cb.checked) {
+        cb.disabled = restantes === 0;
+        const label = cb.closest('.curso-item');
+        if (label) label.classList.toggle('agotado-item', restantes === 0);
+      }
+      const label = cb.closest('.curso-item');
+      if (label) label.classList.toggle('seleccionado', cb.checked);
+    });
+  }
+
+  checkboxes.forEach(cb => cb.addEventListener('change', actualizarContador));
+  actualizarContador();
+</script>
+
+</body>
+</html>

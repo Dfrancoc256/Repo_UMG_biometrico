@@ -222,15 +222,88 @@ public class PdfService {
         escribirCampo(cb, startX, startY, "Carnet:", valor(persona.getNumeroCarnet()), labelFont, carnetFont);
         escribirCampo(cb, startX, startY - salto, "Correo:", recortarTexto(valor(persona.getCorreo()), 28), labelFont, correoFont);
 
-        boolean esCatedratico = "CATEDRATICO".equalsIgnoreCase(persona.getTipoPersona());
-        if (!esCatedratico) {
-            escribirCampo(cb, startX, startY - (salto * 2), "Carrera:",
-                    recortarTexto(persona.getCarrera() != null ? persona.getCarrera().getNombre() : "", 26),
-                    labelFont, valueFont);
-            escribirCampo(cb, startX, startY - (salto * 3), "Sección:", valor(persona.getSeccion()), labelFont, valueFont);
-            escribirCampo(cb, startX, startY - (salto * 4), "Estado:", estado, labelFont, estadoFont);
+        boolean esCatedratico =
+                "CATEDRATICO".equalsIgnoreCase(persona.getTipoPersona());
+
+        boolean esAdmin =
+                persona.getRol() != null &&
+                        persona.getRol().getNombre() != null &&
+                        persona.getRol().getNombre().toUpperCase().contains("ADMIN");
+
+        boolean esPersonal = esCatedratico || esAdmin;
+
+        if (esPersonal) {
+
+            escribirCampo(
+                    cb,
+                    startX,
+                    startY - (salto * 2),
+                    "Área:",
+                    "Universidad Mariano Gálvez",
+                    labelFont,
+                    valueFont
+            );
+
+            escribirCampo(
+                    cb,
+                    startX,
+                    startY - (salto * 3),
+                    "Cargo:",
+                    esAdmin
+                            ? "Administrador del Sistema"
+                            : "Catedrático Universitario",
+                    labelFont,
+                    valueFont
+            );
+
+            escribirCampo(
+                    cb,
+                    startX,
+                    startY - (salto * 4),
+                    "Rol:",
+                    persona.getRol() != null
+                            ? recortarTexto(persona.getRol().getNombre(), 24)
+                            : "Personal UMG",
+                    labelFont,
+                    valueFont
+            );
+
         } else {
-            escribirCampo(cb, startX, startY - (salto * 2), "Estado:", estado, labelFont, estadoFont);
+
+            escribirCampo(
+                    cb,
+                    startX,
+                    startY - (salto * 2),
+                    "Carrera:",
+                    recortarTexto(
+                            persona.getCarrera() != null
+                                    ? persona.getCarrera().getNombre()
+                                    : "",
+                            26
+                    ),
+                    labelFont,
+                    valueFont
+            );
+
+            escribirCampo(
+                    cb,
+                    startX,
+                    startY - (salto * 3),
+                    "Sección:",
+                    valor(persona.getSeccion()),
+                    labelFont,
+                    valueFont
+            );
+
+            escribirCampo(
+                    cb,
+                    startX,
+                    startY - (salto * 4),
+                    "Estado:",
+                    estado,
+                    labelFont,
+                    estadoFont
+            );
         }
 
         // QR con URL de verificación + código de validación
