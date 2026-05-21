@@ -131,21 +131,25 @@ public class PersonaController {
             }
             Persona guardada = personaService.guardar(persona, foto, fotoBase64);
 
+            Persona personaCompleta = personaRepository.findById(guardada.getId())
+                    .orElse(guardada);
+
             if (esNueva) {
-                emailService.enviarCarnetPorCorreo(guardada);
-                whatsAppService.enviarCarnetPorWhatsApp(guardada);
-                if (guardada.getTelefono() != null && !guardada.getTelefono().isBlank()) {
+                emailService.enviarCarnetPorCorreo(personaCompleta);
+                whatsAppService.enviarCarnetPorWhatsApp(personaCompleta);
+
+                if (personaCompleta.getTelefono() != null && !personaCompleta.getTelefono().isBlank()) {
                     try {
-                        String mediaUrl = appBaseUrl + "/personas/" + guardada.getId() + "/carnet-publico";
-                        String nombreArchivo = "carnet-" + guardada.getNumeroCarnet() + ".pdf";
-                        whatsAppService.enviarCarnetPdfUrl(guardada.getTelefono(), mediaUrl, nombreArchivo);
+                        String mediaUrl = appBaseUrl + "/personas/" + personaCompleta.getId() + "/carnet-publico";
+                        String nombreArchivo = "carnet-" + personaCompleta.getNumeroCarnet() + ".pdf";
+                        whatsAppService.enviarCarnetPdfUrl(personaCompleta.getTelefono(), mediaUrl, nombreArchivo);
                     } catch (Exception e) {
                         log.warn("No se pudo enviar PDF por WhatsApp: {}", e.getMessage());
                     }
                 }
                 redirectAttributes.addFlashAttribute("success",
                         "Persona enrolada correctamente. Se ha enviado el carnet por correo" +
-                                (guardada.getTelefono() != null ? " y WhatsApp." : "."));
+                                (personaCompleta.getTelefono() != null ? " y WhatsApp." : "."));
             } else {
                 redirectAttributes.addFlashAttribute("success", "Persona actualizada correctamente.");
             }

@@ -145,7 +145,7 @@ public class WhatsAppService {
         🎓 *Universidad Mariano Gálvez de Guatemala*
         Sede La Florida, Zona 19
 
-        Hola *%s*, has sido enrolado/a exitosamente en el Sistema Biométrico UMG.
+        Hola *%s*, has sido registrado/a exitosamente en el Sistema Biométrico UMG.
 
         📋 *Datos de tu carnet:*
         • Carnet N°: `%s`
