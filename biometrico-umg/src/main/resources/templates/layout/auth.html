@@ -126,6 +126,23 @@
       .login-art p { font-size: 13px; }
       .login-form-panel { padding: 76px 18px 30px 18px; }
     }
+
+    @media (max-width: 900px) {
+
+      .login-art {
+        transform: translateX(-100%) !important;
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      .login-art.open {
+        transform: translateX(0) !important;
+        visibility: visible;
+        opacity: 1;
+      }
+
+    }
+
   </style>
 </head>
 <body>
@@ -254,18 +271,7 @@
   window.addEventListener('popstate', function(e) {
     if (e.state && e.state.authUrl) loadAuthContent(e.state.authUrl);
   });
-
-  /* Toggle sidebar móvil */
-  document.getElementById('loginMenuToggle').addEventListener('click', function() {
-    document.getElementById('loginArt').classList.toggle('open');
-  });
-  document.addEventListener('click', function(e) {
-    var art = document.getElementById('loginArt');
-    var toggle = document.getElementById('loginMenuToggle');
-    if (art.classList.contains('open') && !art.contains(e.target) && !toggle.contains(e.target)) {
-      art.classList.remove('open');
-    }
-  });
+  
 </script>
 </body>
 </html>

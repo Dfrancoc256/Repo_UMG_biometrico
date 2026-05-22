@@ -214,8 +214,10 @@ public class EmailService {
                 persona.getNombreCompleto(),
                 persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : "—",
                 persona.getTipoPersona()  != null ? persona.getTipoPersona()  : "—",
-                persona.getCarrera()      != null ? persona.getCarrera()      : "—",
+                persona.getCarrera() != null && persona.getCarrera().getNombre() != null
+                        ? persona.getCarrera().getNombre()
+                        : "—",
                 persona.getSeccion()      != null ? persona.getSeccion()      : "—"
-            );
+        );
     }
 }

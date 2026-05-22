@@ -222,10 +222,19 @@ public class PdfService {
         escribirCampo(cb, startX, startY, "Carnet:", valor(persona.getNumeroCarnet()), labelFont, carnetFont);
         escribirCampo(cb, startX, startY - salto, "Correo:", recortarTexto(valor(persona.getCorreo()), 28), labelFont, correoFont);
 
+        String nombreCarrera = "—";
+
+        if (persona.getCarrera() != null &&
+                persona.getCarrera().getNombre() != null &&
+                !persona.getCarrera().getNombre().isBlank()) {
+
+            nombreCarrera = persona.getCarrera().getNombre();
+        }
+
         boolean esCatedratico = "CATEDRATICO".equalsIgnoreCase(persona.getTipoPersona());
         if (!esCatedratico) {
             escribirCampo(cb, startX, startY - (salto * 2), "Carrera:",
-                    recortarTexto(persona.getCarrera() != null ? persona.getCarrera().getNombre() : "", 26),
+                    recortarTexto(nombreCarrera, 26),
                     labelFont, valueFont);
             escribirCampo(cb, startX, startY - (salto * 3), "Sección:", valor(persona.getSeccion()), labelFont, valueFont);
             escribirCampo(cb, startX, startY - (salto * 4), "Estado:", estado, labelFont, estadoFont);

@@ -267,10 +267,7 @@ public class PersonaController {
             if (persona.getCorreo() == null || persona.getCorreo().isBlank()) {
                 throw new RuntimeException("La persona no tiene correo registrado");
             }
-            byte[] pdf = pdfService.generarCarnetPersona(persona);
-            String nombreArchivo = "carnet_" +
-                    (persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : persona.getId()) + ".pdf";
-            emailService.enviarCarnet(persona.getCorreo(), pdf, nombreArchivo);
+            emailService.enviarCarnetPorCorreo(persona);
             redirectAttributes.addFlashAttribute("success", "Carnet enviado correctamente al correo.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al enviar carnet: " + e.getMessage());
