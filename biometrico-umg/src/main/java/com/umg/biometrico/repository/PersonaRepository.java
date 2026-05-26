@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,20 @@ public interface PersonaRepository extends JpaRepository<Persona, Long> {
     List<Persona> findByRestringidoTrue();
 
     Optional<Persona> findByCorreoIgnoreCase(String correo);
+
+    Page<Persona> findByActivoTrue(Pageable pageable);
+
+    Page<Persona> findByTipoPersonaIgnoreCaseAndActivoTrue(
+            String tipoPersona,
+            Pageable pageable
+    );
+
+    Page<Persona> findByNombreCompletoContainingIgnoreCaseOrCorreoContainingIgnoreCaseOrNumeroCarnetContainingIgnoreCase(
+            String nombre,
+            String correo,
+            String carnet,
+            Pageable pageable
+    );
 
     boolean existsByCorreoIgnoreCase(String correo);
 

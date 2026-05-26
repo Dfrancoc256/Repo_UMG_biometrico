@@ -21,6 +21,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -44,21 +48,44 @@ public class PersonaController {
     private String appBaseUrl;
 
     @GetMapping
-    public String listar(@RequestParam(required = false) String busqueda,
-                         @RequestParam(required = false) String tipo,
-                         Model model) {
+    public String listar(
+            @RequestParam(required = false) String busqueda,
+            @RequestParam(required = false) String tipo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            Model model) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+
+        Page<Persona> personasPage;
+
         if (busqueda != null && !busqueda.isBlank()) {
-            model.addAttribute("personas", personaService.buscar(busqueda));
+
+            personasPage = personaRepository
+                    .findByNombreCompletoContainingIgnoreCaseOrCorreoContainingIgnoreCaseOrNumeroCarnetContainingIgnoreCase(
+                            busqueda, busqueda, busqueda, pageable);
+
             model.addAttribute("busqueda", busqueda);
+
         } else if (tipo != null && !tipo.isBlank()) {
-            model.addAttribute("personas", personaService.listarActivas().stream()
-                    .filter(p -> tipo.equalsIgnoreCase(p.getTipoPersona()))
-                    .toList());
+
+            personasPage = personaRepository
+                    .findByTipoPersonaIgnoreCaseAndActivoTrue(tipo, pageable);
+
             model.addAttribute("tipoFiltro", tipo);
+
         } else {
-            model.addAttribute("personas", personaService.listarActivas());
+
+            personasPage = personaRepository.findByActivoTrue(pageable);
         }
+
+        model.addAttribute("personas", personasPage.getContent());
+        model.addAttribute("paginaActual", page);
+        model.addAttribute("totalPaginas", personasPage.getTotalPages());
+        model.addAttribute("size", size);
+
         model.addAttribute("activeMenu", "personas");
+
         return "personas/lista";
     }
 
