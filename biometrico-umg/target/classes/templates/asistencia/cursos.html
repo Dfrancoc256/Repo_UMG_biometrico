@@ -11,9 +11,35 @@
     </div>
   </div>
 
+  <!-- BUSCADOR -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-body" style="padding:16px 22px;">
+      <div style="position:relative;max-width:420px;width:100%;">
+
+        <i class="fas fa-search"
+           style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#7a8898;z-index:2;"></i>
+
+        <input type="text"
+               id="buscarCurso"
+               class="form-control"
+               placeholder="Buscar curso, código, catedrático, salón u horario..."
+               onkeyup="filtrarCursos(); toggleClearCurso()"
+               style="padding-left:40px;padding-right:40px;">
+
+        <button type="button"
+                id="btnLimpiarCurso"
+                onclick="limpiarBusquedaCurso()"
+                style="display:none;position:absolute;right:14px;z-index:3;top:50%;transform:translateY(-50%);border:none;background:none;color:#7a8898;cursor:pointer;font-size:14px;">
+          <i class="fas fa-times-circle"></i>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
   <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));">
     <div th:each="c : ${cursos}"
-         class="card"
+         class="card curso-card"
          style="cursor:pointer;transition:transform .2s,box-shadow .2s;"
          onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.15)'"
          onmouseout="this.style.transform='';this.style.boxShadow=''">
@@ -54,6 +80,32 @@
       </a>
     </div>
   </div>
+
+  <script>
+    function filtrarCursos() {
+      const filtro = document.getElementById("buscarCurso").value.toLowerCase();
+      const tarjetas = document.querySelectorAll(".curso-card");
+
+      tarjetas.forEach(tarjeta => {
+        const texto = tarjeta.textContent.toLowerCase();
+        tarjeta.style.display = texto.includes(filtro) ? "" : "none";
+      });
+    }
+
+    function limpiarBusquedaCurso() {
+      const input = document.getElementById("buscarCurso");
+      input.value = "";
+      filtrarCursos();
+      toggleClearCurso();
+      input.focus();
+    }
+
+    function toggleClearCurso() {
+      const input = document.getElementById("buscarCurso");
+      const boton = document.getElementById("btnLimpiarCurso");
+      boton.style.display = input.value.length > 0 ? "block" : "none";
+    }
+  </script>
 
 </th:block>
 </body>

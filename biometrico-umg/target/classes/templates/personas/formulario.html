@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/main :: layout(~{::content}, 'Enrolar Persona', ${activeMenu})}">
+      th:replace="~{layout/main :: layout(~{::content}, 'Regitrar Persona', ${activeMenu})}">
 <body>
 <th:block th:fragment="content">
 
@@ -8,7 +8,7 @@
         <div>
             <h2>
                 <i class="fas fa-user-plus" style="margin-right:10px;color:var(--umg-azul);"></i>
-                <span th:text="${persona.id != null} ? 'Editar Persona' : 'Enrolar Nueva Persona'">Enrolar</span>
+                <span th:text="${persona.id != null} ? 'Editar Persona' : 'Registrar Nueva Persona'">Enrolar</span>
             </h2>
             <p class="breadcrumb">
                 <a th:href="@{/personas}">Personas</a> &rsaquo;
