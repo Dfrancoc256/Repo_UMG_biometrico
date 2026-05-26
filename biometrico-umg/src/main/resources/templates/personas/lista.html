@@ -19,6 +19,7 @@
   <div class="card" style="margin-bottom:18px;">
     <div class="card-body" style="padding:16px 22px;">
       <form th:action="@{/personas}" method="get" class="search-bar" style="flex-wrap:wrap;gap:10px;">
+        <input type="hidden" name="page" value="0">
         <input type="text" class="form-control" name="busqueda" placeholder="Buscar por nombre, correo o carnet..."
                th:value="${busqueda}" style="max-width:360px;"/>
         <select class="form-control" name="tipo" style="max-width:180px;">
@@ -30,6 +31,24 @@
         <button type="submit" class="btn btn-primary">
           <i class="fas fa-search"></i> Buscar
         </button>
+        <div class="page-size-selector">
+
+          <span class="page-size-label">
+              <i class="fas fa-layer-group"></i>
+              Mostrar
+          </span>
+
+          <select name="size"
+                  class="page-size-select"
+                  onchange="mostrarLoader(); this.form.submit()">
+
+            <option value="5" th:selected="${size == 5}">5</option>
+            <option value="10" th:selected="${size == 10}">10</option>
+            <option value="20" th:selected="${size == 20}">20</option>
+
+          </select>
+
+        </div>
         <a th:href="@{/personas}" class="btn btn-outline">
           <i class="fas fa-times"></i> Limpiar
         </a>
@@ -150,6 +169,47 @@
             </tr>
           </tbody>
         </table>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+
+          <!-- BOTON ANTERIOR -->
+          <a th:if="${paginaActual > 0}"
+             th:href="@{/personas(page=${paginaActual - 1},
+                         size=${size},
+                         busqueda=${busqueda},
+                         tipo=${tipoFiltro})}"
+             class="btn btn-outline-primary">
+
+            <i class="fas fa-chevron-left"></i> Anterior
+
+          </a>
+
+          <!-- TEXTO PAGINA -->
+          <div class="pagination-info">
+
+            <i class="fas fa-book-open"></i>
+
+            <span>
+                Página
+                <strong th:text="${paginaActual + 1}"></strong>
+                de
+                <strong th:text="${totalPaginas}"></strong>
+            </span>
+
+          </div>
+
+          <!-- BOTON SIGUIENTE -->
+          <a th:if="${paginaActual + 1 < totalPaginas}"
+             th:href="@{/personas(page=${paginaActual + 1},
+                         size=${size},
+                         busqueda=${busqueda},
+                         tipo=${tipoFiltro})}"
+             class="btn btn-outline-primary">
+
+            Siguiente <i class="fas fa-chevron-right"></i>
+
+          </a>
+
+        </div>
       </div>
     </div>
   </div>
@@ -213,7 +273,36 @@
     function cerrarModalRestriccion() {
       document.getElementById("modalRestriccion").style.display = "none";
     }
+
+    function mostrarLoader() {
+      document.getElementById("loader").style.display = "flex";
+    }
+
   </script>
+
+  <!-- LOADER -->
+  <div id="loader"
+       style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(255,255,255,0.7);
+        z-index:9999;
+        justify-content:center;
+        align-items:center;
+        font-size:22px;
+        font-weight:bold;
+        color:#002b5c;">
+
+    <div>
+      <i class="fas fa-spinner fa-spin"></i>
+      Cargando...
+    </div>
+
+  </div>
 
 </th:block>
 

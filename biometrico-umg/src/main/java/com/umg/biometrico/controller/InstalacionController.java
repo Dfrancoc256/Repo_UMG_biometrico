@@ -58,7 +58,7 @@ public class InstalacionController {
                     .collect(Collectors.toMap(
                             c -> c.getPuerta().getId(),
                             c -> c,
-                            (c1, c2) -> c1
+                            (c1, c2) -> Boolean.TRUE.equals(c1.getActiva()) ? c1 : c2
                     ));
 
             model.addAttribute("instalacion", inst);
@@ -177,12 +177,21 @@ public class InstalacionController {
                                @PathVariable Long camaraId,
                                RedirectAttributes ra) {
 
-        camaraRepository.findById(camaraId).ifPresent(c -> {
-            c.setActiva(!Boolean.TRUE.equals(c.getActiva()));
-            camaraRepository.save(c);
-        });
+        Camara camara = camaraRepository.findById(camaraId).orElse(null);
 
-        ra.addFlashAttribute("success", "Estado de cámara actualizado.");
+        if (camara == null) {
+            ra.addFlashAttribute("error", "No se encontró la cámara.");
+            return "redirect:/instalaciones/" + id;
+        }
+
+        boolean nuevoEstado = !Boolean.TRUE.equals(camara.getActiva());
+
+        camara.setActiva(nuevoEstado);
+        camaraRepository.saveAndFlush(camara);
+
+        ra.addFlashAttribute("success",
+                nuevoEstado ? "Cámara activada correctamente." : "Cámara desactivada correctamente.");
+
         return "redirect:/instalaciones/" + id;
     }
 
