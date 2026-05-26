@@ -174,10 +174,11 @@
           <!-- BOTON ANTERIOR -->
           <a th:if="${paginaActual > 0}"
              th:href="@{/personas(page=${paginaActual - 1},
-                         size=${size},
-                         busqueda=${busqueda},
-                         tipo=${tipoFiltro})}"
-             class="btn btn-outline-primary">
+               size=${size},
+               busqueda=${busqueda},
+               tipo=${tipoFiltro})}"
+             class="btn btn-outline-primary"
+             onclick="mostrarLoader()">
 
             <i class="fas fa-chevron-left"></i> Anterior
 
@@ -200,10 +201,11 @@
           <!-- BOTON SIGUIENTE -->
           <a th:if="${paginaActual + 1 < totalPaginas}"
              th:href="@{/personas(page=${paginaActual + 1},
-                         size=${size},
-                         busqueda=${busqueda},
-                         tipo=${tipoFiltro})}"
-             class="btn btn-outline-primary">
+               size=${size},
+               busqueda=${busqueda},
+               tipo=${tipoFiltro})}"
+             class="btn btn-outline-primary"
+             onclick="mostrarLoader()">
 
             Siguiente <i class="fas fa-chevron-right"></i>
 

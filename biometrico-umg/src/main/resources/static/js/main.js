@@ -126,24 +126,41 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuGroups = document.querySelectorAll('.menu-group');
   const toggles = document.querySelectorAll('.menu-toggle');
 
-  function closeAllGroups() {
-    menuGroups.forEach(group => group.classList.remove('active'));
+  function cerrarMenus() {
+    menuGroups.forEach(group => {
+      group.classList.remove('open');
+    });
   }
 
-  closeAllGroups();
-
   toggles.forEach(toggle => {
+
     toggle.addEventListener('click', function () {
-      const currentGroup = this.closest('.menu-group');
-      const isActive = currentGroup.classList.contains('active');
 
-      closeAllGroups();
+      const grupo = this.closest('.menu-group');
+      const abierto = grupo.classList.contains('open');
 
-      if (!isActive) {
-        currentGroup.classList.add('active');
+      cerrarMenus();
+
+      if (!abierto) {
+        grupo.classList.add('open');
       }
+
     });
+
   });
+
+// ===== MANTENER ABIERTO EL MENÚ ACTIVO =====
+
+  const activeLink = document.querySelector('.submenu a.active');
+
+  if (activeLink) {
+
+    const activeGroup = activeLink.closest('.menu-group');
+
+    if (activeGroup) {
+      activeGroup.classList.add('open');
+    }
+  }
 
   document.addEventListener('click', function (e) {
     if (!sidebar) return;

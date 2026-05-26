@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Nueva Carrera', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+    <div class="page-header">
+        <div>
+            <h2>
+                <i class="fas fa-graduation-cap" style="margin-right:10px;color:var(--umg-azul);"></i>
+                Nueva Carrera
+            </h2>
+            <p class="breadcrumb">Registrar nueva carrera universitaria</p>
+        </div>
+    </div>
+
+    <div class="form-responsive-wrapper">
+
+        <div class="card form-responsive-card">
+            <div class="card-header">
+                <h5>
+                    <i class="fas fa-university" style="margin-right:8px;"></i>
+                    Datos de la Carrera
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <form th:action="@{/carreras/guardar}" th:object="${carrera}" method="post">
+
+                    <div class="form-group">
+                        <label>Nombre de la carrera</label>
+                        <input type="text"
+                               th:field="*{nombre}"
+                               class="form-control"
+                               placeholder="Ejemplo: Ingeniería en Sistemas"
+                               required>
+                    </div>
+
+                    <div class="form-actions-responsive">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Carrera
+                        </button>
+
+                        <a th:href="@{/cursos}" class="btn btn-outline">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+</th:block>
+</body>
+</html>
