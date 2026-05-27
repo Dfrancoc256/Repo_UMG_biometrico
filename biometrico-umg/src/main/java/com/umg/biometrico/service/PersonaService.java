@@ -150,7 +150,7 @@ public class PersonaService {
                     ? Paths.get(guardada.getFotoRuta())
                     : Paths.get("").toAbsolutePath().resolve(guardada.getFotoRuta());
 
-            log.info("Intentando enrolar foto: {}", rutaFoto);
+            log.info("Intentando registrar foto: {}", rutaFoto);
             log.info("Existe el archivo: {}", Files.exists(rutaFoto));
 
             if (!Files.exists(rutaFoto)) {
@@ -169,7 +169,7 @@ public class PersonaService {
             }
 
         } catch (Exception e) {
-            log.warn("No se pudo enrolar facialmente: {}", e.getMessage(), e);
+            log.warn("No se pudo registrar facialmente: {}", e.getMessage(), e);
         }
     }
 

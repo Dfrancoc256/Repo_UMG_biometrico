@@ -24,6 +24,63 @@
     </a>
   </div>
 
+  <!-- BUSCADOR -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-body" style="padding:16px 22px;">
+
+      <div class="search-bar" style="gap:10px;">
+
+        <div style="position:relative;max-width:420px;width:100%;">
+
+          <!-- ICONO BUSCAR -->
+          <i class="fas fa-search"
+             style="
+        position:absolute;
+        left:14px;
+        top:50%;
+        transform:translateY(-50%);
+        color:#7a8898;
+        z-index:2;">
+          </i>
+
+          <!-- INPUT -->
+          <input type="text"
+                 id="buscarAcceso"
+                 class="form-control"
+                 placeholder="Buscar salón, nivel, cámara o descripción..."
+                 onkeyup="filtrarAccesos(); toggleClearButton()"
+                 style="
+            padding-left:40px;
+            padding-right:40px;">
+
+          <!-- BOTON LIMPIAR -->
+          <button type="button"
+                  id="btnLimpiarBusqueda"
+                  onclick="limpiarBusqueda()"
+                  style="
+            display:none;
+            position:absolute;
+            right:14px;
+            z-index:3;
+            top:50%;
+            transform:translateY(-50%);
+            border:none;
+            background:none;
+            color:#7a8898;
+            cursor:pointer;
+            font-size:14px;">
+
+            <i class="fas fa-times-circle"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-header">
       <h5>
@@ -35,7 +92,7 @@
 
     <div class="card-body" style="padding:0;">
       <div class="table-wrapper">
-        <table class="umg-table">
+        <table id="tablaAccesos" class="umg-table">
           <thead>
           <tr>
             <th>#</th>
@@ -77,20 +134,35 @@
             <td>
               <span th:if="${camara != null}"
                     class="badge"
-                    th:classappend="${camara.activa} ? 'badge-success' : 'badge-secondary'"
-                    th:text="${camara.activa} ? 'Activa' : 'Inactiva'">Estado</span>
+                    th:classappend="${camara.activa == true} ? 'badge-success' : 'badge-danger'"
+                    th:text="${camara.activa == true} ? 'Activa' : 'Inactiva'">Estado</span>
 
               <span th:if="${camara == null}" class="badge badge-secondary">Sin cámara</span>
             </td>
 
             <td sec:authorize="hasRole('ADMIN')">
-              <a th:if="${camara != null}"
-                 th:href="@{/kiosko/(camaraId=${camara.id})}"
-                 target="_blank">
-                <code th:text="'/kiosko/?camaraId=' + ${camara.id}">/kiosko/?camaraId=1</code>
-              </a>
 
-              <span th:if="${camara == null}" style="color:#7a8898;">—</span>
+              <a th:if="${camara != null and camara.activa == true}"
+                 th:href="@{/kiosko/(camaraId=${camara.id})}"
+                 target="_blank"
+                 class="btn btn-primary btn-xs"
+                 style="
+                  border-radius:8px;
+                  display:inline-flex;
+                  align-items:center;
+                  gap:6px;
+                  padding:6px 10px;">
+                <i class="fas fa-desktop"></i>
+                Abrir Kiosko
+              </a>
+              <span th:if="${camara == null}"
+                    style="color:#7a8898;">
+      —
+              </span>
+              <span th:if="${camara != null and camara.activa != true}"
+                    class="badge badge-danger">
+                    Kiosko desactivado
+              </span>
             </td>
 
             <td sec:authorize="hasRole('ADMIN')">
@@ -104,16 +176,6 @@
                   <i class="fas fa-edit"></i>
                 </a>
 
-                <!-- Abrir kiosko -->
-                <a th:if="${camara != null}"
-                   th:href="@{/kiosko/(camaraId=${camara.id})}"
-                   target="_blank"
-                   class="btn"
-                   title="Abrir kiosko"
-                   style="width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#0d6efd;color:#fff;">
-                  <i class="fas fa-external-link-alt"></i>
-                </a>
-
                 <!-- Activar / Desactivar cámara -->
                 <form th:if="${camara != null}"
                       th:action="@{/instalaciones/{id}/camara/{camaraId}/toggle(id=${instalacion.id},camaraId=${camara.id})}"
@@ -121,11 +183,10 @@
                       style="display:inline;">
                   <button type="submit"
                           title="Activar / Desactivar cámara"
-                          th:style="${camara.activa}
+                          th:style="${camara.activa == true}
                 ? 'width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#b00000;color:#fff;border:none;cursor:pointer;'
                 : 'width:34px;height:26px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#198754;color:#fff;border:none;cursor:pointer;'">
-                    <i th:class="${camara.activa} ? 'fas fa-ban' : 'fas fa-check'"></i>
-                  </button>
+                    <i th:class="${camara.activa == true} ? 'fas fa-ban' : 'fas fa-check'"></i>                  </button>
                 </form>
 
                 <!-- Eliminar acceso/salón -->
@@ -158,6 +219,63 @@
       </div>
     </div>
   </div>
+
+  <script>
+
+    function filtrarAccesos() {
+
+      const filtro = document
+              .getElementById("buscarAcceso")
+              .value
+              .toLowerCase();
+
+      const filas = document.querySelectorAll(
+              "#tablaAccesos tbody tr"
+      );
+
+      filas.forEach(fila => {
+
+        const texto = fila.textContent.toLowerCase();
+
+        fila.style.display =
+                texto.includes(filtro)
+                        ? ""
+                        : "none";
+      });
+    }
+
+    function limpiarBusqueda() {
+
+      const input = document.getElementById(
+              "buscarAcceso"
+      );
+
+      input.value = "";
+
+      filtrarAccesos();
+
+      toggleClearButton();
+
+      input.focus();
+    }
+
+    function toggleClearButton() {
+
+      const input = document.getElementById(
+              "buscarAcceso"
+      );
+
+      const boton = document.getElementById(
+              "btnLimpiarBusqueda"
+      );
+
+      boton.style.display =
+              input.value.length > 0
+                      ? "block"
+                      : "none";
+    }
+
+  </script>
 
 </th:block>
 </body>

@@ -67,11 +67,11 @@ public class FacialController {
             personaService.actualizar(persona);
 
             resp.put("ok", true);
-            resp.put("mensaje", "Rostro enrolado correctamente para " + persona.getNombreCompleto());
+            resp.put("mensaje", "Rostro registrado correctamente para " + persona.getNombreCompleto());
             return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
-            log.error("❌ Error al enrolar: {}", e.getMessage());
+            log.error("❌ Error al regitrar: {}", e.getMessage());
 
             resp.put("ok", false);
             resp.put("mensaje", "Error: " + e.getMessage());
