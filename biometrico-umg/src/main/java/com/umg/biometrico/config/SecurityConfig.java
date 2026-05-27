@@ -38,7 +38,9 @@ public class SecurityConfig {
                                 "/personas/*/carnet-publico", "/acceso-denegado",
                                 "/verificar/**",
                                 "/enrolamiento", "/enrolamiento/**",
-                                "/kiosko-web/**", "/kiosko/**"
+                                "/kiosko-web/**", "/kiosko/**",
+                                "/auth/olvide-password",
+                                "/auth/restablecer-password"
                         ).permitAll()
 
                         // ── Solo ADMIN ───────────────────────────────────────────

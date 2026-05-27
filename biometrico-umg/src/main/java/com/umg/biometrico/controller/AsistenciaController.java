@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.service.PersonaService;
 import org.springframework.security.core.Authentication;
+import com.umg.biometrico.repository.CarreraRepository;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ public class AsistenciaController {
     private final PdfService pdfService;
     private final EmailService emailService;
     private final PersonaService personaService;
+    private final CarreraRepository carreraRepository;
 
     @GetMapping
     public String listarCursos(Model model, Authentication authentication) {
@@ -51,7 +53,8 @@ public class AsistenciaController {
 
             model.addAttribute("cursos", cursoService.listarActivos());
         }
-
+        
+        model.addAttribute("carreras", carreraRepository.findAll());
         model.addAttribute("activeMenu", "asistencia");
         return "asistencia/cursos";
     }

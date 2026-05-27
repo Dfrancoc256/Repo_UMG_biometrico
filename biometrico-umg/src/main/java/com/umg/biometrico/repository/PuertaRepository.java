@@ -10,4 +10,5 @@ import java.util.List;
 public interface PuertaRepository extends JpaRepository<Puerta, Long> {
     List<Puerta> findByInstalacionId(Long instalacionId);
     List<Puerta> findByInstalacionIdAndEsSalon(Long instalacionId, Boolean esSalon);
+    List<Puerta> findByInstalacion_IdOrderByIdAsc(Long instalacionId);
 }

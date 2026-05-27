@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/auth :: authLayout(~{::content}, 'error')}">
+<body>
+<th:block th:fragment="content">
+
+  <h2>Enlace no válido</h2>
+
+  <div class="alert alert-danger" th:text="${error}">
+    El enlace es inválido o ha expirado.
+  </div>
+
+  <div style="text-align:center;margin-top:18px;">
+    <a th:href="@{/auth/olvide-password}" class="btn btn-primary">
+      Solicitar nuevo enlace
+    </a>
+  </div>
+
+  <div style="text-align:center;margin-top:14px;">
+    <a th:href="@{/auth/login}">Volver al inicio de sesión</a>
+  </div>
+
+</th:block>
+</body>
+</html>

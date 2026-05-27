@@ -12,6 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.umg.biometrico.model.Carrera;
+import com.umg.biometrico.repository.CarreraRepository;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,13 +50,18 @@ public class CursoController {
             cursos = cursoService.listarActivos();
         }
 
-        Map<String, List<Curso>> cursosPorCarrera = cursos.stream()
-                .filter(c -> c.getCarrera() != null)
-                .collect(Collectors.groupingBy(
-                        c -> c.getCarrera().getNombre(),
-                        LinkedHashMap::new,
-                        Collectors.toList()
-                ));
+        Map<String, List<Curso>> cursosPorCarrera = new LinkedHashMap<>();
+
+        List<Carrera> carreras = carreraRepository.findAll();
+
+        for (Carrera carrera : carreras) {
+            List<Curso> cursosDeCarrera = cursos.stream()
+                    .filter(c -> c.getCarrera() != null
+                            && c.getCarrera().getId().equals(carrera.getId()))
+                    .toList();
+
+            cursosPorCarrera.put(carrera.getNombre(), cursosDeCarrera);
+        }
 
         model.addAttribute("cursos", cursos);
         model.addAttribute("cursosPorCarrera", cursosPorCarrera);

@@ -29,6 +29,18 @@ public class EmailService {
         this.pdfService = pdfService;
     }
 
+    public void enviarCorreo(String destino, String asunto, String contenidoHtml) throws MessagingException {
+        MimeMessage mensaje = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+        helper.setFrom(fromAddress);
+        helper.setTo(destino);
+        helper.setSubject(asunto);
+        helper.setText(contenidoHtml, true);
+
+        mailSender.send(mensaje);
+    }
+
     public void enviarCarnet(String destino, byte[] pdfBytes, String nombreArchivo) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
