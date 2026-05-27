@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Árbol Histórico', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-history" style="margin-right:10px;color:var(--umg-azul);"></i>Árbol Histórico de Ingresos</h2>
+      <p class="breadcrumb"><a th:href="@{/reportes}">Reportes</a> &rsaquo; Histórico</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <div class="card-body" style="padding:18px 22px;">
+      <p style="font-size:13.5px;color:#3a4a5c;line-height:1.7;">
+        Este árbol jerárquico muestra el historial completo de ingresos organizado por:
+        <strong>Instalación (nodo raíz)</strong> →
+        <strong>Puerta de acceso (nivel 1)</strong> →
+        <strong>Fechas con registros (nivel 2)</strong>.
+        Al seleccionar una fecha podrá ver el detalle de ingresos del día.
+      </p>
+    </div>
+  </div>
+
+  <!-- Árbol de instalaciones -->
+  <div th:each="inst : ${instalaciones}">
+
+    <!-- Nodo raíz: Instalación -->
+    <div class="tree-node nivel-1" style="margin-bottom:4px;">
+      <i class="fas fa-university" style="color:var(--umg-azul);margin-right:10px;font-size:16px;"></i>
+      <strong th:text="${inst.nombre}" style="font-size:15px;">Instalación</strong>
+      <small style="color:#7a8898;margin-left:12px;" th:text="${inst.direccion}">dir</small>
+    </div>
+
+    <!-- Nivel 1: Puertas -->
+    <div th:each="p : ${inst.puertas}">
+      <div class="tree-node nivel-2">
+        <i class="fas fa-door-open" style="color:var(--umg-dorado);margin-right:8px;"></i>
+        <span th:text="${p.nombre}">Puerta</span>
+        <span class="badge"
+              th:classappend="${p.esSalon} ? 'badge-warning' : 'badge-info'"
+              style="margin-left:8px;"
+              th:text="${p.esSalon} ? 'Salón' : 'Acceso Principal'">tipo</span>
+
+        <!-- Enlace para ver ingresos por esta puerta -->
+        <a th:href="@{/reportes/puerta(instalacionId=${inst.id}, puertaId=${p.id})}"
+           class="btn btn-outline btn-xs" style="margin-left:auto;">
+          <i class="fas fa-arrow-right"></i> Ver registros
+        </a>
+      </div>
+    </div>
+
+    <div th:if="${inst.puertas == null or #lists.isEmpty(inst.puertas)}"
+         style="margin-left:28px;margin-bottom:8px;padding:10px;background:#f7f9fc;border-radius:8px;font-size:12px;color:#7a8898;">
+      <i class="fas fa-info-circle" style="margin-right:6px;"></i>
+      No hay accesos registrados para esta instalación.
+      <a th:href="@{/instalaciones/{id}/puerta/nueva(id=${inst.id})}">Agregar acceso</a>
+    </div>
+
+  </div>
+
+  <div th:if="${instalaciones == null or #lists.isEmpty(instalaciones)}" class="card">
+    <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+      <i class="fas fa-sitemap" style="font-size:40px;display:block;margin-bottom:14px;"></i>
+      No hay instalaciones registradas aún.
+      <br/><br/>
+      <a th:href="@{/instalaciones/nueva}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Registrar instalación
+      </a>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

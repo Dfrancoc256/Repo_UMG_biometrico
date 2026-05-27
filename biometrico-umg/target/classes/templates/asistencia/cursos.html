@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content}, 'Asistencia', ${activeMenu})}">
+<body>
+<th:block th:fragment="content">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fas fa-clipboard-check" style="margin-right:10px;color:var(--umg-azul);"></i>Control de Asistencia</h2>
+      <p class="breadcrumb">Seleccione un curso para gestionar la asistencia</p>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));">
+    <div th:each="c : ${cursos}"
+         class="card"
+         style="cursor:pointer;transition:transform .2s,box-shadow .2s;"
+         onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.15)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div class="card-body" style="padding:22px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+          <div style="background:#eef2f7;padding:10px;border-radius:10px;">
+            <i class="fas fa-book" style="font-size:22px;color:var(--umg-azul);"></i>
+          </div>
+          <span class="badge badge-info" th:text="${c.codigo}">cod</span>
+        </div>
+        <h4 style="font-size:15px;font-weight:700;color:var(--umg-azul);margin-bottom:6px;" th:text="${c.nombre}">Curso</h4>
+        <p style="font-size:12px;color:#7a8898;margin-bottom:4px;">
+          <i class="fas fa-user-tie" style="width:16px;"></i>
+          <span th:text="${c.catedratico != null ? c.catedratico.nombreCompleto : 'Sin asignar'}">Catedrático</span>
+        </p>
+        <p style="font-size:12px;color:#7a8898;margin-bottom:4px;">
+          <i class="fas fa-door-open" style="width:16px;"></i>
+          <span th:text="${c.salon != null ? c.salon : '—'}">Salón</span>
+        </p>
+        <p style="font-size:12px;color:#7a8898;margin-bottom:16px;">
+          <i class="fas fa-clock" style="width:16px;"></i>
+          <span th:text="${c.horario != null ? c.horario : '—'}">Horario</span>
+        </p>
+        <a th:href="@{/asistencia/curso/{id}(id=${c.id})}" class="btn btn-primary" style="width:100%;justify-content:center;">
+          <i class="fas fa-clipboard-list"></i> Ver Árbol de Asistencia
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${cursos == null or #lists.isEmpty(cursos)}" class="card">
+    <div class="card-body" style="text-align:center;padding:60px;color:#7a8898;">
+      <i class="fas fa-book-open" style="font-size:40px;display:block;margin-bottom:14px;"></i>
+      No hay cursos activos registrados.
+      <br/><br/>
+      <a th:href="@{/cursos/nuevo}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Crear primer curso
+      </a>
+    </div>
+  </div>
+
+</th:block>
+</body>
+</html>

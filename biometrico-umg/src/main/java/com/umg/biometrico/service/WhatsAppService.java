@@ -142,24 +142,27 @@ public class WhatsAppService {
     // ─── Mensaje formateado ───────────────────────────────────────────────────
     private String construirMensaje(Persona persona) {
         return """
-            🎓 *Universidad Mariano Gálvez de Guatemala*
-            Sede La Florida, Zona 19
+        🎓 *Universidad Mariano Gálvez de Guatemala*
+        Sede La Florida, Zona 19
 
-            Hola *%s*, has sido enrolado/a exitosamente en el Sistema Biométrico UMG.
+        Hola *%s*, has sido registrado/a exitosamente en el Sistema Biométrico UMG.
 
-            📋 *Datos de tu carnet:*
-            • Carnet N°: `%s`
-            • Tipo: %s
-            • Carrera: %s
+        📋 *Datos de tu carnet:*
+        • Carnet N°: `%s`
+        • Tipo: %s
+        • Carrera: %s
 
-            Tu carnet en PDF ha sido enviado también a tu correo electrónico.
+        Tu carnet en PDF ha sido enviado también a tu correo electrónico.
 
-            _Sistema Biométrico UMG — 2026_
-            """.formatted(
+        _Sistema Biométrico UMG — 2026_
+        """.formatted(
                 persona.getNombreCompleto(),
-                persona.getNumeroCarnet()  != null ? persona.getNumeroCarnet()  : "—",
-                persona.getTipoPersona()   != null ? persona.getTipoPersona()   : "—",
-                persona.getCarrera()       != null ? persona.getCarrera()       : "—"
+                persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : "—",
+                persona.getTipoPersona() != null ? persona.getTipoPersona() : "—",
+                persona.getCarrera() != null &&
+                        persona.getCarrera().getNombre() != null
+                        ? persona.getCarrera().getNombre()
+                        : "No asignada"
         );
     }
 
