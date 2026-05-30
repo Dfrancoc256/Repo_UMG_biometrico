@@ -235,6 +235,18 @@ public class PersonaService {
         });
     }
 
+    public String generarContrasenaTemporal() {
+        String caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$";
+        StringBuilder password = new StringBuilder();
+
+        for (int i = 0; i < 10; i++) {
+            int index = ThreadLocalRandom.current().nextInt(caracteres.length());
+            password.append(caracteres.charAt(index));
+        }
+
+        return password.toString();
+    }
+
     private String generarNumeroCarnetUnico() {
         String carnet;
 

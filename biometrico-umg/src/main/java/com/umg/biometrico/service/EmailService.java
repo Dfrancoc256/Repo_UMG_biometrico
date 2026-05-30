@@ -101,6 +101,75 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void enviarCredencialesAcceso(Persona persona, String contrasenaTemporal) {
+
+        try {
+
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+            helper.setFrom(fromAddress);
+            helper.setTo(persona.getCorreo());
+            helper.setSubject("Credenciales de Acceso - Sistema Biométrico UMG");
+
+            helper.setText("""
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;">
+                <div style="background:#003366;padding:20px;text-align:center;">
+                    <h2 style="color:white;">Sistema Biométrico UMG</h2>
+                </div>
+
+                <div style="padding:25px;background:#f5f8fc;">
+
+                    <p>Estimado/a <strong>%s</strong>,</p>
+
+                    <p>Su cuenta ha sido creada exitosamente en el Sistema Biométrico UMG.</p>
+
+                    <p>Puede iniciar sesión utilizando las siguientes credenciales:</p>
+
+                    <table style="border-collapse:collapse;width:100%%;">
+                        <tr>
+                            <td style="padding:8px;border:1px solid #ddd;"><strong>Usuario:</strong></td>
+                            <td style="padding:8px;border:1px solid #ddd;">%s</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;border:1px solid #ddd;"><strong>Contraseña:</strong></td>
+                            <td style="padding:8px;border:1px solid #ddd;">%s</td>
+                        </tr>
+                    </table>
+
+                    <br>
+
+                    <p>
+                        Por seguridad le recomendamos cambiar su contraseña
+                        después de iniciar sesión por primera vez.
+                    </p>
+
+                </div>
+
+                <div style="background:#003366;padding:10px;text-align:center;">
+                    <small style="color:white;">
+                        Universidad Mariano Gálvez de Guatemala
+                    </small>
+                </div>
+            </div>
+            """.formatted(
+                    persona.getNombreCompleto(),
+                    persona.getCorreo(),
+                    contrasenaTemporal
+            ), true);
+
+            mailSender.send(mensaje);
+
+            log.info("Credenciales enviadas a {}", persona.getCorreo());
+
+        } catch (Exception e) {
+
+            log.error("Error enviando credenciales: {}", e.getMessage(), e);
+
+        }
+    }
+
     public void enviarReporteAsistencia(String destino, String nombreCurso, String fechaStr, byte[] pdfBytes)
             throws MessagingException {
         MimeMessage mensaje = mailSender.createMimeMessage();

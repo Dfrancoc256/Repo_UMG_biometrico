@@ -156,6 +156,18 @@ public class PersonaController {
                 persona.setCarrera(null);
                 persona.setSeccion(null);
             }
+
+            String contrasenaTemporal = null;
+
+            if (esNueva) {
+
+                contrasenaTemporal = personaService.generarContrasenaTemporal();
+
+                persona.setContrasena(contrasenaTemporal);
+
+            }
+            
+
             Persona guardada = personaService.guardar(persona, foto, fotoBase64);
 
             Persona personaCompleta = personaRepository.findById(guardada.getId())
@@ -164,6 +176,8 @@ public class PersonaController {
             if (esNueva) {
                 emailService.enviarCarnetPorCorreo(personaCompleta);
                 whatsAppService.enviarCarnetPorWhatsApp(personaCompleta);
+                emailService.enviarCredencialesAcceso(personaCompleta, contrasenaTemporal);
+
 
                 if (personaCompleta.getTelefono() != null && !personaCompleta.getTelefono().isBlank()) {
                     try {
