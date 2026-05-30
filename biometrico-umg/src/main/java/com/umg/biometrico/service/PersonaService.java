@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,6 +31,8 @@ public class PersonaService {
     private final PersonaRepository personaRepository;
     private final PasswordEncoder passwordEncoder;
     private final FacialApiService facialApiService;
+    private final RostroApiService rostroApiService;
+    private final ObjectMapper objectMapper;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -109,7 +113,10 @@ public class PersonaService {
             entidad.setFotoRuta(guardarFoto(foto));
             entidad.setEncodingFacial(null);
         } else if (fotoBase64 != null && !fotoBase64.isBlank()) {
-            entidad.setFotoRuta(guardarFotoBase64(fotoBase64));
+
+            String fotoSegmentada = segmentarFotoBase64(fotoBase64);
+
+            entidad.setFotoRuta(guardarFotoBase64(fotoSegmentada));
             entidad.setEncodingFacial(null);
         }
 
@@ -138,6 +145,34 @@ public class PersonaService {
         enrolarFacialmenteSiCorresponde(guardada);
 
         return guardada;
+    }
+
+    private String segmentarFotoBase64(String fotoBase64) {
+
+        try {
+            String base64Limpio = fotoBase64.contains(",")
+                    ? fotoBase64.split(",")[1]
+                    : fotoBase64;
+
+            String respuesta = rostroApiService.segmentarRostro(base64Limpio);
+
+            Map<String, Object> json = objectMapper.readValue(respuesta, Map.class);
+
+            Boolean segmentado = (Boolean) json.get("segmentado");
+            String rostro = (String) json.get("rostro");
+
+            if (Boolean.TRUE.equals(segmentado) && rostro != null && !rostro.isBlank()) {
+                log.info("✅ Foto segmentada correctamente. Se guardará en uploads/fotos.");
+                return "data:image/jpeg;base64," + rostro;
+            }
+
+            log.warn("⚠️ No se pudo segmentar la foto. Se guardará la original.");
+            return fotoBase64;
+
+        } catch (Exception e) {
+            log.warn("⚠️ Error segmentando foto. Se guardará la original: {}", e.getMessage());
+            return fotoBase64;
+        }
     }
 
     private void enrolarFacialmenteSiCorresponde(Persona guardada) {
