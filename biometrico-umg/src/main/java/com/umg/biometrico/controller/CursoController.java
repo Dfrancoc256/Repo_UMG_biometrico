@@ -55,12 +55,15 @@ public class CursoController {
         List<Carrera> carreras = carreraRepository.findAll();
 
         for (Carrera carrera : carreras) {
+
             List<Curso> cursosDeCarrera = cursos.stream()
                     .filter(c -> c.getCarrera() != null
                             && c.getCarrera().getId().equals(carrera.getId()))
                     .toList();
 
-            cursosPorCarrera.put(carrera.getNombre(), cursosDeCarrera);
+            if (!cursosDeCarrera.isEmpty()) {
+                cursosPorCarrera.put(carrera.getNombre(), cursosDeCarrera);
+            }
         }
 
         model.addAttribute("cursos", cursos);
