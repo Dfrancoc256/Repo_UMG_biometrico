@@ -52,16 +52,30 @@ public class CursoController {
 
         Map<String, List<Curso>> cursosPorCarrera = new LinkedHashMap<>();
 
-        List<Carrera> carreras = carreraRepository.findAll();
+        if (persona != null
+                && persona.getRol() != null
+                && persona.getRol().getNombre().equalsIgnoreCase("CATEDRATICO")) {
 
-        for (Carrera carrera : carreras) {
+            cursos.stream()
+                    .filter(c -> c.getCarrera() != null)
+                    .collect(Collectors.groupingBy(
+                            c -> c.getCarrera().getNombre(),
+                            LinkedHashMap::new,
+                            Collectors.toList()
+                    ))
+                    .forEach(cursosPorCarrera::put);
 
-            List<Curso> cursosDeCarrera = cursos.stream()
-                    .filter(c -> c.getCarrera() != null
-                            && c.getCarrera().getId().equals(carrera.getId()))
-                    .toList();
+        } else {
 
-            if (!cursosDeCarrera.isEmpty()) {
+            List<Carrera> carreras = carreraRepository.findByActivoTrue();
+
+            for (Carrera carrera : carreras) {
+
+                List<Curso> cursosDeCarrera = cursos.stream()
+                        .filter(c -> c.getCarrera() != null
+                                && c.getCarrera().getId().equals(carrera.getId()))
+                        .toList();
+
                 cursosPorCarrera.put(carrera.getNombre(), cursosDeCarrera);
             }
         }
