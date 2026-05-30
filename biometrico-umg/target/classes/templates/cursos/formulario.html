@@ -49,10 +49,6 @@
                    th:value="${curso.codigo != null ? curso.codigo : codigoPreview}"
                    readonly>
 
-<!--            <small style="color:#6b7280;">-->
-<!--              El código se asigna automáticamente por el sistema.-->
-<!--            </small>-->
-
           </div>
 
           <div class="form-group">
@@ -81,6 +77,34 @@
                     th:text="${c.nombre}"
                     th:selected="${curso.carrera != null and curso.carrera.id == c.id}">
               Carrera
+            </option>
+
+          </select>
+        </div>
+
+        <!-- SECCION -->
+        <div class="form-group">
+
+          <label class="form-label">Sección *</label>
+
+          <select class="form-control" name="seccion" required>
+
+            <option value="">-- Seleccione una sección --</option>
+
+            <option value="A" th:selected="${curso.seccion == 'A'}">
+              Sección A
+            </option>
+
+            <option value="B" th:selected="${curso.seccion == 'B'}">
+              Sección B
+            </option>
+
+            <option value="C" th:selected="${curso.seccion == 'C'}">
+              Sección C
+            </option>
+
+            <option value="D" th:selected="${curso.seccion == 'D'}">
+              Sección D
             </option>
 
           </select>

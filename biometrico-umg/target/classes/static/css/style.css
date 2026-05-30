@@ -217,11 +217,11 @@ canvas {
 }
 
 .menu-toggle:hover .section-icon,
-.menu-group.active .section-icon {
+.menu-group.open .section-icon {
   color: #ffffff;
 }
 
-.menu-group.active .section-icon {
+.menu-group.open .section-icon {
   transform: scale(1.05);
 }
 
@@ -238,7 +238,7 @@ canvas {
           padding .22s ease;
 }
 
-.menu-group.active .submenu {
+.menu-group.open .submenu {
   max-height: 500px;
   opacity: 1;
   padding-bottom: 6px;
@@ -2381,4 +2381,37 @@ select.form-control {
 
 .error-technical-box i{
   margin-right:6px;
+}
+
+.form-responsive-wrapper{
+  width:100%;
+  display:flex;
+  justify-content:center;
+}
+
+.form-responsive-card{
+  width:100%;
+  max-width:700px;
+}
+
+.form-actions-responsive{
+  margin-top:24px;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+@media (max-width:600px){
+  .form-responsive-card{
+    max-width:100%;
+  }
+
+  .form-actions-responsive{
+    flex-direction:column;
+  }
+
+  .form-actions-responsive .btn{
+    width:100%;
+    justify-content:center;
+  }
 }
