@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umg.biometrico.model.Persona;
 import com.umg.biometrico.service.FacialApiService;
 import com.umg.biometrico.service.PersonaService;
+import com.umg.biometrico.service.RostroApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class FacialController {
     private final FacialApiService facialApiService;
     private final PersonaService personaService;
     private final ObjectMapper objectMapper;
+    private final RostroApiService rostroApiService;
 
     @PostMapping("/enrolar/{id}")
     public ResponseEntity<Map<String, Object>> enrolar(
@@ -53,6 +55,24 @@ public class FacialController {
                 resp.put("ok", false);
                 resp.put("mensaje", "Formato de imagen inválido");
                 return ResponseEntity.badRequest().body(resp);
+            }
+
+            String base64Limpio = imagenBase64.split(",")[1];
+
+            String respuestaSegmentacion = rostroApiService.segmentarRostro(base64Limpio);
+
+            log.info("🧠 Respuesta segmentación: {}", respuestaSegmentacion);
+
+            Map<String, Object> jsonSegmentacion = objectMapper.readValue(respuestaSegmentacion, Map.class);
+
+            Boolean segmentado = (Boolean) jsonSegmentacion.get("segmentado");
+            String rostroSegmentado = (String) jsonSegmentacion.get("rostro");
+
+            if (Boolean.TRUE.equals(segmentado) && rostroSegmentado != null && !rostroSegmentado.isBlank()) {
+                imagenBase64 = "data:image/jpeg;base64," + rostroSegmentado;
+                log.info("✅ Se usará imagen segmentada para enrolar.");
+            } else {
+                log.warn("⚠️ No se pudo segmentar. Se usará imagen original.");
             }
 
             List<Double> descriptor = facialApiService.enrolar(id, imagenBase64);

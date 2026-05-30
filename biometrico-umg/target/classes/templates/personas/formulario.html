@@ -367,13 +367,23 @@
                 alert('No hay cámara activa disponible.');
                 return;
             }
+
             canvas.width  = video.videoWidth  || 320;
             canvas.height = video.videoHeight || 240;
             canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
             const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+            // Imagen completa para tu sistema actual
             b64Input.value = dataUrl;
-            preview.src    = dataUrl;
+
+            // Vista previa
+            preview.src = dataUrl;
             preview.style.display = 'block';
+
+            // Prueba: base64 limpio para Postman/API externa
+            const base64Limpio = dataUrl.split(',')[1];
+            console.log("BASE64 LIMPIO:", base64Limpio);
         });
 
         function previewFotoArchivo(input) {

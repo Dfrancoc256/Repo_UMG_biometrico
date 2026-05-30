@@ -40,7 +40,7 @@ public class SecurityConfig {
                                 "/enrolamiento", "/enrolamiento/**",
                                 "/kiosko-web/**", "/kiosko/**",
                                 "/auth/olvide-password",
-                                "/auth/restablecer-password"
+                                "/auth/restablecer-password", "/prueba-rostro/**"
                         ).permitAll()
 
                         // ── Solo ADMIN ───────────────────────────────────────────

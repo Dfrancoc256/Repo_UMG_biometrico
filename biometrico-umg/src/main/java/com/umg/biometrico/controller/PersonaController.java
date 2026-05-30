@@ -276,9 +276,9 @@ public class PersonaController {
                     .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
             String carnet = persona.getNumeroCarnet() != null ? persona.getNumeroCarnet() : "";
             String cod = PdfService.generarCodigoValidacion(carnet);
-            String contenido = "https://umg1.duckdns.org/personas/"
-                    + id
-                    + "/carnet-publico";
+            String contenido = persona.getNumeroCarnet() != null
+                    ? persona.getNumeroCarnet().replace("UMG-", "").trim()
+                    : "";
             byte[] png = pdfService.generarQR(contenido, 220, 220);
             if (png == null) return ResponseEntity.internalServerError().build();
             return ResponseEntity.ok()
